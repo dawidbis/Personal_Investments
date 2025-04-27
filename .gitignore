@@ -1,54 +1,41 @@
-# C++ objects and libs
-*.slo
-*.lo
-*.o
-*.a
-*.la
-*.lai
-*.so
-*.so.*
-*.dll
-*.dylib
+# Ignoruj katalogi kompilacji
+bin/
+obj/
 
-# Qt-es
-object_script.*.Release
-object_script.*.Debug
-*_plugin_import.cpp
-/.qmake.cache
-/.qmake.stash
-*.pro.user
-*.pro.user.*
-*.qbs.user
-*.qbs.user.*
-*.moc
-moc_*.cpp
-moc_*.h
-qrc_*.cpp
-ui_*.h
-*.qmlc
-*.jsc
-Makefile*
-*build-*
-*.qm
-*.prl
+# Ignoruj pliki tymczasowe Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-# Qt unit tests
-target_wrapper.*
+# Ignoruj pliki konfiguracji lokalnej
+appsettings.Local.json
 
-# QtCreator
-*.autosave
+# Ignoruj pliki bazy danych lokalnej (np. SQLite)
+*.db
+*.db-shm
+*.db-wal
 
-# QtCreator Qml
-*.qmlproject.user
-*.qmlproject.user.*
+# Ignoruj logi
+*.log
 
-# QtCreator CMake
-CMakeLists.txt.user*
+# Ignoruj foldery publikacji
+publish/
 
-# QtCreator 4.8< compilation database
-compile_commands.json
+# Ignoruj cache NuGeta lokalny
+*.nupkg
+packages/
 
-# QtCreator local machine specific files for imported projects
-*creator.user*
+# Ignoruj folder TestResults
+TestResults/
 
-*_qmlcache.qrc
+# Ignoruj pliki crash dumpów
+*.dmp
+
+# Ignoruj thumb.db (Windows)
+Thumbs.db
+
+# Ignoruj konfiguracje Rider / ReSharper
+.idea/
+*.DotSettings
