@@ -11,7 +11,10 @@ namespace Personal_Investment_App
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+
+            LoginForm loginForm = new LoginForm();
+
+            Application.Run(loginForm);
         }
     }
 }
