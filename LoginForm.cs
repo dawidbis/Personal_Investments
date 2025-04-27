@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic.Devices;
+﻿using DatabaseConnection;
+using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,9 +17,12 @@ namespace Personal_Investment_App
         public string Username { get; set; }
         public string Password { get; set; }
 
-        public LoginForm()
+        private DatabaseManager dbManager;
+
+        public LoginForm(DatabaseManager dbManager)
         {
             InitializeComponent();
+            this.dbManager = dbManager;
         }
 
         private void btnLogin_MouseEnter(object sender, EventArgs e)
@@ -53,7 +57,9 @@ namespace Personal_Investment_App
             Password = txtPassword.Text;
             if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
             {
+
                 MessageBox.Show("Proszę wpisać nazwę użytkownika oraz hasło.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
                 return;
             }
             
