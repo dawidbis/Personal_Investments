@@ -1,4 +1,5 @@
-﻿using DatabaseConnection;
+﻿#pragma warning disable CA1416 
+using DatabaseConnection;
 using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace Personal_Investment_App
 
         private void btnLogin_MouseEnter(object sender, EventArgs e)
         {
+
             btnLogin.BackColor = Color.DarkGray;
             btnLogin.ForeColor = Color.FromArgb(250, 250, 250);
             btnLogin.Cursor = Cursors.Hand;
@@ -55,15 +57,25 @@ namespace Personal_Investment_App
         {
             Username = txtLogin.Text;
             Password = txtPassword.Text;
+
             if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
             {
-
                 MessageBox.Show("Proszę wpisać nazwę użytkownika oraz hasło.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
                 return;
             }
-            
 
+            var result = dbManager.Login(txtLogin.Text, txtPassword.Text);
+
+            if (result.Success)
+            {
+                MessageBox.Show("Zalogowano pomyślnie!", "Sukces",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show(result.ErrorMessage, "Błąd logowania",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
