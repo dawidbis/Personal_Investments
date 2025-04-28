@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="DatabaseConnection\DatabaseConnection.csproj" />
+    <ProjectReference Include="ProgramLogic\ProgramLogic.csproj" />
   </ItemGroup>
 
   <ItemGroup>
