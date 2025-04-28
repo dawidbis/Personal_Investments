@@ -10,14 +10,21 @@ namespace Personal_Investment_App
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,  
-            // see https://aka.ms/applicationconfiguration.  
             ApplicationConfiguration.Initialize();
 
             var dbManager = new DatabaseManager();
-            var loginForm = new LoginForm(dbManager);
 
-            Application.Run(loginForm);
+            using (var loginForm = new LoginForm(dbManager))
+            {
+                if (loginForm.ShowDialog() == DialogResult.OK)
+                {
+                    Application.Run(new Form1(dbManager)); 
+                }
+                else
+                {
+                    Application.Exit();
+                }
+            }
         }
     }
 }

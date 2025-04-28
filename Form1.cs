@@ -1,10 +1,18 @@
+#pragma warning disable CS0436
+using DatabaseConnection;
+
 namespace Personal_Investment_App
 {
     public partial class Form1 : Form
     {
-        public Form1()
+        private DatabaseManager dbManager;
+
+        public Form1(DatabaseManager dbManager)
+
         {
             InitializeComponent();
+
+            this.dbManager = dbManager;
         }
 
         private void assaToolStripMenuItem_Click(object sender, EventArgs e)

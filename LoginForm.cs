@@ -68,8 +68,8 @@ namespace Personal_Investment_App
 
             if (result.Success)
             {
-                MessageBox.Show("Zalogowano pomyślnie!", "Sukces",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             }
             else
             {
