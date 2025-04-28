@@ -44,9 +44,17 @@
             dezaktywujInwestycjęToolStripMenuItem = new ToolStripMenuItem();
             wylogujToolStripMenuItem1 = new ToolStripMenuItem();
             panel1 = new Panel();
+            groupBox3 = new GroupBox();
+            listBox2 = new ListBox();
             groupBox2 = new GroupBox();
+            lblśredniZysk = new Label();
+            label6 = new Label();
+            lblłącznaWartość = new Label();
             label4 = new Label();
-            listBox1 = new ListBox();
+            button1 = new Button();
+            label3 = new Label();
+            label2 = new Label();
+            groupBox1 = new GroupBox();
             listView1 = new ListView();
             Typ_inwestycji = new ColumnHeader();
             Nazwa_Inwestycji = new ColumnHeader();
@@ -54,13 +62,11 @@
             Kwota_inwestycji = new ColumnHeader();
             Obecna_wartość = new ColumnHeader();
             imageList1 = new ImageList(components);
-            button1 = new Button();
-            label3 = new Label();
-            label2 = new Label();
             label1 = new Label();
-            groupBox1 = new GroupBox();
+            lblilośćInwestycji = new Label();
             menuStrip2.SuspendLayout();
             panel1.SuspendLayout();
+            groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             SuspendLayout();
@@ -151,6 +157,7 @@
             // 
             // panel1
             // 
+            panel1.Controls.Add(groupBox3);
             panel1.Controls.Add(groupBox2);
             panel1.Controls.Add(groupBox1);
             panel1.Location = new Point(117, 0);
@@ -158,12 +165,34 @@
             panel1.Size = new Size(682, 450);
             panel1.TabIndex = 2;
             // 
+            // groupBox3
+            // 
+            groupBox3.Controls.Add(listBox2);
+            groupBox3.Location = new Point(13, 331);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Size = new Size(524, 116);
+            groupBox3.TabIndex = 7;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "Szczególy wybranej inwestycji";
+            // 
+            // listBox2
+            // 
+            listBox2.FormattingEnabled = true;
+            listBox2.ItemHeight = 15;
+            listBox2.Location = new Point(6, 21);
+            listBox2.Name = "listBox2";
+            listBox2.Size = new Size(500, 79);
+            listBox2.TabIndex = 0;
+            // 
             // groupBox2
             // 
-            groupBox2.Controls.Add(button1);
+            groupBox2.Controls.Add(lblilośćInwestycji);
+            groupBox2.Controls.Add(lblśredniZysk);
+            groupBox2.Controls.Add(label6);
+            groupBox2.Controls.Add(lblłącznaWartość);
             groupBox2.Controls.Add(label4);
+            groupBox2.Controls.Add(button1);
             groupBox2.Controls.Add(label3);
-            groupBox2.Controls.Add(listBox1);
             groupBox2.Controls.Add(label2);
             groupBox2.Location = new Point(537, 3);
             groupBox2.Name = "groupBox2";
@@ -171,30 +200,86 @@
             groupBox2.TabIndex = 5;
             groupBox2.TabStop = false;
             // 
+            // lblśredniZysk
+            // 
+            lblśredniZysk.AutoSize = true;
+            lblśredniZysk.Location = new Point(24, 53);
+            lblśredniZysk.Name = "lblśredniZysk";
+            lblśredniZysk.Size = new Size(86, 15);
+            lblśredniZysk.TabIndex = 6;
+            lblśredniZysk.Text = "Średni zysk (%)";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(79, 108);
+            label6.Name = "label6";
+            label6.Size = new Size(0, 15);
+            label6.TabIndex = 5;
+            // 
+            // lblłącznaWartość
+            // 
+            lblłącznaWartość.AutoSize = true;
+            lblłącznaWartość.Location = new Point(0, 38);
+            lblłącznaWartość.Name = "lblłącznaWartość";
+            lblłącznaWartość.Size = new Size(145, 15);
+            lblłącznaWartość.TabIndex = 4;
+            lblłącznaWartość.Text = "Łączna wartość inwestycji:";
+            // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(18, 19);
+            label4.Location = new Point(24, 19);
             label4.Name = "label4";
-            label4.Size = new Size(106, 15);
-            label4.TabIndex = 1;
-            label4.Text = "Historia Inwestycji:";
+            label4.Size = new Size(98, 15);
+            label4.TabIndex = 3;
+            label4.Text = "Szybkie statystyki";
             // 
-            // listBox1
+            // button1
             // 
-            listBox1.FormattingEnabled = true;
-            listBox1.ItemHeight = 15;
-            listBox1.Location = new Point(6, 38);
-            listBox1.Name = "listBox1";
-            listBox1.Size = new Size(133, 334);
-            listBox1.TabIndex = 0;
+            button1.Location = new Point(6, 378);
+            button1.Name = "button1";
+            button1.Size = new Size(127, 23);
+            button1.TabIndex = 2;
+            button1.Text = "Sprawdź stan Konta";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(62, 360);
+            label3.Name = "label3";
+            label3.Size = new Size(13, 15);
+            label3.TabIndex = 1;
+            label3.Text = "0";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(34, 345);
+            label2.Name = "label2";
+            label2.Size = new Size(67, 15);
+            label2.TabIndex = 0;
+            label2.Text = "Stan Konta:";
+            label2.Click += label2_Click;
+            // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(listView1);
+            groupBox1.Controls.Add(label1);
+            groupBox1.Location = new Point(13, 3);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(524, 322);
+            groupBox1.TabIndex = 6;
+            groupBox1.TabStop = false;
             // 
             // listView1
             // 
             listView1.Columns.AddRange(new ColumnHeader[] { Typ_inwestycji, Nazwa_Inwestycji, Data_zakupu, Kwota_inwestycji, Obecna_wartość });
             listView1.Location = new Point(6, 38);
             listView1.Name = "listView1";
-            listView1.Size = new Size(512, 397);
+            listView1.Size = new Size(512, 278);
             listView1.SmallImageList = imageList1;
             listView1.TabIndex = 3;
             listView1.UseCompatibleStateImageBehavior = false;
@@ -209,35 +294,6 @@
             imageList1.Images.SetKeyName(2, "business.png");
             imageList1.Images.SetKeyName(3, "bars.png");
             // 
-            // button1
-            // 
-            button1.Location = new Point(12, 412);
-            button1.Name = "button1";
-            button1.Size = new Size(127, 23);
-            button1.TabIndex = 2;
-            button1.Text = "Sprawdź stan Konta";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(62, 394);
-            label3.Name = "label3";
-            label3.Size = new Size(13, 15);
-            label3.TabIndex = 1;
-            label3.Text = "0";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(35, 379);
-            label2.Name = "label2";
-            label2.Size = new Size(67, 15);
-            label2.TabIndex = 0;
-            label2.Text = "Stan Konta:";
-            label2.Click += label2_Click;
-            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -248,15 +304,15 @@
             label1.Text = "Posiadane inwestycje";
             label1.Click += label1_Click;
             // 
-            // groupBox1
+            // lblilośćInwestycji
             // 
-            groupBox1.Controls.Add(listView1);
-            groupBox1.Controls.Add(label1);
-            groupBox1.Location = new Point(13, 3);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(524, 444);
-            groupBox1.TabIndex = 6;
-            groupBox1.TabStop = false;
+            lblilośćInwestycji.AutoSize = true;
+            lblilośćInwestycji.Location = new Point(21, 68);
+            lblilośćInwestycji.Name = "lblilośćInwestycji";
+            lblilośćInwestycji.Size = new Size(89, 15);
+            lblilośćInwestycji.TabIndex = 7;
+            lblilośćInwestycji.Text = "Ilość inwestycji:";
+            lblilośćInwestycji.Click += lblilośćInwestycji_Click;
             // 
             // Form1
             // 
@@ -270,6 +326,7 @@
             menuStrip2.ResumeLayout(false);
             menuStrip2.PerformLayout();
             panel1.ResumeLayout(false);
+            groupBox3.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
@@ -301,13 +358,18 @@
         private ImageList imageList1;
         private ToolStripMenuItem eksportujDaneToolStripMenuItem;
         private GroupBox groupBox2;
-        private Label label4;
-        private ListBox listBox1;
         private ColumnHeader Typ_inwestycji;
         private ColumnHeader Nazwa_Inwestycji;
         private ColumnHeader Data_zakupu;
         private ColumnHeader Kwota_inwestycji;
         private ColumnHeader Obecna_wartość;
         private GroupBox groupBox1;
+        private GroupBox groupBox3;
+        private ListBox listBox2;
+        private Label lblśredniZysk;
+        private Label label6;
+        private Label lblłącznaWartość;
+        private Label label4;
+        private Label lblilośćInwestycji;
     }
 }

@@ -44,5 +44,10 @@ namespace Personal_Investment_App
         {
 
         }
+
+        private void lbliloœæInwestycji_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
