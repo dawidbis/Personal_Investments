@@ -77,5 +77,28 @@ namespace Personal_Investment_App
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void chckPassword_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chckPassword.Checked)
+            {
+                txtPassword.PasswordChar = '\0';
+            }
+            else
+            {
+                txtPassword.PasswordChar = '*';
+            }
+        }
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            RegisterForm okno = new RegisterForm(dbManager);
+            okno.ShowDialog();
+        }
+
+        private void lnkPassword_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+
+        }
     }
 }

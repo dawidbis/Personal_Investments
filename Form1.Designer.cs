@@ -36,24 +36,15 @@
             toolStripMenuItem1 = new ToolStripMenuItem();
             generujRaportToolStripMenuItem = new ToolStripMenuItem();
             eksportujDaneToolStripMenuItem = new ToolStripMenuItem();
-            walutaToolStripMenuItem = new ToolStripMenuItem();
-            euroToolStripMenuItem = new ToolStripMenuItem();
-            dolarToolStripMenuItem = new ToolStripMenuItem();
-            złotyToolStripMenuItem = new ToolStripMenuItem();
-            funtyToolStripMenuItem = new ToolStripMenuItem();
             dezaktywujInwestycjęToolStripMenuItem = new ToolStripMenuItem();
             wylogujToolStripMenuItem1 = new ToolStripMenuItem();
             panel1 = new Panel();
             groupBox3 = new GroupBox();
-            listBox2 = new ListBox();
             groupBox2 = new GroupBox();
             lblśredniZysk = new Label();
             label6 = new Label();
             lblłącznaWartość = new Label();
             label4 = new Label();
-            button1 = new Button();
-            label3 = new Label();
-            label2 = new Label();
             groupBox1 = new GroupBox();
             listView1 = new ListView();
             Typ_inwestycji = new ColumnHeader();
@@ -64,6 +55,10 @@
             imageList1 = new ImageList(components);
             label1 = new Label();
             lblilośćInwestycji = new Label();
+            listView2 = new ListView();
+            Opis_inwestycji = new ColumnHeader();
+            Historia_zmian_wartości = new ColumnHeader();
+            Notatki_własne = new ColumnHeader();
             menuStrip2.SuspendLayout();
             panel1.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -75,7 +70,7 @@
             // 
             menuStrip2.BackColor = SystemColors.ActiveBorder;
             menuStrip2.Dock = DockStyle.Left;
-            menuStrip2.Items.AddRange(new ToolStripItem[] { inwestycjePersonalneToolStripMenuItem, sprzedajInwestycjęToolStripMenuItem, toolStripMenuItem1, generujRaportToolStripMenuItem, eksportujDaneToolStripMenuItem, walutaToolStripMenuItem, dezaktywujInwestycjęToolStripMenuItem, wylogujToolStripMenuItem1 });
+            menuStrip2.Items.AddRange(new ToolStripItem[] { inwestycjePersonalneToolStripMenuItem, sprzedajInwestycjęToolStripMenuItem, toolStripMenuItem1, generujRaportToolStripMenuItem, eksportujDaneToolStripMenuItem, dezaktywujInwestycjęToolStripMenuItem, wylogujToolStripMenuItem1 });
             menuStrip2.Location = new Point(0, 0);
             menuStrip2.Name = "menuStrip2";
             menuStrip2.Size = new Size(127, 450);
@@ -112,42 +107,11 @@
             eksportujDaneToolStripMenuItem.Size = new Size(114, 19);
             eksportujDaneToolStripMenuItem.Text = "Eksportuj dane";
             // 
-            // walutaToolStripMenuItem
-            // 
-            walutaToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { euroToolStripMenuItem, dolarToolStripMenuItem, złotyToolStripMenuItem, funtyToolStripMenuItem });
-            walutaToolStripMenuItem.Name = "walutaToolStripMenuItem";
-            walutaToolStripMenuItem.Size = new Size(114, 19);
-            walutaToolStripMenuItem.Text = "Waluta";
-            // 
-            // euroToolStripMenuItem
-            // 
-            euroToolStripMenuItem.Name = "euroToolStripMenuItem";
-            euroToolStripMenuItem.Size = new Size(104, 22);
-            euroToolStripMenuItem.Text = "Euro";
-            // 
-            // dolarToolStripMenuItem
-            // 
-            dolarToolStripMenuItem.Name = "dolarToolStripMenuItem";
-            dolarToolStripMenuItem.Size = new Size(104, 22);
-            dolarToolStripMenuItem.Text = "Dolar";
-            // 
-            // złotyToolStripMenuItem
-            // 
-            złotyToolStripMenuItem.Name = "złotyToolStripMenuItem";
-            złotyToolStripMenuItem.Size = new Size(104, 22);
-            złotyToolStripMenuItem.Text = "Złoty";
-            // 
-            // funtyToolStripMenuItem
-            // 
-            funtyToolStripMenuItem.Name = "funtyToolStripMenuItem";
-            funtyToolStripMenuItem.Size = new Size(104, 22);
-            funtyToolStripMenuItem.Text = "Funty";
-            // 
             // dezaktywujInwestycjęToolStripMenuItem
             // 
             dezaktywujInwestycjęToolStripMenuItem.Name = "dezaktywujInwestycjęToolStripMenuItem";
             dezaktywujInwestycjęToolStripMenuItem.Size = new Size(114, 19);
-            dezaktywujInwestycjęToolStripMenuItem.Text = "Dezaktywuj konto";
+            dezaktywujInwestycjęToolStripMenuItem.Text = "Usuń konto";
             // 
             // wylogujToolStripMenuItem1
             // 
@@ -167,22 +131,13 @@
             // 
             // groupBox3
             // 
-            groupBox3.Controls.Add(listBox2);
+            groupBox3.Controls.Add(listView2);
             groupBox3.Location = new Point(13, 331);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(524, 116);
+            groupBox3.Size = new Size(666, 116);
             groupBox3.TabIndex = 7;
             groupBox3.TabStop = false;
             groupBox3.Text = "Szczególy wybranej inwestycji";
-            // 
-            // listBox2
-            // 
-            listBox2.FormattingEnabled = true;
-            listBox2.ItemHeight = 15;
-            listBox2.Location = new Point(6, 21);
-            listBox2.Name = "listBox2";
-            listBox2.Size = new Size(500, 79);
-            listBox2.TabIndex = 0;
             // 
             // groupBox2
             // 
@@ -191,19 +146,16 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(lblłącznaWartość);
             groupBox2.Controls.Add(label4);
-            groupBox2.Controls.Add(button1);
-            groupBox2.Controls.Add(label3);
-            groupBox2.Controls.Add(label2);
             groupBox2.Location = new Point(537, 3);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(145, 444);
+            groupBox2.Size = new Size(145, 322);
             groupBox2.TabIndex = 5;
             groupBox2.TabStop = false;
             // 
             // lblśredniZysk
             // 
             lblśredniZysk.AutoSize = true;
-            lblśredniZysk.Location = new Point(24, 53);
+            lblśredniZysk.Location = new Point(24, 67);
             lblśredniZysk.Name = "lblśredniZysk";
             lblśredniZysk.Size = new Size(86, 15);
             lblśredniZysk.TabIndex = 6;
@@ -234,35 +186,6 @@
             label4.Size = new Size(98, 15);
             label4.TabIndex = 3;
             label4.Text = "Szybkie statystyki";
-            // 
-            // button1
-            // 
-            button1.Location = new Point(6, 378);
-            button1.Name = "button1";
-            button1.Size = new Size(127, 23);
-            button1.TabIndex = 2;
-            button1.Text = "Sprawdź stan Konta";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(62, 360);
-            label3.Name = "label3";
-            label3.Size = new Size(13, 15);
-            label3.TabIndex = 1;
-            label3.Text = "0";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(34, 345);
-            label2.Name = "label2";
-            label2.Size = new Size(67, 15);
-            label2.TabIndex = 0;
-            label2.Text = "Stan Konta:";
-            label2.Click += label2_Click;
             // 
             // groupBox1
             // 
@@ -307,12 +230,21 @@
             // lblilośćInwestycji
             // 
             lblilośćInwestycji.AutoSize = true;
-            lblilośćInwestycji.Location = new Point(21, 68);
+            lblilośćInwestycji.Location = new Point(21, 93);
             lblilośćInwestycji.Name = "lblilośćInwestycji";
             lblilośćInwestycji.Size = new Size(89, 15);
             lblilośćInwestycji.TabIndex = 7;
             lblilośćInwestycji.Text = "Ilość inwestycji:";
             lblilośćInwestycji.Click += lblilośćInwestycji_Click;
+            // 
+            // listView2
+            // 
+            listView2.Columns.AddRange(new ColumnHeader[] { Opis_inwestycji, Historia_zmian_wartości, Notatki_własne });
+            listView2.Location = new Point(6, 17);
+            listView2.Name = "listView2";
+            listView2.Size = new Size(660, 97);
+            listView2.TabIndex = 0;
+            listView2.UseCompatibleStateImageBehavior = false;
             // 
             // Form1
             // 
@@ -345,14 +277,6 @@
         private ToolStripMenuItem wylogujToolStripMenuItem1;
         private Panel panel1;
         private Label label1;
-        private ToolStripMenuItem walutaToolStripMenuItem;
-        private ToolStripMenuItem euroToolStripMenuItem;
-        private ToolStripMenuItem dolarToolStripMenuItem;
-        private ToolStripMenuItem złotyToolStripMenuItem;
-        private ToolStripMenuItem funtyToolStripMenuItem;
-        private Label label3;
-        private Label label2;
-        private Button button1;
         private ToolStripMenuItem sprzedajInwestycjęToolStripMenuItem;
         private ListView listView1;
         private ImageList imageList1;
@@ -365,11 +289,14 @@
         private ColumnHeader Obecna_wartość;
         private GroupBox groupBox1;
         private GroupBox groupBox3;
-        private ListBox listBox2;
         private Label lblśredniZysk;
         private Label label6;
         private Label lblłącznaWartość;
         private Label label4;
         private Label lblilośćInwestycji;
+        private ListView listView2;
+        private ColumnHeader Opis_inwestycji;
+        private ColumnHeader Historia_zmian_wartości;
+        private ColumnHeader Notatki_własne;
     }
 }

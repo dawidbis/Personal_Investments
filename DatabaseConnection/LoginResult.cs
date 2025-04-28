@@ -19,6 +19,7 @@ namespace DatabaseConnection
         UserNotFound,
         InvalidPassword,
         DbUnavailable,
+        UserAlreadyExists,
         UnknownError
     }
 }

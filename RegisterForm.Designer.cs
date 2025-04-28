@@ -34,9 +34,9 @@
             txtHasło = new TextBox();
             txtEmail = new TextBox();
             groupBox1 = new GroupBox();
-            lblLogin = new Label();
-            lblHasło = new Label();
             lblEmail = new Label();
+            lblHasło = new Label();
+            lblLogin = new Label();
             groupBox2 = new GroupBox();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -60,6 +60,7 @@
             btnAnuluj.TabIndex = 1;
             btnAnuluj.Text = "Anuluj";
             btnAnuluj.UseVisualStyleBackColor = true;
+            btnAnuluj.Click += btnAnuluj_Click;
             // 
             // txtLogin
             // 
@@ -96,14 +97,14 @@
             groupBox1.TabIndex = 5;
             groupBox1.TabStop = false;
             // 
-            // lblLogin
+            // lblEmail
             // 
-            lblLogin.AutoSize = true;
-            lblLogin.Location = new Point(6, 19);
-            lblLogin.Name = "lblLogin";
-            lblLogin.Size = new Size(40, 15);
-            lblLogin.TabIndex = 5;
-            lblLogin.Text = "Login:";
+            lblEmail.AutoSize = true;
+            lblEmail.Location = new Point(6, 74);
+            lblEmail.Name = "lblEmail";
+            lblEmail.Size = new Size(36, 15);
+            lblEmail.TabIndex = 7;
+            lblEmail.Text = "Email";
             // 
             // lblHasło
             // 
@@ -114,15 +115,14 @@
             lblHasło.TabIndex = 6;
             lblHasło.Text = "Hasło";
             // 
-            // lblEmail
+            // lblLogin
             // 
-            lblEmail.AutoSize = true;
-            lblEmail.Location = new Point(6, 74);
-            lblEmail.Name = "lblEmail";
-            lblEmail.Size = new Size(36, 15);
-            lblEmail.TabIndex = 7;
-            lblEmail.Text = "Email";
-            lblEmail.Click += lblEmail_Click;
+            lblLogin.AutoSize = true;
+            lblLogin.Location = new Point(6, 19);
+            lblLogin.Name = "lblLogin";
+            lblLogin.Size = new Size(40, 15);
+            lblLogin.TabIndex = 5;
+            lblLogin.Text = "Login:";
             // 
             // groupBox2
             // 
