@@ -73,6 +73,7 @@
             // 
             txtHasło.Location = new Point(49, 43);
             txtHasło.Name = "txtHasło";
+            txtHasło.PasswordChar = '*';
             txtHasło.Size = new Size(100, 23);
             txtHasło.TabIndex = 3;
             // 

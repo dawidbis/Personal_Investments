@@ -1,19 +1,49 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Personal_Investment_App.DatabaseConnection;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using ProgramLogic;
+using System;
+
 
 namespace DatabaseConnection
 {
-    public class DatabaseManager
+    public class DatabaseManager: DbContext
     {
-        private SqlConnection connection = new SqlConnection(
-            @"Data Source=(local)\SQLEXPRESS;
-          Initial Catalog=""Personal Investments"";
-          Integrated Security=True;
-          Encrypt=False");
+        public DbSet<User> Users { get; set; }
+        public DbSet<Investment> Investments { get; set; }
+        public DbSet<InvestmentType> InvestmentTypes { get; set; }
+        public DbSet<InvestmentCategory> InvestmentCategories { get; set; }
+        public DbSet<ReturnsHistory> ReturnsHistories { get; set; }
+        public DbSet<Report> Reports { get; set; }
+        public DbSet<ReportType> ReportTypes { get; set; }
+        public DbSet<UserInvestment> UserInvestments { get; set; }
 
-        private string? activeUser = null;
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserInvestment>()
+                .HasKey(ui => new { ui.UserId, ui.InvestmentId });
+
+            modelBuilder.Entity<UserInvestment>()
+                .HasOne(ui => ui.User)
+                .WithMany(u => u.UserInvestments)
+                .HasForeignKey(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserInvestment>()
+                .HasOne(ui => ui.Investment)
+                .WithMany(i => i.UserInvestments)
+                .HasForeignKey(ui => ui.InvestmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=PersonalInvestments;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+        }
 
         public LoginResult Login(string username, string password)
         {
@@ -21,54 +51,26 @@ namespace DatabaseConnection
 
             try
             {
-                connection.Open();
-                using (var command = new SqlCommand(
-                    "SELECT password_hash FROM dbo.users WHERE username = @u",
-                    connection))
+                using (var context = new DatabaseManager())
                 {
-                    command.Parameters.AddWithValue("@u", username);
-                    var dbHash = command.ExecuteScalar() as string;
+                    string hashedPassword = HashPassword(password);
+                    var user = context.Users.FirstOrDefault(u => u.Username == username && u.PasswordHash == hashedPassword);
 
-                    if (dbHash == null)
+                    if (user != null)
                     {
-                        result.Success = false;
-                        result.Code = ErrorCode.UserNotFound;
-                        result.ErrorMessage = "Nie ma takiego użytkownika.";
+                        result.Success = true;
                     }
                     else
                     {
-                        string inputPasswordHash = HashPassword(password);
-
-                        if (dbHash != inputPasswordHash)
-                        {
-                            result.Success = false;
-                            result.Code = ErrorCode.InvalidPassword;
-                            result.ErrorMessage = "Nieprawidłowe hasło.";
-                        }
-                        else
-                        {
-                            result.Success = true;
-                            result.Code = ErrorCode.None;
-                            activeUser = username;
-                        }
+                        result.Success = false;
+                        result.ErrorMessage = "Invalid username or password.";
                     }
                 }
-            }
-            catch (SqlException)
-            {
-                result.Success = false;
-                result.Code = ErrorCode.DbUnavailable;
-                result.ErrorMessage = "Błąd połączenia z bazą danych.";
             }
             catch (Exception ex)
             {
                 result.Success = false;
-                result.Code = ErrorCode.UnknownError;
-                result.ErrorMessage = "Nieoczekiwany błąd: " + ex.Message;
-            }
-            finally
-            {
-                connection.Close();
+                result.ErrorMessage = $"Error: {ex.Message}";
             }
 
             return result;
@@ -80,51 +82,38 @@ namespace DatabaseConnection
 
             try
             {
-                connection.Open();
-
-                using (var command = new SqlCommand(
-                    "SELECT COUNT(*) FROM dbo.users WHERE username = @u OR email = @e",
-                    connection))
+                using (var context = new DatabaseManager())
                 {
-                    command.Parameters.AddWithValue("@u", username);
-                    command.Parameters.AddWithValue("@e", email);
-                    int userExists = (int)command.ExecuteScalar();
+                    bool userExists = context.Users.Any(u => u.Username == username || u.Email == email);
 
-                    if (userExists > 0)
+                    if (userExists)
                     {
                         result.Success = false;
                         result.Code = ErrorCode.UserAlreadyExists;
                         result.ErrorMessage = "Użytkownik o tej nazwie lub e-mailu już istnieje.";
                         return result;
                     }
-                }
 
-                string hashedPassword = HashPassword(password);
+                    string hashedPassword = HashPassword(password);
 
-                using (var command = new SqlCommand(
-                    "INSERT INTO dbo.users (username, password_hash, email) VALUES (@u, @p, @e)",
-                    connection))
-                {
-                    command.Parameters.AddWithValue("@u", username);
-                    command.Parameters.AddWithValue("@p", hashedPassword);
-                    command.Parameters.AddWithValue("@e", email);
-
-                    int rowsAffected = command.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
+                    var user = new User
                     {
-                        result.Success = true;
-                        result.Code = ErrorCode.None;
-                    }
-                    else
-                    {
-                        result.Success = false;
-                        result.Code = ErrorCode.UnknownError;
-                        result.ErrorMessage = "Wystąpił problem podczas rejestracji użytkownika.";
-                    }
+                        Username = username,
+                        PasswordHash = hashedPassword,
+                        Email = email,
+                        CreatedAt = DateTime.UtcNow,
+                        IsActive = true,
+                        Token = string.Empty
+                    };
+
+                    context.Users.Add(user);
+                    context.SaveChanges();
+
+                    result.Success = true;
+                    result.Code = ErrorCode.None;
                 }
             }
-            catch (SqlException)
+            catch (DbUpdateException)
             {
                 result.Success = false;
                 result.Code = ErrorCode.DbUnavailable;
@@ -135,10 +124,6 @@ namespace DatabaseConnection
                 result.Success = false;
                 result.Code = ErrorCode.UnknownError;
                 result.ErrorMessage = "Nieoczekiwany błąd: " + ex.Message;
-            }
-            finally
-            {
-                connection.Close();
             }
 
             return result;
