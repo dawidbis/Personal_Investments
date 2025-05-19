@@ -12,6 +12,7 @@ namespace DatabaseConnection
 {
     public class DatabaseManager: DbContext
     {
+        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=PersonalInvestments;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         public DbSet<User> Users { get; set; }
         public DbSet<Investment> Investments { get; set; }
         public DbSet<InvestmentType> InvestmentTypes { get; set; }
@@ -42,7 +43,27 @@ namespace DatabaseConnection
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=PersonalInvestments;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+            optionsBuilder.UseSqlServer(this.ConnectionString);
+        }
+
+        public bool UsunKonto(string username)
+        {
+            try
+            {
+                var user = this.Users.FirstOrDefault(u => u.Username == username);
+                if (user != null)
+                {
+                    this.Users.Remove(user);
+                    this.SaveChanges();
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // np. logowanie do pliku/loga
+                return false;
+            }
         }
 
         public LoginResult Login(string username, string password)

@@ -14,15 +14,26 @@ namespace Personal_Investment_App
 
             var dbManager = new DatabaseManager();
 
-            using (var loginForm = new LoginForm(dbManager))
+            while (true)
             {
-                if (loginForm.ShowDialog() == DialogResult.OK)
+                var loginForm = new LoginForm(dbManager);
+                var dialogResult = loginForm.ShowDialog();
+
+                if (dialogResult == DialogResult.OK)
                 {
-                    Application.Run(new Form1(dbManager)); 
+                    var form1 = new Form1(dbManager,loginForm.Username);
+
+                    // G³ówne okno zwraca true jeœli u¿ytkownik klikn¹³ "Wyloguj"
+                    Application.Run(form1);
+
+                    if (!form1.Wylogowano)
+                    {
+                        break; // zakoñcz aplikacjê jeœli zamkniêto okno bez wylogowania
+                    }
                 }
                 else
                 {
-                    Application.Exit();
+                    break; // zamkniêto formularz logowania – zakoñcz aplikacjê
                 }
             }
         }
