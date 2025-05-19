@@ -56,5 +56,34 @@ namespace Personal_Investment_App
                 }
             }
         }
+
+        private void akcjaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+
+            if (userId == null)
+            {
+                MessageBox.Show("Nie można znaleźć zalogowanego użytkownika w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var form = new AddStockForm(dbManager, userId.Value);
+
+            form.FormClosed += (s, args) =>
+            {
+                var inv = form.CreatedInvestment;
+                if (inv != null)
+                {
+                    var item = new ListViewItem(inv.Id.ToString());
+                    item.SubItems.Add(inv.Name);
+                    item.SubItems.Add(inv.AmountInvested.ToString("C"));
+                    item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
+                    item.SubItems.Add(inv.ExpectedReturn.ToString("P2"));
+                    listView1.Items.Add(item);
+                }
+            };
+
+            form.Show();
+        }
     }
 }

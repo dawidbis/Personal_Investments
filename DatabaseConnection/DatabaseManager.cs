@@ -10,9 +10,9 @@ using System;
 
 namespace DatabaseConnection
 {
-    public class DatabaseManager: DbContext
+    public class DatabaseManager : DbContext
     {
-        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=PersonalInvestments;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Personal;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         public DbSet<User> Users { get; set; }
         public DbSet<Investment> Investments { get; set; }
         public DbSet<InvestmentType> InvestmentTypes { get; set; }
@@ -78,14 +78,14 @@ namespace DatabaseConnection
         }
         public bool UsunKonto(string username)
         {
-                var user = this.Users.FirstOrDefault(u => u.Username == username);
-                if (user != null)
-                {
-                    this.Users.Remove(user);
-                    this.SaveChanges();
-                    return true;
-                }
-                return false;
+            var user = this.Users.FirstOrDefault(u => u.Username == username);
+            if (user != null)
+            {
+                this.Users.Remove(user);
+                this.SaveChanges();
+                return true;
+            }
+            return false;
         }
 
         public LoginResult Login(string username, string password)
@@ -184,6 +184,26 @@ namespace DatabaseConnection
                 }
                 return builder.ToString();
             }
+        }
+
+        public Investment AddInvestment(Investment investment)
+        {
+            this.Investments.Add(investment);
+            this.SaveChanges();
+            return investment;
+        }
+
+        public InvestmentType GetStockInvestmentType()
+        {
+            return this.InvestmentTypes
+                       .Include(t => t.Category)
+                       .FirstOrDefault(t => t.Name == "Akcje");
+        }
+
+        public int? GetUserIdByUsername(string username)
+        {
+            var user = this.Users.FirstOrDefault(u => u.Username == username);
+            return user?.Id;
         }
     }
 }

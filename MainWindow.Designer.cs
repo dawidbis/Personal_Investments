@@ -35,6 +35,11 @@
             Kwota_inwestycji = new ColumnHeader();
             Obecna_wartość = new ColumnHeader();
             imageList1 = new ImageList(components);
+            akcjaToolStripMenuItem = new ToolStripMenuItem();
+            obligacjaToolStripMenuItem = new ToolStripMenuItem();
+            kryptowalutaToolStripMenuItem = new ToolStripMenuItem();
+            surowiecToolStripMenuItem = new ToolStripMenuItem();
+            eTFToolStripMenuItem = new ToolStripMenuItem();
             menuStrip2.SuspendLayout();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
@@ -47,14 +52,14 @@
             menuStrip2.Items.AddRange(new ToolStripItem[] { inwestycjePersonalneToolStripMenuItem, sprzedajInwestycjęToolStripMenuItem, generujRaportToolStripMenuItem, eksportujDaneToolStripMenuItem, UsunKontoToolStripMenuItem, wylogujToolStripMenuItem1 });
             menuStrip2.Location = new Point(0, 0);
             menuStrip2.Name = "menuStrip2";
-            menuStrip2.Padding = new Padding(7, 3, 0, 3);
-            menuStrip2.Size = new Size(914, 36);
+            menuStrip2.Size = new Size(800, 34);
             menuStrip2.TabIndex = 1;
             menuStrip2.Text = "menuStrip2";
             // 
             // inwestycjePersonalneToolStripMenuItem
             // 
             inwestycjePersonalneToolStripMenuItem.AutoSize = false;
+            inwestycjePersonalneToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { akcjaToolStripMenuItem, obligacjaToolStripMenuItem, kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem, eTFToolStripMenuItem });
             inwestycjePersonalneToolStripMenuItem.Name = "inwestycjePersonalneToolStripMenuItem";
             inwestycjePersonalneToolStripMenuItem.Size = new Size(140, 30);
             inwestycjePersonalneToolStripMenuItem.Text = "Dodaj inwestycję";
@@ -101,10 +106,9 @@
             // 
             panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel1.Controls.Add(groupBox1);
-            panel1.Location = new Point(145, 40);
-            panel1.Margin = new Padding(3, 4, 3, 4);
+            panel1.Location = new Point(127, 30);
             panel1.Name = "panel1";
-            panel1.Size = new Size(282, 237);
+            panel1.Size = new Size(247, 178);
             panel1.TabIndex = 2;
             // 
             // groupBox1
@@ -112,11 +116,9 @@
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox1.Controls.Add(listView1);
-            groupBox1.Location = new Point(3, 16);
-            groupBox1.Margin = new Padding(3, 4, 3, 4);
+            groupBox1.Location = new Point(3, 12);
             groupBox1.Name = "groupBox1";
-            groupBox1.Padding = new Padding(3, 4, 3, 4);
-            groupBox1.Size = new Size(769, 584);
+            groupBox1.Size = new Size(673, 438);
             groupBox1.TabIndex = 6;
             groupBox1.TabStop = false;
             // 
@@ -124,10 +126,9 @@
             // 
             listView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listView1.Columns.AddRange(new ColumnHeader[] { Typ_inwestycji, Nazwa_Inwestycji, Data_zakupu, Kwota_inwestycji, Obecna_wartość });
-            listView1.Location = new Point(3, 23);
-            listView1.Margin = new Padding(3, 4, 3, 4);
+            listView1.Location = new Point(3, 17);
             listView1.Name = "listView1";
-            listView1.Size = new Size(762, 553);
+            listView1.Size = new Size(667, 416);
             listView1.SmallImageList = imageList1;
             listView1.TabIndex = 3;
             listView1.UseCompatibleStateImageBehavior = false;
@@ -143,15 +144,45 @@
             imageList1.Images.SetKeyName(2, "business.png");
             imageList1.Images.SetKeyName(3, "bars.png");
             // 
+            // akcjaToolStripMenuItem
+            // 
+            akcjaToolStripMenuItem.Name = "akcjaToolStripMenuItem";
+            akcjaToolStripMenuItem.Size = new Size(180, 22);
+            akcjaToolStripMenuItem.Text = "Akcja";
+            akcjaToolStripMenuItem.Click += akcjaToolStripMenuItem_Click;
+            // 
+            // obligacjaToolStripMenuItem
+            // 
+            obligacjaToolStripMenuItem.Name = "obligacjaToolStripMenuItem";
+            obligacjaToolStripMenuItem.Size = new Size(180, 22);
+            obligacjaToolStripMenuItem.Text = "Obligacja";
+            // 
+            // kryptowalutaToolStripMenuItem
+            // 
+            kryptowalutaToolStripMenuItem.Name = "kryptowalutaToolStripMenuItem";
+            kryptowalutaToolStripMenuItem.Size = new Size(180, 22);
+            kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
+            // 
+            // surowiecToolStripMenuItem
+            // 
+            surowiecToolStripMenuItem.Name = "surowiecToolStripMenuItem";
+            surowiecToolStripMenuItem.Size = new Size(180, 22);
+            surowiecToolStripMenuItem.Text = "Surowiec";
+            // 
+            // eTFToolStripMenuItem
+            // 
+            eTFToolStripMenuItem.Name = "eTFToolStripMenuItem";
+            eTFToolStripMenuItem.Size = new Size(180, 22);
+            eTFToolStripMenuItem.Text = "ETF";
+            // 
             // MainWindow
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            ClientSize = new Size(914, 600);
+            ClientSize = new Size(800, 450);
             Controls.Add(panel1);
             Controls.Add(menuStrip2);
-            Margin = new Padding(3, 4, 3, 4);
             Name = "MainWindow";
             Text = "Personal Investments";
             WindowState = FormWindowState.Maximized;
@@ -181,5 +212,10 @@
         private ColumnHeader Data_zakupu;
         private ColumnHeader Kwota_inwestycji;
         private ColumnHeader Obecna_wartość;
+        private ToolStripMenuItem akcjaToolStripMenuItem;
+        private ToolStripMenuItem obligacjaToolStripMenuItem;
+        private ToolStripMenuItem kryptowalutaToolStripMenuItem;
+        private ToolStripMenuItem surowiecToolStripMenuItem;
+        private ToolStripMenuItem eTFToolStripMenuItem;
     }
 }
