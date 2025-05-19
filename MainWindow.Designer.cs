@@ -21,7 +21,11 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             menuStrip2 = new MenuStrip();
             inwestycjePersonalneToolStripMenuItem = new ToolStripMenuItem();
-            sprzedajInwestycjęToolStripMenuItem = new ToolStripMenuItem();
+            akcjaToolStripMenuItem = new ToolStripMenuItem();
+            obligacjaToolStripMenuItem = new ToolStripMenuItem();
+            kryptowalutaToolStripMenuItem = new ToolStripMenuItem();
+            surowiecToolStripMenuItem = new ToolStripMenuItem();
+            eTFToolStripMenuItem = new ToolStripMenuItem();
             generujRaportToolStripMenuItem = new ToolStripMenuItem();
             eksportujDaneToolStripMenuItem = new ToolStripMenuItem();
             UsunKontoToolStripMenuItem = new ToolStripMenuItem();
@@ -35,11 +39,6 @@
             Kwota_inwestycji = new ColumnHeader();
             Obecna_wartość = new ColumnHeader();
             imageList1 = new ImageList(components);
-            akcjaToolStripMenuItem = new ToolStripMenuItem();
-            obligacjaToolStripMenuItem = new ToolStripMenuItem();
-            kryptowalutaToolStripMenuItem = new ToolStripMenuItem();
-            surowiecToolStripMenuItem = new ToolStripMenuItem();
-            eTFToolStripMenuItem = new ToolStripMenuItem();
             menuStrip2.SuspendLayout();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
@@ -49,7 +48,7 @@
             // 
             menuStrip2.BackColor = SystemColors.ActiveBorder;
             menuStrip2.ImageScalingSize = new Size(20, 20);
-            menuStrip2.Items.AddRange(new ToolStripItem[] { inwestycjePersonalneToolStripMenuItem, sprzedajInwestycjęToolStripMenuItem, generujRaportToolStripMenuItem, eksportujDaneToolStripMenuItem, UsunKontoToolStripMenuItem, wylogujToolStripMenuItem1 });
+            menuStrip2.Items.AddRange(new ToolStripItem[] { inwestycjePersonalneToolStripMenuItem, generujRaportToolStripMenuItem, eksportujDaneToolStripMenuItem, UsunKontoToolStripMenuItem, wylogujToolStripMenuItem1 });
             menuStrip2.Location = new Point(0, 0);
             menuStrip2.Name = "menuStrip2";
             menuStrip2.Size = new Size(800, 34);
@@ -65,12 +64,36 @@
             inwestycjePersonalneToolStripMenuItem.Text = "Dodaj inwestycję";
             inwestycjePersonalneToolStripMenuItem.Click += inwestycjePersonalneToolStripMenuItem_Click;
             // 
-            // sprzedajInwestycjęToolStripMenuItem
+            // akcjaToolStripMenuItem
             // 
-            sprzedajInwestycjęToolStripMenuItem.AutoSize = false;
-            sprzedajInwestycjęToolStripMenuItem.Name = "sprzedajInwestycjęToolStripMenuItem";
-            sprzedajInwestycjęToolStripMenuItem.Size = new Size(140, 30);
-            sprzedajInwestycjęToolStripMenuItem.Text = "Sprzedaj inwestycję";
+            akcjaToolStripMenuItem.Name = "akcjaToolStripMenuItem";
+            akcjaToolStripMenuItem.Size = new Size(144, 22);
+            akcjaToolStripMenuItem.Text = "Akcja";
+            akcjaToolStripMenuItem.Click += akcjaToolStripMenuItem_Click;
+            // 
+            // obligacjaToolStripMenuItem
+            // 
+            obligacjaToolStripMenuItem.Name = "obligacjaToolStripMenuItem";
+            obligacjaToolStripMenuItem.Size = new Size(144, 22);
+            obligacjaToolStripMenuItem.Text = "Obligacja";
+            // 
+            // kryptowalutaToolStripMenuItem
+            // 
+            kryptowalutaToolStripMenuItem.Name = "kryptowalutaToolStripMenuItem";
+            kryptowalutaToolStripMenuItem.Size = new Size(144, 22);
+            kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
+            // 
+            // surowiecToolStripMenuItem
+            // 
+            surowiecToolStripMenuItem.Name = "surowiecToolStripMenuItem";
+            surowiecToolStripMenuItem.Size = new Size(144, 22);
+            surowiecToolStripMenuItem.Text = "Surowiec";
+            // 
+            // eTFToolStripMenuItem
+            // 
+            eTFToolStripMenuItem.Name = "eTFToolStripMenuItem";
+            eTFToolStripMenuItem.Size = new Size(144, 22);
+            eTFToolStripMenuItem.Text = "ETF";
             // 
             // generujRaportToolStripMenuItem
             // 
@@ -144,37 +167,6 @@
             imageList1.Images.SetKeyName(2, "business.png");
             imageList1.Images.SetKeyName(3, "bars.png");
             // 
-            // akcjaToolStripMenuItem
-            // 
-            akcjaToolStripMenuItem.Name = "akcjaToolStripMenuItem";
-            akcjaToolStripMenuItem.Size = new Size(180, 22);
-            akcjaToolStripMenuItem.Text = "Akcja";
-            akcjaToolStripMenuItem.Click += akcjaToolStripMenuItem_Click;
-            // 
-            // obligacjaToolStripMenuItem
-            // 
-            obligacjaToolStripMenuItem.Name = "obligacjaToolStripMenuItem";
-            obligacjaToolStripMenuItem.Size = new Size(180, 22);
-            obligacjaToolStripMenuItem.Text = "Obligacja";
-            // 
-            // kryptowalutaToolStripMenuItem
-            // 
-            kryptowalutaToolStripMenuItem.Name = "kryptowalutaToolStripMenuItem";
-            kryptowalutaToolStripMenuItem.Size = new Size(180, 22);
-            kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
-            // 
-            // surowiecToolStripMenuItem
-            // 
-            surowiecToolStripMenuItem.Name = "surowiecToolStripMenuItem";
-            surowiecToolStripMenuItem.Size = new Size(180, 22);
-            surowiecToolStripMenuItem.Text = "Surowiec";
-            // 
-            // eTFToolStripMenuItem
-            // 
-            eTFToolStripMenuItem.Name = "eTFToolStripMenuItem";
-            eTFToolStripMenuItem.Size = new Size(180, 22);
-            eTFToolStripMenuItem.Text = "ETF";
-            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -202,7 +194,6 @@
         private ToolStripMenuItem generujRaportToolStripMenuItem;
         private ToolStripMenuItem wylogujToolStripMenuItem1;
         private Panel panel1;
-        private ToolStripMenuItem sprzedajInwestycjęToolStripMenuItem;
         private ImageList imageList1;
         private ToolStripMenuItem eksportujDaneToolStripMenuItem;
         private GroupBox groupBox1;

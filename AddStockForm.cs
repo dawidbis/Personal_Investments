@@ -48,6 +48,7 @@ namespace Personal_Investment_App
                 return;
             }
 
+<<<<<<< HEAD
             // Retrieve InvestmentType for stocks
             var type = dbManager.GetStockInvestmentCategory();
             if (type == null)
@@ -56,16 +57,19 @@ namespace Personal_Investment_App
                 return;
             }
 
+=======
+            var stockType = dbManager.GetOrCreateStockInvestmentType();
+>>>>>>> 4c940b0e2ef1dbd25cb6b1512176601f89135ce6
 
             var investment = new Investment
             {
                 Name = textBoxName.Text.Trim(),
-                AmountInvested = amount,
+                AmountInvested = decimal.Parse(textBoxAmount.Text),
                 DateOfInvestment = dateTimePicker.Value,
-                ExpectedReturn = expectedReturn,
-                Notes = textBoxNotes.Text.Trim(),
-                TypeId = type.Id,
-                UserId = this.userId
+                ExpectedReturn = decimal.Parse(textBoxExpectedReturn.Text) / 100m,
+                Notes = textBoxNotes.Text,
+                TypeId = stockType.Id,
+                UserId = userId
             };
 
             CreatedInvestment = dbManager.AddInvestment(investment);
