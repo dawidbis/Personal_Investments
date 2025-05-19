@@ -193,11 +193,41 @@ namespace DatabaseConnection
             return investment;
         }
 
-        public InvestmentType GetStockInvestmentType()
+        public InvestmentType GetOrCreateStockInvestmentType()
         {
-            return this.InvestmentTypes
-                       .Include(t => t.Category)
-                       .FirstOrDefault(t => t.Name == "Akcje");
+            // Znajdź lub utwórz kategorię "Akcje"
+            var akcjeCategory = this.InvestmentCategories
+                .FirstOrDefault(c => c.Name == "Akcje");
+
+            if (akcjeCategory == null)
+            {
+                akcjeCategory = new InvestmentCategory
+                {
+                    Name = "Akcje",
+                    Description = "Inwestycje w akcje notowane na giełdzie"
+                };
+                this.InvestmentCategories.Add(akcjeCategory);
+                this.SaveChanges();
+            }
+
+            // Znajdź lub utwórz typ inwestycji "Akcje"
+            var stockType = this.InvestmentTypes
+                .FirstOrDefault(t => t.Name == "Akcje");
+
+            if (stockType == null)
+            {
+                stockType = new InvestmentType
+                {
+                    Name = "Akcje",
+                    RiskLevel = "Średni", // Możesz dopasować wg logiki aplikacji
+                    CategoryId = akcjeCategory.Id
+                };
+
+                this.InvestmentTypes.Add(stockType);
+                this.SaveChanges();
+            }
+
+            return stockType;
         }
 
         public int? GetUserIdByUsername(string username)

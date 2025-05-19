@@ -48,24 +48,17 @@ namespace Personal_Investment_App
                 return;
             }
 
-            // Retrieve InvestmentType for stocks
-            var type = dbManager.GetStockInvestmentType();
-            if (type == null)
-            {
-                MessageBox.Show("Nie znaleziono typu inwestycji 'Akcje' w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
+            var stockType = dbManager.GetOrCreateStockInvestmentType();
 
             var investment = new Investment
             {
                 Name = textBoxName.Text.Trim(),
-                AmountInvested = amount,
+                AmountInvested = decimal.Parse(textBoxAmount.Text),
                 DateOfInvestment = dateTimePicker.Value,
-                ExpectedReturn = expectedReturn,
-                Notes = textBoxNotes.Text.Trim(),
-                TypeId = type.Id,
-                UserId = this.userId
+                ExpectedReturn = decimal.Parse(textBoxExpectedReturn.Text) / 100m,
+                Notes = textBoxNotes.Text,
+                TypeId = stockType.Id,
+                UserId = userId
             };
 
             CreatedInvestment = dbManager.AddInvestment(investment);
