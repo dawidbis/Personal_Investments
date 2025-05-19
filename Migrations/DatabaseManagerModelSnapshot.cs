@@ -198,8 +198,7 @@ namespace Personal_Investment_App.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Token")
-                        .IsRequired()
+                    b.Property<string>("ResetCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")

@@ -46,6 +46,36 @@ namespace DatabaseConnection
             optionsBuilder.UseSqlServer(this.ConnectionString);
         }
 
+        public bool DoesUserExist(string login, string email)
+        {
+            return this.Users.Any(u => u.Username == login && u.Email == email);
+        }
+
+        public void SaveResetCode(string login, string resetCode)
+        {
+            var user = this.Users.FirstOrDefault(u => u.Username == login);
+            if (user != null)
+            {
+                user.ResetCode = resetCode;
+                this.SaveChanges();
+            }
+        }
+
+        public bool IsResetCodeValid(string login, string resetCode)
+        {
+            return this.Users.Any(u => u.Username == login && u.ResetCode == resetCode);
+        }
+
+        public void UpdatePassword(string login, string newPassword)
+        {
+            var user = this.Users.FirstOrDefault(u => u.Username == login);
+            if (user != null)
+            {
+                user.PasswordHash = HashPassword(newPassword);
+                user.ResetCode = null;
+                this.SaveChanges();
+            }
+        }
         public bool UsunKonto(string username)
         {
                 var user = this.Users.FirstOrDefault(u => u.Username == username);
@@ -116,7 +146,7 @@ namespace DatabaseConnection
                         Email = email,
                         CreatedAt = DateTime.UtcNow,
                         IsActive = true,
-                        Token = string.Empty
+                        ResetCode = string.Empty
                     };
 
                     context.Users.Add(user);

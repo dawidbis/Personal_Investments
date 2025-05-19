@@ -98,7 +98,8 @@ namespace Personal_Investment_App
 
         private void lnkPassword_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-
+            ForgotPassword oknoResetowanie = new ForgotPassword(dbManager);
+            oknoResetowanie.ShowDialog();
         }
     }
 }

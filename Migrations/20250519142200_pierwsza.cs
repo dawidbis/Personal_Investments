@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Personal_Investment_App.Migrations
 {
     /// <inheritdoc />
-    public partial class Pierwsza : Migration
+    public partial class pierwsza : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -45,7 +45,7 @@ namespace Personal_Investment_App.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ResetCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)

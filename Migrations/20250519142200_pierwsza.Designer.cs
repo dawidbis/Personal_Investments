@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Personal_Investment_App.Migrations
 {
     [DbContext(typeof(DatabaseManager))]
-    [Migration("20250507144258_Pierwsza")]
-    partial class Pierwsza
+    [Migration("20250519142200_pierwsza")]
+    partial class pierwsza
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -201,8 +201,7 @@ namespace Personal_Investment_App.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Token")
-                        .IsRequired()
+                    b.Property<string>("ResetCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
