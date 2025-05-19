@@ -48,8 +48,6 @@ namespace DatabaseConnection
 
         public bool UsunKonto(string username)
         {
-            try
-            {
                 var user = this.Users.FirstOrDefault(u => u.Username == username);
                 if (user != null)
                 {
@@ -58,12 +56,6 @@ namespace DatabaseConnection
                     return true;
                 }
                 return false;
-            }
-            catch (Exception ex)
-            {
-                // np. logowanie do pliku/loga
-                return false;
-            }
         }
 
         public LoginResult Login(string username, string password)
