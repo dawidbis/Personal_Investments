@@ -3,12 +3,12 @@ using DatabaseConnection;
 
 namespace Personal_Investment_App
 {
-    public partial class Form1 : Form
+    public partial class MainWindow : Form
     {
         private DatabaseManager dbManager;
         public bool Wylogowano { get; private set; } = false;
         private readonly string zalogowanyUzytkownik;
-        public Form1(DatabaseManager dbManager, string zalogowanyUzytkownik)
+        public MainWindow(DatabaseManager dbManager, string zalogowanyUzytkownik)
 
         {
             InitializeComponent();

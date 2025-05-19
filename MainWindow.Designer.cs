@@ -1,6 +1,6 @@
 ﻿namespace Personal_Investment_App
 {
-    partial class Form1
+    partial class MainWindow
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -18,7 +18,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             menuStrip2 = new MenuStrip();
             inwestycjePersonalneToolStripMenuItem = new ToolStripMenuItem();
             sprzedajInwestycjęToolStripMenuItem = new ToolStripMenuItem();
@@ -143,7 +143,7 @@
             imageList1.Images.SetKeyName(2, "business.png");
             imageList1.Images.SetKeyName(3, "bars.png");
             // 
-            // Form1
+            // MainWindow
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -152,8 +152,8 @@
             Controls.Add(panel1);
             Controls.Add(menuStrip2);
             Margin = new Padding(3, 4, 3, 4);
-            Name = "Form1";
-            Text = "Form1";
+            Name = "MainWindow";
+            Text = "Personal Investments";
             WindowState = FormWindowState.Maximized;
             menuStrip2.ResumeLayout(false);
             menuStrip2.PerformLayout();

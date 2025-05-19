@@ -21,7 +21,7 @@ namespace Personal_Investment_App
 
                 if (dialogResult == DialogResult.OK)
                 {
-                    var form1 = new Form1(dbManager,loginForm.Username);
+                    var form1 = new MainWindow(dbManager,loginForm.Username);
 
                     // G³ówne okno zwraca true jeœli u¿ytkownik klikn¹³ "Wyloguj"
                     Application.Run(form1);
