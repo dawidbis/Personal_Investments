@@ -193,10 +193,9 @@ namespace DatabaseConnection
             return investment;
         }
 
-        public InvestmentType GetStockInvestmentType()
+        public InvestmentCategory GetStockInvestmentCategory()
         {
-            return this.InvestmentTypes
-                       .Include(t => t.Category)
+            return this.InvestmentCategories
                        .FirstOrDefault(t => t.Name == "Akcje");
         }
 
