@@ -48,7 +48,7 @@ namespace Personal_Investment_App
                 return;
             }
 
-<<<<<<< HEAD
+
             // Retrieve InvestmentType for stocks
             var type = dbManager.GetStockInvestmentCategory();
             if (type == null)
@@ -57,9 +57,8 @@ namespace Personal_Investment_App
                 return;
             }
 
-=======
+
             var stockType = dbManager.GetOrCreateStockInvestmentType();
->>>>>>> 4c940b0e2ef1dbd25cb6b1512176601f89135ce6
 
             var investment = new Investment
             {

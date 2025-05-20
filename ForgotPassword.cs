@@ -27,25 +27,25 @@ namespace Personal_Investment_App
 
             if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(email))
             {
-                MessageBox.Show("Wprowadź login i email.");
+                MessageBox.Show("Wprowadź login i email.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!dbManager.DoesUserExist(login, email))
             {
-                MessageBox.Show("Nie znaleziono użytkownika.");
+                MessageBox.Show("Nie znaleziono użytkownika z podanym loginem i emailem.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            string resetCode = Guid.NewGuid().ToString().Substring(0, 6); // np. 6-cyfrowy kod
+            string resetCode = Guid.NewGuid().ToString().Substring(0, 6);
             dbManager.SaveResetCode(login, resetCode);
 
-            MessageBox.Show($"Twój kod resetu to: {resetCode}", "Kod resetu");
+            MessageBox.Show($"Twój kod resetu to: {resetCode}", "Kod resetu", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             var changePasswordForm = new ChangePasswordForm(dbManager, login);
             this.Hide();
             changePasswordForm.ShowDialog();
-            this.Close(); // wracamy do LoginForm po zmianie hasła
+            this.Close();
         }
 
         private void label2_Click(object sender, EventArgs e)

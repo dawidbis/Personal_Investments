@@ -14,8 +14,9 @@ namespace Personal_Investment_App
 {
     public partial class ChangePasswordForm : Form
     {
-        private string login;
-        private DatabaseManager dbManager;
+        private readonly DatabaseManager dbManager;
+        private readonly string login;
+
         public ChangePasswordForm(DatabaseManager dbManager, string login)
         {
             InitializeComponent();
@@ -23,29 +24,38 @@ namespace Personal_Investment_App
             this.login = login;
         }
 
-        private void btnKodResetu_TextChanged(object sender, EventArgs e)
+        private void btnChangePassword_Click(object sender, EventArgs e)
         {
+            string code = txtResetCode.Text.Trim();
+            string newPassword = txtNewPassword.Text;
+            string confirmPassword = txtConfirmPassword.Text;
 
-        }
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                MessageBox.Show("Wprowadź kod resetu.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-        private void btnNoweHaslo_TextChanged(object sender, EventArgs e)
-        {
+            if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                MessageBox.Show("Wprowadź i potwierdź nowe hasło.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-        }
-
-        private void btnZmienHaslo_Click(object sender, EventArgs e)
-        {
-            string code = txtKodResetu.Text;
-            string newPassword = txtNoweHaslo.Text;
+            if (newPassword != confirmPassword)
+            {
+                MessageBox.Show("Hasła nie są takie same.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             if (!dbManager.IsResetCodeValid(login, code))
             {
-                MessageBox.Show("Nieprawidłowy kod.");
+                MessageBox.Show("Nieprawidłowy kod resetu.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             dbManager.UpdatePassword(login, newPassword);
-            MessageBox.Show("Hasło zmienione.");
+            MessageBox.Show("Hasło zostało zmienione.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
             this.Close();
         }
     }

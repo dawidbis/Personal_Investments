@@ -15,27 +15,28 @@ namespace Personal_Investment_App
     public partial class RegisterForm : Form
     {
         private DatabaseManager dbManager;
+
         public RegisterForm(DatabaseManager dbManager)
         {
             InitializeComponent();
             this.dbManager = dbManager;
         }
 
-        private bool IsValidEmail(string email)
+        private void btnRegister_Click(object sender, EventArgs e)
         {
-            string pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-            return Regex.IsMatch(email, pattern);
-        }
-
-        private void btnOk_Click(object sender, EventArgs e)
-        {
-            string username = txtLogin.Text;
-            string password = txtHasło.Text;
+            string username = txtUsername.Text;
+            string password = txtPassword.Text;
+            string confirmPassword = txtConfirmPassword.Text;
             string email = txtEmail.Text;
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || !IsValidEmail(email))
+            if (string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(email) ||
+                password != confirmPassword ||
+                !IsValidEmail(email))
             {
-                MessageBox.Show("Proszę podać poprawne dane.", "Błąd rejestracji", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Proszę podać poprawne dane i upewnić się, że hasła są zgodne.",
+                                "Błąd rejestracji", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -52,9 +53,14 @@ namespace Personal_Investment_App
             }
         }
 
-        private void btnAnuluj_Click(object sender, EventArgs e)
+        private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
         }
     }
 }

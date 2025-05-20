@@ -2,15 +2,16 @@
 {
     partial class ChangePasswordForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        private TextBox txtResetCode;
+        private TextBox txtNewPassword;
+        private TextBox txtConfirmPassword;
+        private Button btnChangePassword;
+        private Label lblResetCode;
+        private Label lblNewPassword;
+        private Label lblConfirmPassword;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,88 +21,93 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            btnZmienHaslo = new Button();
-            txtKodResetu = new TextBox();
-            txtNoweHaslo = new TextBox();
-            label1 = new Label();
-            label2 = new Label();
-            SuspendLayout();
-            // 
-            // btnZmienHaslo
-            // 
-            btnZmienHaslo.Location = new Point(307, 293);
-            btnZmienHaslo.Name = "btnZmienHaslo";
-            btnZmienHaslo.Size = new Size(195, 29);
-            btnZmienHaslo.TabIndex = 0;
-            btnZmienHaslo.Text = "Zmien Haslo";
-            btnZmienHaslo.UseVisualStyleBackColor = true;
-            btnZmienHaslo.Click += btnZmienHaslo_Click;
-            // 
-            // txtKodResetu
-            // 
-            txtKodResetu.Location = new Point(307, 211);
-            txtKodResetu.Name = "txtKodResetu";
-            txtKodResetu.Size = new Size(195, 27);
-            txtKodResetu.TabIndex = 1;
-            txtKodResetu.TextChanged += btnKodResetu_TextChanged;
-            // 
-            // txtNoweHaslo
-            // 
-            txtNoweHaslo.Location = new Point(307, 244);
-            txtNoweHaslo.Name = "txtNoweHaslo";
-            txtNoweHaslo.PasswordChar = '*';
-            txtNoweHaslo.Size = new Size(195, 27);
-            txtNoweHaslo.TabIndex = 2;
-            txtNoweHaslo.TextChanged += btnNoweHaslo_TextChanged;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(176, 211);
-            label1.Name = "label1";
-            label1.Size = new Size(119, 20);
-            label1.TabIndex = 3;
-            label1.Text = "Podaj kod resetu";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(176, 247);
-            label2.Name = "label2";
-            label2.Size = new Size(125, 20);
-            label2.TabIndex = 4;
-            label2.Text = "Podaj nowe hasło";
-            // 
+            this.txtResetCode = new TextBox();
+            this.txtNewPassword = new TextBox();
+            this.txtConfirmPassword = new TextBox();
+            this.btnChangePassword = new Button();
+            this.lblResetCode = new Label();
+            this.lblNewPassword = new Label();
+            this.lblConfirmPassword = new Label();
+
+            // txtResetCode
+            this.txtResetCode.BackColor = Color.FromArgb(30, 30, 30);
+            this.txtResetCode.ForeColor = Color.White;
+            this.txtResetCode.Font = new Font("Segoe UI", 10F);
+            this.txtResetCode.Location = new Point(180, 20);
+            this.txtResetCode.Name = "txtResetCode";
+            this.txtResetCode.Size = new Size(200, 25);
+
+            // txtNewPassword
+            this.txtNewPassword.BackColor = Color.FromArgb(30, 30, 30);
+            this.txtNewPassword.ForeColor = Color.White;
+            this.txtNewPassword.Font = new Font("Segoe UI", 10F);
+            this.txtNewPassword.Location = new Point(180, 60);
+            this.txtNewPassword.Name = "txtNewPassword";
+            this.txtNewPassword.Size = new Size(200, 25);
+            this.txtNewPassword.UseSystemPasswordChar = true;
+
+            // txtConfirmPassword
+            this.txtConfirmPassword.BackColor = Color.FromArgb(30, 30, 30);
+            this.txtConfirmPassword.ForeColor = Color.White;
+            this.txtConfirmPassword.Font = new Font("Segoe UI", 10F);
+            this.txtConfirmPassword.Location = new Point(180, 100);
+            this.txtConfirmPassword.Name = "txtConfirmPassword";
+            this.txtConfirmPassword.Size = new Size(200, 25);
+            this.txtConfirmPassword.UseSystemPasswordChar = true;
+
+            // btnChangePassword
+            this.btnChangePassword.BackColor = Color.MediumPurple;
+            this.btnChangePassword.FlatAppearance.BorderSize = 0;
+            this.btnChangePassword.FlatStyle = FlatStyle.Flat;
+            this.btnChangePassword.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.btnChangePassword.ForeColor = Color.White;
+            this.btnChangePassword.Location = new Point(180, 140);
+            this.btnChangePassword.Name = "btnChangePassword";
+            this.btnChangePassword.Size = new Size(200, 40);
+            this.btnChangePassword.Text = "Zmień hasło";
+            this.btnChangePassword.UseVisualStyleBackColor = false;
+            this.btnChangePassword.Click += new EventHandler(this.btnChangePassword_Click);
+
+            // lblResetCode
+            this.lblResetCode.AutoSize = true;
+            this.lblResetCode.ForeColor = Color.White;
+            this.lblResetCode.Location = new Point(60, 25);
+            this.lblResetCode.Name = "lblResetCode";
+            this.lblResetCode.Size = new Size(75, 15);
+            this.lblResetCode.Text = "Kod resetu:";
+
+            // lblNewPassword
+            this.lblNewPassword.AutoSize = true;
+            this.lblNewPassword.ForeColor = Color.White;
+            this.lblNewPassword.Location = new Point(60, 65);
+            this.lblNewPassword.Name = "lblNewPassword";
+            this.lblNewPassword.Size = new Size(74, 15);
+            this.lblNewPassword.Text = "Nowe hasło:";
+
+            // lblConfirmPassword
+            this.lblConfirmPassword.AutoSize = true;
+            this.lblConfirmPassword.ForeColor = Color.White;
+            this.lblConfirmPassword.Location = new Point(60, 105);
+            this.lblConfirmPassword.Name = "lblConfirmPassword";
+            this.lblConfirmPassword.Size = new Size(114, 15);
+            this.lblConfirmPassword.Text = "Potwierdź hasło:";
+
             // ChangePasswordForm
-            // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(label2);
-            Controls.Add(label1);
-            Controls.Add(txtNoweHaslo);
-            Controls.Add(txtKodResetu);
-            Controls.Add(btnZmienHaslo);
-            Name = "ChangePasswordForm";
-            Text = "ChangePasswordForm";
-            ResumeLayout(false);
-            PerformLayout();
+            this.BackColor = Color.Black;
+            this.ClientSize = new Size(420, 200);
+            this.Controls.Add(this.lblResetCode);
+            this.Controls.Add(this.lblNewPassword);
+            this.Controls.Add(this.lblConfirmPassword);
+            this.Controls.Add(this.txtResetCode);
+            this.Controls.Add(this.txtNewPassword);
+            this.Controls.Add(this.txtConfirmPassword);
+            this.Controls.Add(this.btnChangePassword);
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "Zmiana hasła";
         }
-
-        #endregion
-
-        private Button btnZmienHaslo;
-        private TextBox txtKodResetu;
-        private TextBox txtNoweHaslo;
-        private Label label1;
-        private Label label2;
     }
 }

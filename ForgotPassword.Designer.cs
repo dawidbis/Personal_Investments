@@ -1,16 +1,15 @@
-﻿namespace Personal_Investment_App
+﻿
+namespace Personal_Investment_App
 {
-    partial class ForgotPassword
+   partial class ForgotPassword
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private TextBox txtLogin;
+        private System.Windows.Forms.TextBox txtEmail;
+        private System.Windows.Forms.Button btnReset;
+        private Label lblLogin;
+        private System.Windows.Forms.Label lblEmail;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,101 +19,88 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            txtLogin = new TextBox();
-            txtEmail = new TextBox();
-            btnZatwierdź = new Button();
-            btnAnuluj = new Button();
-            label1 = new Label();
-            label2 = new Label();
-            SuspendLayout();
+            this.txtLogin = new System.Windows.Forms.TextBox();
+            this.txtEmail = new System.Windows.Forms.TextBox();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.lblLogin = new System.Windows.Forms.Label();
+            this.lblEmail = new System.Windows.Forms.Label();
+            this.SuspendLayout();
             // 
             // txtLogin
             // 
-            txtLogin.Location = new Point(371, 174);
-            txtLogin.Name = "txtLogin";
-            txtLogin.Size = new Size(125, 27);
-            txtLogin.TabIndex = 0;
-            txtLogin.TextChanged += txtLogin_TextChanged;
+            this.txtLogin.BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
+            this.txtLogin.ForeColor = System.Drawing.Color.White;
+            this.txtLogin.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.txtLogin.Location = new System.Drawing.Point(160, 25);
+            this.txtLogin.Name = "txtLogin";
+            this.txtLogin.Size = new System.Drawing.Size(200, 25);
+            this.txtLogin.TabIndex = 0;
+            this.txtLogin.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             // 
             // txtEmail
             // 
-            txtEmail.Location = new Point(371, 138);
-            txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(125, 27);
-            txtEmail.TabIndex = 1;
-            txtEmail.TextChanged += txtEmail_TextChanged;
+            this.txtEmail.BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
+            this.txtEmail.ForeColor = System.Drawing.Color.White;
+            this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.txtEmail.Location = new System.Drawing.Point(160, 65);
+            this.txtEmail.Name = "txtEmail";
+            this.txtEmail.Size = new System.Drawing.Size(200, 25);
+            this.txtEmail.TabIndex = 1;
+            this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             // 
-            // btnZatwierdź
+            // btnReset
             // 
-            btnZatwierdź.Location = new Point(251, 241);
-            btnZatwierdź.Name = "btnZatwierdź";
-            btnZatwierdź.Size = new Size(132, 29);
-            btnZatwierdź.TabIndex = 2;
-            btnZatwierdź.Text = "Wygeneruj Kod";
-            btnZatwierdź.UseVisualStyleBackColor = true;
-            btnZatwierdź.Click += btnWygenerujKod_Click;
+            this.btnReset.BackColor = System.Drawing.Color.MediumPurple;
+            this.btnReset.FlatAppearance.BorderSize = 0;
+            this.btnReset.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnReset.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnReset.ForeColor = System.Drawing.Color.White;
+            this.btnReset.Location = new System.Drawing.Point(160, 105);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(200, 40);
+            this.btnReset.TabIndex = 2;
+            this.btnReset.Text = "Resetuj hasło";
+            this.btnReset.UseVisualStyleBackColor = false;
+            this.btnReset.Click += new System.EventHandler(this.btnWygenerujKod_Click);
             // 
-            // btnAnuluj
+            // lblLogin
             // 
-            btnAnuluj.Location = new Point(402, 241);
-            btnAnuluj.Name = "btnAnuluj";
-            btnAnuluj.Size = new Size(94, 29);
-            btnAnuluj.TabIndex = 3;
-            btnAnuluj.Text = "Anuluj";
-            btnAnuluj.UseVisualStyleBackColor = true;
-            btnAnuluj.Click += btnAnuluj_Click;
+            this.lblLogin.AutoSize = true;
+            this.lblLogin.ForeColor = System.Drawing.Color.White;
+            this.lblLogin.Location = new System.Drawing.Point(50, 30);
+            this.lblLogin.Name = "lblLogin";
+            this.lblLogin.Size = new System.Drawing.Size(39, 15);
+            this.lblLogin.TabIndex = 3;
+            this.lblLogin.Text = "Login:";
             // 
-            // label1
+            // lblEmail
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(238, 138);
-            label1.Name = "label1";
-            label1.Size = new Size(127, 20);
-            label1.TabIndex = 4;
-            label1.Text = "Podaj adres email";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(251, 181);
-            label2.Name = "label2";
-            label2.Size = new Size(84, 20);
-            label2.TabIndex = 5;
-            label2.Text = "Podaj login";
-            label2.Click += label2_Click;
+            this.lblEmail.AutoSize = true;
+            this.lblEmail.ForeColor = System.Drawing.Color.White;
+            this.lblEmail.Location = new System.Drawing.Point(50, 70);
+            this.lblEmail.Name = "lblEmail";
+            this.lblEmail.Size = new System.Drawing.Size(38, 15);
+            this.lblEmail.TabIndex = 4;
+            this.lblEmail.Text = "Email:";
             // 
             // ForgotPassword
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(label2);
-            Controls.Add(label1);
-            Controls.Add(btnAnuluj);
-            Controls.Add(btnZatwierdź);
-            Controls.Add(txtEmail);
-            Controls.Add(txtLogin);
-            Name = "ForgotPassword";
-            Text = "ForgotPassword";
-            ResumeLayout(false);
-            PerformLayout();
+            this.BackColor = System.Drawing.Color.Black;
+            this.ClientSize = new System.Drawing.Size(400, 170);
+            this.Controls.Add(this.lblEmail);
+            this.Controls.Add(this.lblLogin);
+            this.Controls.Add(this.btnReset);
+            this.Controls.Add(this.txtEmail);
+            this.Controls.Add(this.txtLogin);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.Name = "ForgotPassword";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Resetowanie hasła";
+            this.ResumeLayout(false);
+            this.PerformLayout();
         }
-
-        #endregion
-
-        private TextBox txtLogin;
-        private TextBox txtEmail;
-        private Button btnZatwierdź;
-        private Button btnAnuluj;
-        private Label label1;
-        private Label label2;
     }
 }
