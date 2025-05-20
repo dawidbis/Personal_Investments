@@ -12,7 +12,7 @@ namespace DatabaseConnection
 {
     public class DatabaseManager : DbContext
     {
-        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Personal;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Personale;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         public DbSet<User> Users { get; set; }
         public DbSet<Investment> Investments { get; set; }
         public DbSet<InvestmentType> InvestmentTypes { get; set; }
@@ -193,12 +193,6 @@ namespace DatabaseConnection
             return investment;
         }
 
-<<<<<<< HEAD
-        public InvestmentCategory GetStockInvestmentCategory()
-        {
-            return this.InvestmentCategories
-                       .FirstOrDefault(t => t.Name == "Akcje");
-=======
         public InvestmentType GetOrCreateStockInvestmentType()
         {
             // Znajdź lub utwórz kategorię "Akcje"
@@ -234,7 +228,7 @@ namespace DatabaseConnection
             }
 
             return stockType;
->>>>>>> 4c940b0e2ef1dbd25cb6b1512176601f89135ce6
+
         }
 
         public int? GetUserIdByUsername(string username)

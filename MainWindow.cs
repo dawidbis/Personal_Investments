@@ -1,6 +1,7 @@
 #pragma warning disable CS0436
 using DatabaseConnection;
 using Microsoft.EntityFrameworkCore;
+using Polygon_api;
 
 namespace Personal_Investment_App
 {
@@ -24,6 +25,7 @@ namespace Personal_Investment_App
             listView1.Columns.Add("Typ", 100);
             listView1.Columns.Add("Ryzyko", 80);
             listView1.Columns.Add("Kategoria", 100);
+            listView1.Columns.Add("Cena zamknięcia", 120); 
 
             listView1.Items.Clear();
 
@@ -65,6 +67,7 @@ namespace Personal_Investment_App
             InitializeComponent();
             this.dbManager = dbManager;
             this.zalogowanyUzytkownik = zalogowanyUzytkownik;
+
             int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
             if (userId.HasValue)
             {
@@ -151,6 +154,32 @@ namespace Personal_Investment_App
             };
 
             form.Show();
+        }
+
+        private async void btnOdswiez_Click(object sender, EventArgs e)
+        {
+            var candleService = new AlphaVantageService();
+
+            foreach (ListViewItem item in listView1.Items)
+            {
+                string symbol = item.SubItems[1].Text; // Zakładamy, że w kolumnie "Nazwa" masz symbol, np. "AAPL"
+
+                var candles = await candleService.GetDailyCandlesAsync(symbol);
+                var latestCandle = candles.OrderByDescending(c => c.Date).FirstOrDefault();
+
+                string lastClose = latestCandle?.C.ToString("F2") ?? "Brak";
+
+                if (item.SubItems.Count < 9)
+                {
+                    item.SubItems.Add(lastClose);
+                }
+                else
+                {
+                    item.SubItems[8].Text = lastClose;
+                }
+            }
+
+            MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
