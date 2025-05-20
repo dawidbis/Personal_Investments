@@ -193,6 +193,12 @@ namespace DatabaseConnection
             return investment;
         }
 
+        public InvestmentCategory GetStockInvestmentCategory()
+        {
+            return this.InvestmentCategories
+                       .FirstOrDefault(t => t.Name == "Akcje");
+        }       
+
         public InvestmentType GetOrCreateStockInvestmentType()
         {
             // Znajdź lub utwórz kategorię "Akcje"
@@ -228,7 +234,6 @@ namespace DatabaseConnection
             }
 
             return stockType;
-
         }
 
         public int? GetUserIdByUsername(string username)

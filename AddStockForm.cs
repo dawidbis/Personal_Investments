@@ -57,6 +57,10 @@ namespace Personal_Investment_App
                 return;
             }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 66cf09224a426bdd1c444c2b4e585fb367da090d
             var stockType = dbManager.GetOrCreateStockInvestmentType();
 
             var investment = new Investment

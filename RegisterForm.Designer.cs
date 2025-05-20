@@ -2,15 +2,18 @@
 {
     partial class RegisterForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        private System.Windows.Forms.TextBox txtUsername;
+        private System.Windows.Forms.TextBox txtPassword;
+        private System.Windows.Forms.TextBox txtConfirmPassword;
+        private System.Windows.Forms.TextBox txtEmail;
+        private System.Windows.Forms.Button btnRegister;
+        private System.Windows.Forms.Label lblUsername;
+        private System.Windows.Forms.Label lblPassword;
+        private System.Windows.Forms.Label lblConfirmPassword;
+        private System.Windows.Forms.Label lblEmail;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,147 +23,140 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            btnOk = new Button();
-            btnAnuluj = new Button();
-            txtLogin = new TextBox();
-            txtHasło = new TextBox();
+            txtUsername = new TextBox();
+            txtPassword = new TextBox();
+            txtConfirmPassword = new TextBox();
             txtEmail = new TextBox();
-            groupBox1 = new GroupBox();
+            btnRegister = new Button();
+            lblUsername = new Label();
+            lblPassword = new Label();
+            lblConfirmPassword = new Label();
             lblEmail = new Label();
-            lblHasło = new Label();
-            lblLogin = new Label();
-            groupBox2 = new GroupBox();
-            groupBox1.SuspendLayout();
-            groupBox2.SuspendLayout();
             SuspendLayout();
             // 
-            // btnOk
+            // txtUsername
             // 
-            btnOk.Location = new Point(6, 20);
-            btnOk.Name = "btnOk";
-            btnOk.Size = new Size(75, 23);
-            btnOk.TabIndex = 0;
-            btnOk.Text = "OK";
-            btnOk.UseVisualStyleBackColor = true;
-            btnOk.Click += btnOk_Click;
+            txtUsername.BackColor = Color.FromArgb(30, 30, 30);
+            txtUsername.BorderStyle = BorderStyle.FixedSingle;
+            txtUsername.Font = new Font("Segoe UI", 10F);
+            txtUsername.ForeColor = Color.White;
+            txtUsername.Location = new Point(170, 30);
+            txtUsername.Name = "txtUsername";
+            txtUsername.Size = new Size(190, 25);
+            txtUsername.TabIndex = 0;
             // 
-            // btnAnuluj
+            // txtPassword
             // 
-            btnAnuluj.Location = new Point(87, 20);
-            btnAnuluj.Name = "btnAnuluj";
-            btnAnuluj.Size = new Size(75, 23);
-            btnAnuluj.TabIndex = 1;
-            btnAnuluj.Text = "Anuluj";
-            btnAnuluj.UseVisualStyleBackColor = true;
-            btnAnuluj.Click += btnAnuluj_Click;
+            txtPassword.BackColor = Color.FromArgb(30, 30, 30);
+            txtPassword.BorderStyle = BorderStyle.FixedSingle;
+            txtPassword.Font = new Font("Segoe UI", 10F);
+            txtPassword.ForeColor = Color.White;
+            txtPassword.Location = new Point(170, 70);
+            txtPassword.Name = "txtPassword";
+            txtPassword.Size = new Size(190, 25);
+            txtPassword.TabIndex = 1;
+            txtPassword.UseSystemPasswordChar = true;
             // 
-            // txtLogin
+            // txtConfirmPassword
             // 
-            txtLogin.Location = new Point(49, 16);
-            txtLogin.Name = "txtLogin";
-            txtLogin.Size = new Size(100, 23);
-            txtLogin.TabIndex = 2;
-            // 
-            // txtHasło
-            // 
-            txtHasło.Location = new Point(49, 43);
-            txtHasło.Name = "txtHasło";
-            txtHasło.PasswordChar = '*';
-            txtHasło.Size = new Size(100, 23);
-            txtHasło.TabIndex = 3;
+            txtConfirmPassword.BackColor = Color.FromArgb(30, 30, 30);
+            txtConfirmPassword.BorderStyle = BorderStyle.FixedSingle;
+            txtConfirmPassword.Font = new Font("Segoe UI", 10F);
+            txtConfirmPassword.ForeColor = Color.White;
+            txtConfirmPassword.Location = new Point(170, 110);
+            txtConfirmPassword.Name = "txtConfirmPassword";
+            txtConfirmPassword.Size = new Size(190, 25);
+            txtConfirmPassword.TabIndex = 2;
+            txtConfirmPassword.UseSystemPasswordChar = true;
             // 
             // txtEmail
             // 
-            txtEmail.Location = new Point(49, 71);
+            txtEmail.BackColor = Color.FromArgb(30, 30, 30);
+            txtEmail.BorderStyle = BorderStyle.FixedSingle;
+            txtEmail.Font = new Font("Segoe UI", 10F);
+            txtEmail.ForeColor = Color.White;
+            txtEmail.Location = new Point(170, 150);
             txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(100, 23);
-            txtEmail.TabIndex = 4;
+            txtEmail.Size = new Size(190, 25);
+            txtEmail.TabIndex = 2;
             // 
-            // groupBox1
+            // btnRegister
             // 
-            groupBox1.Controls.Add(lblEmail);
-            groupBox1.Controls.Add(lblHasło);
-            groupBox1.Controls.Add(lblLogin);
-            groupBox1.Controls.Add(txtLogin);
-            groupBox1.Controls.Add(txtEmail);
-            groupBox1.Controls.Add(txtHasło);
-            groupBox1.Location = new Point(36, 12);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(177, 103);
-            groupBox1.TabIndex = 5;
-            groupBox1.TabStop = false;
+            btnRegister.BackColor = Color.MediumPurple;
+            btnRegister.FlatAppearance.BorderSize = 0;
+            btnRegister.FlatStyle = FlatStyle.Flat;
+            btnRegister.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnRegister.ForeColor = Color.White;
+            btnRegister.Location = new Point(160, 200);
+            btnRegister.Name = "btnRegister";
+            btnRegister.Size = new Size(200, 40);
+            btnRegister.TabIndex = 3;
+            btnRegister.Text = "Zarejestruj";
+            btnRegister.UseVisualStyleBackColor = false;
+            btnRegister.Click += btnRegister_Click;
+            // 
+            // lblUsername
+            // 
+            lblUsername.AutoSize = true;
+            lblUsername.ForeColor = Color.White;
+            lblUsername.Location = new Point(50, 35);
+            lblUsername.Name = "lblUsername";
+            lblUsername.Size = new Size(114, 15);
+            lblUsername.TabIndex = 4;
+            lblUsername.Text = "Nazwa użytkownika:";
+            // 
+            // lblPassword
+            // 
+            lblPassword.AutoSize = true;
+            lblPassword.ForeColor = Color.White;
+            lblPassword.Location = new Point(50, 75);
+            lblPassword.Name = "lblPassword";
+            lblPassword.Size = new Size(40, 15);
+            lblPassword.TabIndex = 5;
+            lblPassword.Text = "Hasło:";
+            // 
+            // lblConfirmPassword
+            // 
+            lblConfirmPassword.AutoSize = true;
+            lblConfirmPassword.ForeColor = Color.White;
+            lblConfirmPassword.Location = new Point(50, 115);
+            lblConfirmPassword.Name = "lblConfirmPassword";
+            lblConfirmPassword.Size = new Size(93, 15);
+            lblConfirmPassword.TabIndex = 6;
+            lblConfirmPassword.Text = "Potwierdź hasło:";
             // 
             // lblEmail
             // 
             lblEmail.AutoSize = true;
-            lblEmail.Location = new Point(6, 74);
+            lblEmail.ForeColor = Color.White;
+            lblEmail.Location = new Point(50, 155); 
             lblEmail.Name = "lblEmail";
-            lblEmail.Size = new Size(36, 15);
+            lblEmail.Size = new Size(93, 15);
             lblEmail.TabIndex = 7;
-            lblEmail.Text = "Email";
-            // 
-            // lblHasło
-            // 
-            lblHasło.AutoSize = true;
-            lblHasło.Location = new Point(6, 46);
-            lblHasło.Name = "lblHasło";
-            lblHasło.Size = new Size(37, 15);
-            lblHasło.TabIndex = 6;
-            lblHasło.Text = "Hasło";
-            // 
-            // lblLogin
-            // 
-            lblLogin.AutoSize = true;
-            lblLogin.Location = new Point(6, 19);
-            lblLogin.Name = "lblLogin";
-            lblLogin.Size = new Size(40, 15);
-            lblLogin.TabIndex = 5;
-            lblLogin.Text = "Login:";
-            // 
-            // groupBox2
-            // 
-            groupBox2.Controls.Add(btnOk);
-            groupBox2.Controls.Add(btnAnuluj);
-            groupBox2.Location = new Point(36, 121);
-            groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(177, 49);
-            groupBox2.TabIndex = 6;
-            groupBox2.TabStop = false;
+            lblEmail.Text = "Email:";
             // 
             // RegisterForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(244, 188);
-            Controls.Add(groupBox2);
-            Controls.Add(groupBox1);
+            BackColor = Color.Black;
+            ClientSize = new Size(400, 300);
+            Controls.Add(lblConfirmPassword);
+            Controls.Add(lblPassword);
+            Controls.Add(lblUsername);
+            Controls.Add(lblEmail);
+            Controls.Add(btnRegister);
+            Controls.Add(txtConfirmPassword);
+            Controls.Add(txtPassword);
+            Controls.Add(txtUsername);
+            Controls.Add(txtEmail);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "RegisterForm";
-            Text = "RegisterForm";
-            groupBox1.ResumeLayout(false);
-            groupBox1.PerformLayout();
-            groupBox2.ResumeLayout(false);
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Rejestracja";
             ResumeLayout(false);
+            PerformLayout();
         }
-
-        #endregion
-
-        private Button btnOk;
-        private Button btnAnuluj;
-        private TextBox txtLogin;
-        private TextBox txtHasło;
-        private TextBox txtEmail;
-        private GroupBox groupBox1;
-        private Label lblEmail;
-        private Label lblHasło;
-        private Label lblLogin;
-        private GroupBox groupBox2;
     }
 }

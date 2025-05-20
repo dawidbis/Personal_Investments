@@ -24,33 +24,70 @@ namespace Personal_Investment_App
         {
             InitializeComponent();
             this.dbManager = dbManager;
+            ApplyTheme();
         }
 
+        private void ApplyTheme()
+        {
+            this.BackColor = Color.Black;
+
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Button btn)
+                {
+                    btn.BackColor = Color.MediumPurple;
+                    btn.ForeColor = Color.White;
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.FlatAppearance.BorderSize = 0;
+                    btn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+                    btn.Size = new Size(120, 40); // dopasuj w razie potrzeby
+                }
+                else if (ctrl is TextBox txt)
+                {
+                    txt.BackColor = Color.FromArgb(30, 30, 30);
+                    txt.ForeColor = Color.White;
+                    txt.BorderStyle = BorderStyle.FixedSingle;
+                }
+                else if (ctrl is Label lbl)
+                {
+                    lbl.ForeColor = Color.White;
+                }
+                else if (ctrl is LinkLabel link)
+                {
+                    link.LinkColor = Color.MediumPurple;
+                    link.ActiveLinkColor = Color.DarkViolet;
+                }
+                else if (ctrl is CheckBox chk)
+                {
+                    chk.ForeColor = Color.White;
+                }
+            }
+        }
         private void btnLogin_MouseEnter(object sender, EventArgs e)
         {
 
-            btnLogin.BackColor = Color.DarkGray;
-            btnLogin.ForeColor = Color.FromArgb(250, 250, 250);
+            btnLogin.BackColor = Color.DarkViolet;
+            btnLogin.ForeColor = Color.White;
             btnLogin.Cursor = Cursors.Hand;
         }
 
         private void btnLogin_MouseLeave(object sender, EventArgs e)
         {
-            btnLogin.BackColor = Color.DimGray;
-            btnLogin.ForeColor = Color.FromArgb(224, 224, 224);
+            btnLogin.BackColor = Color.MediumPurple;
+            btnLogin.ForeColor = Color.White;
         }
 
         private void btnRegister_MouseEnter(object sender, EventArgs e)
         {
-            btnRegister.BackColor = Color.DarkGray;
-            btnRegister.ForeColor = Color.FromArgb(250, 250, 250);
+            btnRegister.BackColor = Color.DarkViolet;
+            btnRegister.ForeColor = Color.White;
             btnRegister.Cursor = Cursors.Hand;
         }
 
         private void btnRegister_MouseLeave(object sender, EventArgs e)
         {
-            btnRegister.BackColor = Color.DimGray;
-            btnRegister.ForeColor = Color.FromArgb(224, 224, 224);
+            btnRegister.BackColor = Color.MediumPurple;
+            btnRegister.ForeColor = Color.White;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -89,7 +126,7 @@ namespace Personal_Investment_App
                 txtPassword.PasswordChar = '*';
             }
         }
-
+        
         private void btnRegister_Click(object sender, EventArgs e)
         {
             RegisterForm okno = new RegisterForm(dbManager);

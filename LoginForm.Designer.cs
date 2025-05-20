@@ -2,15 +2,15 @@
 {
     partial class LoginForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        private System.Windows.Forms.TextBox txtLogin;
+        private System.Windows.Forms.TextBox txtPassword;
+        private System.Windows.Forms.Button btnLogin;
+        private System.Windows.Forms.Button btnRegister;
+        private System.Windows.Forms.CheckBox chckPassword;
+        private System.Windows.Forms.LinkLabel lnkPassword;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,127 +20,125 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            txtLogin = new TextBox();
-            txtPassword = new TextBox();
-            btnLogin = new Button();
-            btnRegister = new Button();
-            chckPassword = new CheckBox();
-            lnkPassword = new LinkLabel();
-            SuspendLayout();
+            this.txtLogin = new System.Windows.Forms.TextBox();
+            this.txtPassword = new System.Windows.Forms.TextBox();
+            this.btnLogin = new System.Windows.Forms.Button();
+            this.btnRegister = new System.Windows.Forms.Button();
+            this.chckPassword = new System.Windows.Forms.CheckBox();
+            this.lnkPassword = new System.Windows.Forms.LinkLabel();
+            this.SuspendLayout();
+
             // 
             // txtLogin
             // 
-            txtLogin.BackColor = Color.Black;
-            txtLogin.Font = new Font("Segoe UI", 24F);
-            txtLogin.ForeColor = Color.FromArgb(224, 224, 224);
-            txtLogin.Location = new Point(42, 94);
-            txtLogin.Name = "txtLogin";
-            txtLogin.Size = new Size(424, 50);
-            txtLogin.TabIndex = 0;
-            txtLogin.Text = "login";
+            this.txtLogin.BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
+            this.txtLogin.ForeColor = System.Drawing.Color.White;
+            this.txtLogin.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.txtLogin.Location = new System.Drawing.Point(55, 30);
+            this.txtLogin.Name = "txtLogin";
+            this.txtLogin.Size = new System.Drawing.Size(250, 25);
+            this.txtLogin.TabIndex = 0;
+            this.txtLogin.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+
             // 
             // txtPassword
             // 
-            txtPassword.BackColor = Color.Black;
-            txtPassword.Font = new Font("Segoe UI", 24F);
-            txtPassword.ForeColor = Color.FromArgb(224, 224, 224);
-            txtPassword.Location = new Point(42, 178);
-            txtPassword.Name = "txtPassword";
-            txtPassword.PasswordChar = '*';
-            txtPassword.Size = new Size(424, 50);
-            txtPassword.TabIndex = 1;
-            txtPassword.Text = "hasło";
+            this.txtPassword.BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
+            this.txtPassword.ForeColor = System.Drawing.Color.White;
+            this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.txtPassword.Location = new System.Drawing.Point(55, 70);
+            this.txtPassword.Name = "txtPassword";
+            this.txtPassword.Size = new System.Drawing.Size(250, 25);
+            this.txtPassword.TabIndex = 1;
+            this.txtPassword.UseSystemPasswordChar = true;
+            this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+
             // 
             // btnLogin
             // 
-            btnLogin.BackColor = Color.Green;
-            btnLogin.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
-            btnLogin.ForeColor = Color.FromArgb(224, 224, 224);
-            btnLogin.Location = new Point(42, 284);
-            btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(200, 60);
-            btnLogin.TabIndex = 2;
-            btnLogin.Text = "Zaloguj";
-            btnLogin.UseVisualStyleBackColor = false;
-            btnLogin.Click += btnLogin_Click;
-            btnLogin.MouseEnter += btnLogin_MouseEnter;
-            btnLogin.MouseLeave += btnLogin_MouseLeave;
+            this.btnLogin.BackColor = System.Drawing.Color.MediumPurple;
+            this.btnLogin.FlatAppearance.BorderSize = 0;
+            this.btnLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnLogin.ForeColor = System.Drawing.Color.White;
+            this.btnLogin.Location = new System.Drawing.Point(55, 120);
+            this.btnLogin.Name = "btnLogin";
+            this.btnLogin.Size = new System.Drawing.Size(120, 40);
+            this.btnLogin.TabIndex = 2;
+            this.btnLogin.Text = "Zaloguj";
+            this.btnLogin.UseVisualStyleBackColor = false;
+            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
+            this.btnLogin.MouseEnter += new System.EventHandler(this.btnLogin_MouseEnter);
+            this.btnLogin.MouseLeave += new System.EventHandler(this.btnLogin_MouseLeave);
+
             // 
             // btnRegister
             // 
-            btnRegister.BackColor = Color.Orange;
-            btnRegister.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
-            btnRegister.ForeColor = Color.FromArgb(224, 224, 224);
-            btnRegister.Location = new Point(248, 284);
-            btnRegister.Name = "btnRegister";
-            btnRegister.Size = new Size(218, 60);
-            btnRegister.TabIndex = 3;
-            btnRegister.Text = "Nowe konto";
-            btnRegister.UseVisualStyleBackColor = false;
-            btnRegister.Click += btnRegister_Click;
-            btnRegister.MouseEnter += btnRegister_MouseEnter;
-            btnRegister.MouseLeave += btnRegister_MouseLeave;
+            this.btnRegister.BackColor = System.Drawing.Color.MediumPurple;
+            this.btnRegister.FlatAppearance.BorderSize = 0;
+            this.btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRegister.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnRegister.ForeColor = System.Drawing.Color.White;
+            this.btnRegister.Location = new System.Drawing.Point(185, 120);
+            this.btnRegister.Name = "btnRegister";
+            this.btnRegister.Size = new System.Drawing.Size(120, 40);
+            this.btnRegister.TabIndex = 3;
+            this.btnRegister.Text = "Zarejestruj";
+            this.btnRegister.UseVisualStyleBackColor = false;
+            this.btnRegister.Click += new System.EventHandler(this.btnRegister_Click);
+            this.btnRegister.MouseEnter += new System.EventHandler(this.btnRegister_MouseEnter);
+            this.btnRegister.MouseLeave += new System.EventHandler(this.btnRegister_MouseLeave);
+
             // 
             // chckPassword
             // 
-            chckPassword.AutoSize = true;
-            chckPassword.Font = new Font("Segoe UI", 14F);
-            chckPassword.ForeColor = Color.FromArgb(224, 224, 224);
-            chckPassword.Location = new Point(336, 234);
-            chckPassword.Name = "chckPassword";
-            chckPassword.Size = new Size(130, 29);
-            chckPassword.TabIndex = 4;
-            chckPassword.Text = "Pokaż hasło";
-            chckPassword.UseVisualStyleBackColor = true;
-            chckPassword.CheckedChanged += chckPassword_CheckedChanged;
+            this.chckPassword.AutoSize = true;
+            this.chckPassword.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.chckPassword.ForeColor = System.Drawing.Color.White;
+            this.chckPassword.Location = new System.Drawing.Point(55, 100);
+            this.chckPassword.Name = "chckPassword";
+            this.chckPassword.Size = new System.Drawing.Size(96, 19);
+            this.chckPassword.TabIndex = 4;
+            this.chckPassword.Text = "Pokaż hasło";
+            this.chckPassword.UseVisualStyleBackColor = true;
+            this.chckPassword.CheckedChanged += new System.EventHandler(this.chckPassword_CheckedChanged);
+
             // 
             // lnkPassword
             // 
-            lnkPassword.AutoSize = true;
-            lnkPassword.Font = new Font("Segoe UI", 14F);
-            lnkPassword.Location = new Point(288, 347);
-            lnkPassword.Name = "lnkPassword";
-            lnkPassword.Size = new Size(178, 25);
-            lnkPassword.TabIndex = 5;
-            lnkPassword.TabStop = true;
-            lnkPassword.Text = "Zapomniałeś hasła?";
-            lnkPassword.LinkClicked += lnkPassword_LinkClicked;
+            this.lnkPassword.AutoSize = true;
+            this.lnkPassword.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lnkPassword.LinkColor = System.Drawing.Color.MediumPurple;
+            this.lnkPassword.Location = new System.Drawing.Point(185, 100);
+            this.lnkPassword.Name = "lnkPassword";
+            this.lnkPassword.Size = new System.Drawing.Size(120, 15);
+            this.lnkPassword.TabIndex = 5;
+            this.lnkPassword.TabStop = true;
+            this.lnkPassword.Text = "Nie pamiętasz hasła?";
+            this.lnkPassword.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkPassword_LinkClicked);
+
             // 
             // LoginForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.MidnightBlue;
-            ClientSize = new Size(521, 405);
-            Controls.Add(lnkPassword);
-            Controls.Add(chckPassword);
-            Controls.Add(btnRegister);
-            Controls.Add(btnLogin);
-            Controls.Add(txtPassword);
-            Controls.Add(txtLogin);
-            ForeColor = Color.Black;
-            Name = "LoginForm";
-            Text = "LoginForm";
-            TransparencyKey = Color.Transparent;
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Black;
+            this.ClientSize = new System.Drawing.Size(360, 200);
+            this.Controls.Add(this.lnkPassword);
+            this.Controls.Add(this.chckPassword);
+            this.Controls.Add(this.btnRegister);
+            this.Controls.Add(this.btnLogin);
+            this.Controls.Add(this.txtPassword);
+            this.Controls.Add(this.txtLogin);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.Name = "LoginForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Logowanie";
+            this.ResumeLayout(false);
+            this.PerformLayout();
         }
-
-        #endregion
-
-        private TextBox txtLogin;
-        private TextBox txtPassword;
-        private Button btnLogin;
-        private Button btnRegister;
-        private CheckBox chckPassword;
-        private LinkLabel lnkPassword;
     }
 }
