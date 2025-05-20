@@ -24,15 +24,72 @@ namespace Personal_Investment_App
             InitializeComponent();
             this.dbManager = dbManager;
             this.userId = userId;
-            this.buttonSave.Click += new EventHandler(this.buttonSave_Click);
+
+            buttonSave.Click += buttonSave_Click;
+
+            SetPlaceholder();
+
+            textBoxName.TextChanged += TextBoxName_TextChanged;
+            textBoxName.GotFocus += TextBoxName_GotFocus;
+            textBoxName.LostFocus += TextBoxName_LostFocus;
+        }
+
+        private readonly string placeholderText = "Podaj ticker NASDAQ np. GOOGL";
+        private bool isPlaceholderActive = true;
+
+        private void SetPlaceholder()
+        {
+            isPlaceholderActive = true;
+            textBoxName.ForeColor = Color.Gray;
+            textBoxName.Text = placeholderText;
+        }
+
+        private void RemovePlaceholder()
+        {
+            if (isPlaceholderActive)
+            {
+                isPlaceholderActive = false;
+                textBoxName.Text = "";
+                textBoxName.ForeColor = Color.White;
+            }
+        }
+
+        private void TextBoxName_TextChanged(object sender, EventArgs e)
+        {
+            if (!textBoxName.Focused)
+            {
+                // Jeśli pole nie jest aktywne i jest puste, pokaż placeholder
+                if (string.IsNullOrEmpty(textBoxName.Text))
+                {
+                    SetPlaceholder();
+                }
+            }
+        }
+
+        private void TextBoxName_GotFocus(object sender, EventArgs e)
+        {
+            // Zawsze usuń placeholder, gdy zaczyna pisać (aktywny i pusty)
+            if (isPlaceholderActive)
+            {
+                RemovePlaceholder();
+            }
+        }
+
+        private void TextBoxName_LostFocus(object sender, EventArgs e)
+        {
+            // Jeśli po opuszczeniu pola jest puste, pokaż placeholder
+            if (string.IsNullOrWhiteSpace(textBoxName.Text))
+            {
+                SetPlaceholder();
+            }
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
-            // Validate inputs
-            if (string.IsNullOrWhiteSpace(textBoxName.Text))
+
+            if (string.IsNullOrWhiteSpace(textBoxName.Text) || isPlaceholderActive)
             {
-                MessageBox.Show("Podaj nazwę akcji.", "Wymagane", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Podaj nazwę akcji (ticker).", "Wymagane", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
