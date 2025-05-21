@@ -198,6 +198,7 @@ namespace DatabaseConnection
             return this.InvestmentCategories
                        .FirstOrDefault(t => t.Name == "Akcje");
         }       
+
         public InvestmentType GetOrCreateStockInvestmentType()
         {
             // Znajdź lub utwórz kategorię "Akcje"
