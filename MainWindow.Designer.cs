@@ -1,4 +1,5 @@
-﻿namespace Personal_Investment_App
+﻿
+namespace Personal_Investment_App
 {
     partial class MainWindow
     {
@@ -25,11 +26,11 @@
             obligacjaToolStripMenuItem = new ToolStripMenuItem();
             kryptowalutaToolStripMenuItem = new ToolStripMenuItem();
             surowiecToolStripMenuItem = new ToolStripMenuItem();
-            eTFToolStripMenuItem = new ToolStripMenuItem();
             generujRaportToolStripMenuItem = new ToolStripMenuItem();
             eksportujDaneToolStripMenuItem = new ToolStripMenuItem();
             UsunKontoToolStripMenuItem = new ToolStripMenuItem();
             wylogujToolStripMenuItem1 = new ToolStripMenuItem();
+            sprzedajToolStripMenuItem = new ToolStripMenuItem();
             panelUser = new Panel();
             labelWelcome = new Label();
             panelMain = new Panel();
@@ -61,14 +62,15 @@
         generujRaportToolStripMenuItem,
         eksportujDaneToolStripMenuItem,
         UsunKontoToolStripMenuItem,
-        wylogujToolStripMenuItem1
+        wylogujToolStripMenuItem1,
+        sprzedajToolStripMenuItem
     });
 
             inwestycjePersonalneToolStripMenuItem.Text = "Dodaj inwestycję";
 
             inwestycjePersonalneToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
         akcjaToolStripMenuItem, obligacjaToolStripMenuItem,
-        kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem, eTFToolStripMenuItem
+        kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem
     });
 
             akcjaToolStripMenuItem.Text = "Akcja";
@@ -76,7 +78,6 @@
             obligacjaToolStripMenuItem.Text = "Obligacja";
             kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
             surowiecToolStripMenuItem.Text = "Surowiec";
-            eTFToolStripMenuItem.Text = "ETF";
 
             generujRaportToolStripMenuItem.Text = "Generuj raport";
             eksportujDaneToolStripMenuItem.Text = "Eksportuj dane";
@@ -84,20 +85,25 @@
             UsunKontoToolStripMenuItem.Click += UsunKontoToolStripMenuItem_Click;
             wylogujToolStripMenuItem1.Text = "Wyloguj";
             wylogujToolStripMenuItem1.Click += wylogujToolStripMenuItem1_Click;
+            sprzedajToolStripMenuItem.Text = "Sprzedaj wybrane inwestycje";
+            sprzedajToolStripMenuItem.Click += sprzedajToolStripMenuItem_Click;
 
             // Ustawienia padding i kolory dla elementów menu i podmenu
             foreach (ToolStripMenuItem parent in menuStrip2.Items.OfType<ToolStripMenuItem>())
             {
-                // większy padding i biały tekst dla głównego menu
                 parent.Padding = new Padding(15, 10, 15, 10);
                 parent.ForeColor = Color.White;
 
                 foreach (ToolStripItem subItem in parent.DropDownItems)
                 {
                     subItem.BackColor = Color.FromArgb(25, 25, 35);
-                    subItem.ForeColor = Color.White; // tekst w podmenu na biało
-                    subItem.Padding = new Padding(20, 10, 20, 10); // większy padding podmenu
-                    subItem.Height = 40; // zwiększona wysokość elementów podmenu
+                    subItem.ForeColor = Color.White;
+                    subItem.Padding = new Padding(20, 15, 20, 15); // większy padding góra-dół
+                    subItem.Height = 45;
+                    subItem.Margin = new Padding(0, 5, 0, 5); // przesunięcie w dół
+                    subItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+                    subItem.MouseEnter += (s, e) => { menuStrip2.Cursor = Cursors.Hand; };
+                    subItem.MouseLeave += (s, e) => { menuStrip2.Cursor = Cursors.Default; };
                 }
             }
 
@@ -186,11 +192,11 @@
         private ToolStripMenuItem obligacjaToolStripMenuItem;
         private ToolStripMenuItem kryptowalutaToolStripMenuItem;
         private ToolStripMenuItem surowiecToolStripMenuItem;
-        private ToolStripMenuItem eTFToolStripMenuItem;
         private ToolStripMenuItem generujRaportToolStripMenuItem;
         private ToolStripMenuItem eksportujDaneToolStripMenuItem;
         private ToolStripMenuItem UsunKontoToolStripMenuItem;
         private ToolStripMenuItem wylogujToolStripMenuItem1;
+        private ToolStripMenuItem sprzedajToolStripMenuItem;
         private Panel panelUser;
         private Label labelWelcome;
         private Panel panelMain;

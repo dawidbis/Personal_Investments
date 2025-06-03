@@ -241,6 +241,28 @@ namespace DatabaseConnection
             var user = this.Users.FirstOrDefault(u => u.Username == username);
             return user?.Id;
         }
+
+        public bool SellInvestment(int investmentId, decimal marketPrice)
+        {
+            var investment = this.Investments.FirstOrDefault(i => i.Id == investmentId);
+            if (investment == null) return false;
+
+            decimal returnValue = marketPrice;
+
+            var returnHistory = new ReturnsHistory
+            {
+                InvestmentId = investment.Id,
+                Date = DateTime.Now,
+                Value = returnValue
+            };
+
+            this.ReturnsHistories.Add(returnHistory);
+            this.Investments.Remove(investment);
+            this.SaveChanges();
+
+            return true;
+        }
+
     }
 }
   

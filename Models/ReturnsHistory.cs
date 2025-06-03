@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProgramLogic
 {
+    [Table("ReturnsHistories")]
     public class ReturnsHistory
     {
         public int Id { get; set; }

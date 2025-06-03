@@ -56,6 +56,8 @@ namespace Personal_Investment_App
 
                 item.ForeColor = Color.White;
 
+                item.Tag = inv.Id;
+
                 listView1.Items.Add(item);
                 index++;
             }
@@ -101,7 +103,7 @@ namespace Personal_Investment_App
                 "Potwierdzenie usunięcia konta",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
-    );
+            );
             if (result == DialogResult.Yes)
             {
                 if (dbManager.UsunKonto(zalogowanyUzytkownik))
@@ -158,27 +160,78 @@ namespace Personal_Investment_App
             form.Show();
         }
 
+        private async void sprzedajToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Najpierw wybierz inwestycję z listy.", "Brak wyboru", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var selectedItem = listView1.SelectedItems[0];
+            string investmentName = selectedItem.Text;
+            int investmentId = (int)selectedItem.Tag;
+
+            var confirm = MessageBox.Show(
+                $"Czy na pewno chcesz sprzedać inwestycję \"{investmentName}\"?\nZostanie zapisana w historii jako sprzedana po aktualnej cenie rynkowej.",
+                "Potwierdź sprzedaż",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes) return;
+
+            var candleService = new AlphaVantageService();
+            var candles = await candleService.GetDailyCandlesAsync(investmentName); // zakładamy że nazwa == symbol
+            var latest = candles.OrderByDescending(c => c.Date).FirstOrDefault();
+
+            if (latest == null)
+            {
+                MessageBox.Show("Nie udało się pobrać aktualnej ceny dla tej inwestycji.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            decimal marketPrice = latest.C;
+
+            bool success = dbManager.SellInvestment(investmentId, marketPrice);
+
+            if (success)
+            {
+                MessageBox.Show($"Inwestycja \"{investmentName}\" została sprzedana po cenie {marketPrice:C}.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+                if (userId.HasValue)
+                {
+                    SetupListView(userId.Value); // Odśwież listę
+                }
+            }
+            else
+            {
+                MessageBox.Show("Nie udało się sprzedać inwestycji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
         private async void btnOdswiez_Click(object sender, EventArgs e)
         {
             var candleService = new AlphaVantageService();
 
-            foreach (ListViewItem item in listView1.Items)
+            for (int i = 0; i < listView1.Items.Count; i++)
             {
-                string symbol = item.SubItems[1].Text; // Zakładamy, że w kolumnie "Nazwa" masz symbol, np. "AAPL"
+                var item = listView1.Items[i];
+
+                // ticker jest w kolumnie 0 („Nazwa”), nie w 1
+                string symbol = item.SubItems[0].Text;
 
                 var candles = await candleService.GetDailyCandlesAsync(symbol);
-                var latestCandle = candles.OrderByDescending(c => c.Date).FirstOrDefault();
+                var latest = candles.OrderByDescending(c => c.Date).FirstOrDefault();
+                string lastClose = latest?.C.ToString("F2") ?? "Brak";
 
-                string lastClose = latestCandle?.C.ToString("F2") ?? "Brak";
-
-                if (item.SubItems.Count < 9)
-                {
+                // kolumna "Cena zamknięcia" ma indeks 7
+                if (item.SubItems.Count <= 7)
                     item.SubItems.Add(lastClose);
-                }
                 else
-                {
-                    item.SubItems[8].Text = lastClose;
-                }
+                    item.SubItems[7].Text = lastClose;
+
             }
 
             MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
