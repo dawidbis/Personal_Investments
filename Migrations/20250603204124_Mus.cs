@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Personal_Investment_App.Migrations
 {
     /// <inheritdoc />
-    public partial class Pierwsza : Migration
+    public partial class Mus : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -116,7 +116,8 @@ namespace Personal_Investment_App.Migrations
                     AmountInvested = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DateOfInvestment = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpectedReturn = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsSold = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -143,7 +144,7 @@ namespace Personal_Investment_App.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     InvestmentId = table.Column<int>(type: "int", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Value = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    Value = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -153,7 +154,7 @@ namespace Personal_Investment_App.Migrations
                         column: x => x.InvestmentId,
                         principalTable: "Investments",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(

@@ -55,7 +55,7 @@ namespace Personal_Investment_App
 
             // Zwiększamy wysokość i padding menuStrip2
             menuStrip2.Padding = new Padding(15, 12, 15, 12);
-            menuStrip2.Size = new Size(1000, 55); // większa wysokość
+            menuStrip2.Size = new Size(1000, 555); // większa wysokość
 
             menuStrip2.Items.AddRange(new ToolStripItem[] {
         inwestycjePersonalneToolStripMenuItem,
@@ -79,14 +79,15 @@ namespace Personal_Investment_App
             kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
             surowiecToolStripMenuItem.Text = "Surowiec";
 
-            generujRaportToolStripMenuItem.Text = "Generuj raport";
-            eksportujDaneToolStripMenuItem.Text = "Eksportuj dane";
+            generujRaportToolStripMenuItem.Text = "Generuj";
+            eksportujDaneToolStripMenuItem.Text = "Eksportuj";
             UsunKontoToolStripMenuItem.Text = "Usuń konto";
             UsunKontoToolStripMenuItem.Click += UsunKontoToolStripMenuItem_Click;
             wylogujToolStripMenuItem1.Text = "Wyloguj";
             wylogujToolStripMenuItem1.Click += wylogujToolStripMenuItem1_Click;
             sprzedajToolStripMenuItem.Text = "Sprzedaj wybrane inwestycje";
             sprzedajToolStripMenuItem.Click += sprzedajToolStripMenuItem_Click;
+          
 
             // Ustawienia padding i kolory dla elementów menu i podmenu
             foreach (ToolStripMenuItem parent in menuStrip2.Items.OfType<ToolStripMenuItem>())

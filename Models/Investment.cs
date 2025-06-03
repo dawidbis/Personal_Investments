@@ -19,11 +19,12 @@ namespace ProgramLogic
         public DateTime DateOfInvestment { get; set; }
         public decimal ExpectedReturn { get; set; }
         public string Notes { get; set; }
+        public bool IsSold { get; set; }
 
         public User User { get; set; }
         public InvestmentType Type { get; set; }
         public ICollection<UserInvestment> UserInvestments { get; set; }
-        public ICollection<ReturnsHistory> ReturnsHistory { get; set; }
+        public ICollection<ReturnsHistory> ReturnsHistories { get; set; }
     }
 
 }

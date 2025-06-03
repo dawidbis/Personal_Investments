@@ -6,13 +6,14 @@ using System.Security.Cryptography;
 using System.Text;
 using ProgramLogic;
 using System;
+using Microsoft.Extensions.Logging;
 
 
 namespace DatabaseConnection
 {
     public class DatabaseManager : DbContext
     {
-        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Personal;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=NowaBaza;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         public DbSet<User> Users { get; set; }
         public DbSet<Investment> Investments { get; set; }
         public DbSet<InvestmentType> InvestmentTypes { get; set; }
@@ -40,7 +41,13 @@ namespace DatabaseConnection
                 .WithMany(i => i.UserInvestments)
                 .HasForeignKey(ui => ui.InvestmentId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ReturnsHistory>()
+                .HasOne(r => r.Investment)
+                .WithMany(i => i.ReturnsHistories)
+                .HasForeignKey(r => r.InvestmentId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
+       
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(this.ConnectionString);
@@ -245,24 +252,23 @@ namespace DatabaseConnection
         public bool SellInvestment(int investmentId, decimal marketPrice)
         {
             var investment = this.Investments.FirstOrDefault(i => i.Id == investmentId);
-            if (investment == null) return false;
-
-            decimal returnValue = marketPrice;
+            if (investment == null || investment.IsSold)
+                return false;
 
             var returnHistory = new ReturnsHistory
             {
                 InvestmentId = investment.Id,
                 Date = DateTime.Now,
-                Value = returnValue
+                Value = marketPrice
             };
 
             this.ReturnsHistories.Add(returnHistory);
-            this.Investments.Remove(investment);
-            this.SaveChanges();
+
+            investment.IsSold = true; // ✅ oznacz jako sprzedaną
+            this.SaveChanges();       // ✅ zapis wszystkiego razem
 
             return true;
         }
-
     }
 }
   

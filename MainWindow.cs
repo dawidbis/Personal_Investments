@@ -32,7 +32,7 @@ namespace Personal_Investment_App
             var inwestycje = dbManager.Investments
                 .Include(i => i.Type)
                 .ThenInclude(t => t.Category)
-                .Where(i => i.UserId == userId)
+                .Where(i => i.UserId == userId && !i.IsSold)
                 .ToList();
 
             int index = 0;

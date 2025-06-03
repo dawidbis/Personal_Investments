@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Personal_Investment_App.Migrations
 {
     [DbContext(typeof(DatabaseManager))]
-    [Migration("20250603154356_AddReturnsHistory")]
-    partial class AddReturnsHistory
+    [Migration("20250603204124_Mus")]
+    partial class Mus
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,9 @@ namespace Personal_Investment_App.Migrations
 
                     b.Property<decimal>("ExpectedReturn")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsSold")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -170,7 +173,8 @@ namespace Personal_Investment_App.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Value")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
 
                     b.HasKey("Id");
 
@@ -280,9 +284,9 @@ namespace Personal_Investment_App.Migrations
             modelBuilder.Entity("ProgramLogic.ReturnsHistory", b =>
                 {
                     b.HasOne("ProgramLogic.Investment", "Investment")
-                        .WithMany("ReturnsHistory")
+                        .WithMany("ReturnsHistories")
                         .HasForeignKey("InvestmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Investment");
@@ -309,7 +313,7 @@ namespace Personal_Investment_App.Migrations
 
             modelBuilder.Entity("ProgramLogic.Investment", b =>
                 {
-                    b.Navigation("ReturnsHistory");
+                    b.Navigation("ReturnsHistories");
 
                     b.Navigation("UserInvestments");
                 });
