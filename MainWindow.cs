@@ -2,6 +2,9 @@
 using DatabaseConnection;
 using Microsoft.EntityFrameworkCore;
 using Polygon_api;
+using ProgramLogic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Personal_Investment_App
 {
@@ -210,6 +213,224 @@ namespace Personal_Investment_App
             }
         }
 
+        private void eksportujDaneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "JSON files (*.json)|*.json";
+                    saveFileDialog.Title = "Zapisz dane inwestycji";
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        var userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik); // zakładamy, że currentUsername masz w klasie
+                        if (userId == null)
+                        {
+                            MessageBox.Show("Nie znaleziono zalogowanego użytkownika.");
+                            return;
+                        }
+
+                        var allInvestments = dbManager.Investments
+                            .Include(i => i.Type)
+                                .ThenInclude(t => t.Category)
+                            .Include(i => i.ReturnsHistories)
+                            .Where(i => i.UserId == userId)
+                            .ToList();
+
+                        var activeInvestments = allInvestments
+                            .Where(i => !i.IsSold)
+                            .Select(i => new
+                            {
+                                i.Id,
+                                i.Name,
+                                Type = i.Type?.Name,
+                                Category = i.Type?.Category?.Name,
+                                i.AmountInvested,
+                                i.DateOfInvestment,
+                                i.ExpectedReturn,
+                                i.Notes,
+                                i.IsSold,
+                                ReturnsHistory = i.ReturnsHistories.Select(r => new
+                                {
+                                    r.Date,
+                                    r.Value
+                                })
+                            });
+
+                        var soldInvestments = allInvestments
+                            .Where(i => i.IsSold)
+                            .Select(i => new
+                            {
+                                i.Id,
+                                i.Name,
+                                Type = i.Type?.Name,
+                                Category = i.Type?.Category?.Name,
+                                i.AmountInvested,
+                                i.DateOfInvestment,
+                                i.ExpectedReturn,
+                                i.Notes,
+                                i.IsSold,
+                                SaleHistory = i.ReturnsHistories.Select(r => new
+                                {
+                                    r.Date,
+                                    r.Value
+                                })
+                            });
+
+                        var exportData = new
+                        {
+                            User = zalogowanyUzytkownik,
+                            ExportDate = DateTime.Now,
+                            ActiveInvestments = activeInvestments,
+                            SoldInvestments = soldInvestments
+                        };
+
+                        var options = new JsonSerializerOptions
+                        {
+                            WriteIndented = true,
+                            ReferenceHandler = ReferenceHandler.IgnoreCycles
+                        };
+
+                        string json = JsonSerializer.Serialize(exportData, options);
+                        File.WriteAllText(saveFileDialog.FileName, json);
+
+                        MessageBox.Show("Dane zostały wyeksportowane pomyślnie.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Błąd podczas eksportu: " + ex.Message, "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void importujDaneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                {
+                    openFileDialog.Filter = "JSON files (*.json)|*.json";
+                    openFileDialog.Title = "Importuj dane inwestycji";
+
+                    if (openFileDialog.ShowDialog() != DialogResult.OK)
+                        return;
+
+                    string json = File.ReadAllText(openFileDialog.FileName);
+
+                    using JsonDocument doc = JsonDocument.Parse(json);
+                    JsonElement root = doc.RootElement;
+
+                    int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+                    if (userId == null)
+                    {
+                        MessageBox.Show("Zalogowany użytkownik nie istnieje.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    ImportInvestments(root, "ActiveInvestments", false, userId.Value);
+                    ImportInvestments(root, "SoldInvestments", true, userId.Value);
+
+                    MessageBox.Show("Import zakończony sukcesem.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd importu: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ImportInvestments(JsonElement root, string propertyName, bool isSold, int userId)
+        {
+            if (!root.TryGetProperty(propertyName, out JsonElement investments))
+                return;
+
+            foreach (JsonElement inv in investments.EnumerateArray())
+            {
+                string name = inv.GetProperty("Name").GetString();
+                string typeName = inv.GetProperty("Type").GetString();
+                string categoryName = inv.GetProperty("Category").GetString();
+                decimal amountInvested = inv.GetProperty("AmountInvested").GetDecimal();
+                DateTime dateOfInvestment = inv.GetProperty("DateOfInvestment").GetDateTime();
+                decimal expectedReturn = inv.GetProperty("ExpectedReturn").GetDecimal();
+                string notes = inv.GetProperty("Notes").GetString();
+
+                // Znajdź lub dodaj kategorię
+                var category = dbManager.InvestmentCategories.FirstOrDefault(c => c.Name == categoryName);
+                if (category == null)
+                {
+                    category = new InvestmentCategory
+                    {
+                        Name = categoryName,
+                        Description = ""
+                    };
+                    dbManager.InvestmentCategories.Add(category);
+                    dbManager.SaveChanges();
+                }
+
+                // Znajdź lub dodaj typ inwestycji
+                var type = dbManager.InvestmentTypes.FirstOrDefault(t => t.Name == typeName && t.CategoryId == category.Id);
+                if (type == null)
+                {
+                    type = new InvestmentType
+                    {
+                        Name = typeName,
+                        RiskLevel = "Nieznany",
+                        CategoryId = category.Id
+                    };
+                    dbManager.InvestmentTypes.Add(type);
+                    dbManager.SaveChanges();
+                }
+
+                var investment = new Investment
+                {
+                    Name = name,
+                    TypeId = type.Id,
+                    UserId = userId,
+                    AmountInvested = amountInvested,
+                    DateOfInvestment = dateOfInvestment,
+                    ExpectedReturn = expectedReturn,
+                    Notes = notes,
+                    IsSold = isSold
+                };
+
+                dbManager.Investments.Add(investment);
+                dbManager.SaveChanges();
+
+                // Wczytaj historię zwrotów
+                if (inv.TryGetProperty("ReturnsHistory", out JsonElement returnsHistory))
+                {
+                    foreach (JsonElement ret in returnsHistory.EnumerateArray())
+                    {
+                        dbManager.ReturnsHistories.Add(new ReturnsHistory
+                        {
+                            InvestmentId = investment.Id,
+                            Date = ret.GetProperty("Date").GetDateTime(),
+                            Value = ret.GetProperty("Value").GetDecimal()
+                        });
+                    }
+                }
+
+                // Wczytaj historię sprzedaży (dla sprzedanych inwestycji)
+                if (inv.TryGetProperty("SaleHistory", out JsonElement saleHistory))
+                {
+                    foreach (JsonElement ret in saleHistory.EnumerateArray())
+                    {
+                        dbManager.ReturnsHistories.Add(new ReturnsHistory
+                        {
+                            InvestmentId = investment.Id,
+                            Date = ret.GetProperty("Date").GetDateTime(),
+                            Value = ret.GetProperty("Value").GetDecimal()
+                        });
+                    }
+                }
+
+                dbManager.SaveChanges();
+
+                SetupListView(userId); // Odśwież listę inwestycji
+            }
+        }
 
         private async void btnOdswiez_Click(object sender, EventArgs e)
         {

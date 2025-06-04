@@ -1,4 +1,6 @@
 ﻿
+
+
 namespace Personal_Investment_App
 {
     partial class MainWindow
@@ -28,6 +30,7 @@ namespace Personal_Investment_App
             surowiecToolStripMenuItem = new ToolStripMenuItem();
             generujRaportToolStripMenuItem = new ToolStripMenuItem();
             eksportujDaneToolStripMenuItem = new ToolStripMenuItem();
+            importujDaneToolStripMenuItem = new ToolStripMenuItem();
             UsunKontoToolStripMenuItem = new ToolStripMenuItem();
             wylogujToolStripMenuItem1 = new ToolStripMenuItem();
             sprzedajToolStripMenuItem = new ToolStripMenuItem();
@@ -58,20 +61,21 @@ namespace Personal_Investment_App
             menuStrip2.Size = new Size(1000, 555); // większa wysokość
 
             menuStrip2.Items.AddRange(new ToolStripItem[] {
-        inwestycjePersonalneToolStripMenuItem,
-        generujRaportToolStripMenuItem,
-        eksportujDaneToolStripMenuItem,
-        UsunKontoToolStripMenuItem,
-        wylogujToolStripMenuItem1,
-        sprzedajToolStripMenuItem
-    });
+            inwestycjePersonalneToolStripMenuItem,
+            generujRaportToolStripMenuItem,
+            eksportujDaneToolStripMenuItem,
+            importujDaneToolStripMenuItem,
+            UsunKontoToolStripMenuItem,
+            wylogujToolStripMenuItem1,
+            sprzedajToolStripMenuItem
+        });
 
             inwestycjePersonalneToolStripMenuItem.Text = "Dodaj inwestycję";
 
             inwestycjePersonalneToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
-        akcjaToolStripMenuItem, obligacjaToolStripMenuItem,
-        kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem
-    });
+            akcjaToolStripMenuItem, obligacjaToolStripMenuItem,
+            kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem
+        });
 
             akcjaToolStripMenuItem.Text = "Akcja";
             akcjaToolStripMenuItem.Click += akcjaToolStripMenuItem_Click;
@@ -79,8 +83,11 @@ namespace Personal_Investment_App
             kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
             surowiecToolStripMenuItem.Text = "Surowiec";
 
-            generujRaportToolStripMenuItem.Text = "Generuj";
-            eksportujDaneToolStripMenuItem.Text = "Eksportuj";
+            generujRaportToolStripMenuItem.Text = "Generuj raport";
+            eksportujDaneToolStripMenuItem.Text = "Eksportuj dane";
+            eksportujDaneToolStripMenuItem.Click += eksportujDaneToolStripMenuItem_Click;
+            importujDaneToolStripMenuItem.Text = "Importuj dane";
+            importujDaneToolStripMenuItem.Click += importujDaneToolStripMenuItem_Click;
             UsunKontoToolStripMenuItem.Text = "Usuń konto";
             UsunKontoToolStripMenuItem.Click += UsunKontoToolStripMenuItem_Click;
             wylogujToolStripMenuItem1.Text = "Wyloguj";
@@ -195,6 +202,7 @@ namespace Personal_Investment_App
         private ToolStripMenuItem surowiecToolStripMenuItem;
         private ToolStripMenuItem generujRaportToolStripMenuItem;
         private ToolStripMenuItem eksportujDaneToolStripMenuItem;
+        private ToolStripMenuItem importujDaneToolStripMenuItem;
         private ToolStripMenuItem UsunKontoToolStripMenuItem;
         private ToolStripMenuItem wylogujToolStripMenuItem1;
         private ToolStripMenuItem sprzedajToolStripMenuItem;
