@@ -36,6 +36,7 @@ namespace Personal_Investment_App
             sprzedajToolStripMenuItem = new ToolStripMenuItem();
             panelUser = new Panel();
             labelWelcome = new Label();
+            labelBilans=new Label();
             panelMain = new Panel();
             groupBox1 = new GroupBox();
             listView1 = new ListView();
@@ -120,12 +121,19 @@ namespace Personal_Investment_App
             panelUser.Width = 200;
             panelUser.BackColor = Color.FromArgb(10, 10, 10);
             panelUser.Controls.Add(labelWelcome);
+            panelUser.Controls.Add(labelBilans);
 
             labelWelcome.ForeColor = Color.White;
             labelWelcome.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             labelWelcome.Location = new Point(10, 50);
             labelWelcome.AutoSize = true;
             labelWelcome.Text = "Cześć, USER!";
+
+            labelBilans.ForeColor = Color.White;
+            labelBilans.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            labelBilans.Location = new Point(10, 80);
+            labelBilans.AutoSize = true;
+            labelBilans.Text = "Bilans ogólny: BILANS";
 
             // panelMain
             panelMain.Dock = DockStyle.Fill;
@@ -174,7 +182,7 @@ namespace Personal_Investment_App
             MaximizeBox = false;
             MinimizeBox = false;
             ControlBox = true;
-            ClientSize = new Size(1154, 640);
+            ClientSize = new Size(1200, 640);
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Personal Investments";
             Controls.Add(panelMain);
@@ -208,6 +216,7 @@ namespace Personal_Investment_App
         private ToolStripMenuItem sprzedajToolStripMenuItem;
         private Panel panelUser;
         private Label labelWelcome;
+        private Label labelBilans;
         private Panel panelMain;
         private GroupBox groupBox1;
         private ListView listView1;

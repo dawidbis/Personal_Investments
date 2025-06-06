@@ -31,6 +31,7 @@ namespace Personal_Investment_App
             listView1.Columns.Add("Stop Loss", 100);
             listView1.Columns.Add("Typ", 80);
             listView1.Columns.Add("Cena zamknięcia", 140);
+            listView1.Columns.Add("Aktualny Bilans", 140);
 
             listView1.Items.Clear();
 
@@ -49,6 +50,7 @@ namespace Personal_Investment_App
                 item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
                 item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
                 item.SubItems.Add(inv.Type?.Name ?? "Brak");
+                item.SubItems.Add("...");
                 item.SubItems.Add("...");
 
                 item.ImageIndex = (inv.Type?.Category?.Name == "Akcje") ? 1 : -1;
@@ -83,7 +85,7 @@ namespace Personal_Investment_App
             }
 
             autoCheckTimer = new Timer();
-            autoCheckTimer.Interval = 10 * 60 * 100;
+            autoCheckTimer.Interval = 10 * 60 * 1000;
             autoCheckTimer.Tick += AutoCheckTimer_Tick;
             autoCheckTimer.Start(); 
         }
@@ -463,24 +465,109 @@ namespace Personal_Investment_App
                 SetupListView(userId); // Odśwież listę inwestycji
             }
         }
+        public async Task RefreshTotalBalanceAsync(int userId)
+        {
+            decimal totalInvested = 0;
+            decimal totalCurrentValue = 0;
+            decimal totalSoldValue = 0;
+
+            var inwestycjeUzytkownika = dbManager.Investments
+                .Include(i => i.ReturnsHistories)
+                .Where(i => i.UserId == userId)
+                .ToList();
+
+            foreach (var inv in inwestycjeUzytkownika)
+            {
+                if (inv.BuyPrice == null || inv.NumberOfShares == 0)
+                    continue;
+
+                decimal invested = inv.BuyPrice * inv.NumberOfShares;
+                totalInvested += invested;
+
+                if (!inv.IsSold)
+                {
+                    decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(inv.Name);
+                    if (currentPrice != null)
+                    {
+                        totalCurrentValue += currentPrice.Value * inv.NumberOfShares;
+                    }
+                }
+                else
+                {
+                    var sale = inv.ReturnsHistories
+                        .OrderByDescending(r => r.Date)
+                        .FirstOrDefault();
+
+                    if (sale != null)
+                        totalSoldValue += sale.Value * inv.NumberOfShares;
+                }
+            }
+
+            decimal totalFinal = totalCurrentValue + totalSoldValue;
+            decimal totalChange = totalInvested == 0 ? 0 : ((totalFinal - totalInvested) / totalInvested) * 100;
+            string result = totalChange >= 0 ? $"+{totalChange:F2}%" : $"{totalChange:F2}%";
+
+            labelBilans.Text = $"Bilans ogólny: {result}";
+            labelBilans.ForeColor = totalChange >= 0 ? Color.DarkGreen : Color.DarkRed;
+        }
 
         private async void btnOdswiez_Click(object sender, EventArgs e)
         {
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+            if (userId == null)
+            {
+                MessageBox.Show("Nie znaleziono zalogowanego użytkownika.");
+                return;
+            }
+
+            // Pobierz wszystkie inwestycje użytkownika (niesprzedane)
+            var inwestycjeUzytkownika = dbManager.Investments
+                .Where(i => i.UserId == userId && !i.IsSold)
+                .ToList();
+
             for (int i = 0; i < listView1.Items.Count; i++)
             {
                 var item = listView1.Items[i];
                 string symbol = item.SubItems[0].Text;
 
-                decimal? close = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
+                // Znajdź inwestycję w bazie danych
+                var inwestycja = inwestycjeUzytkownika.FirstOrDefault(i => i.Name == symbol);
+                if (inwestycja == null || inwestycja.BuyPrice == null || inwestycja.BuyPrice == 0)
+                {
+                    item.ForeColor = Color.Gray;
+                    continue;
+                }
 
-                string lastClose = close.HasValue ? close.Value.ToString("F2") : "Brak";
+                decimal buyPrice = inwestycja.BuyPrice;
 
-                // kolumna "Cena zamknięcia" ma indeks 6
+                // Pobierz cenę z API
+                decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
+                if (currentPrice == null)
+                {
+                    item.ForeColor = Color.Orange;
+                    continue;
+                }
+
+                // Ustaw aktualną cenę (kolumna 6)
                 if (item.SubItems.Count <= 6)
-                    item.SubItems.Add(lastClose);
+                    item.SubItems.Add(currentPrice.Value.ToString("F2"));
                 else
-                    item.SubItems[6].Text = lastClose;
+                    item.SubItems[6].Text = currentPrice.Value.ToString("F2");
+
+                // Oblicz bilans
+                decimal change = ((currentPrice.Value - buyPrice) / buyPrice) * 100;
+                string bilansText = change >= 0 ? $"+{change:F2}%" : $"{change:F2}%";
+
+                if (item.SubItems.Count <= 7)
+                    item.SubItems.Add(bilansText);
+                else
+                    item.SubItems[7].Text = bilansText;
+
+                // Pokoloruj cały wiersz w zależności od zysku/straty
+                item.ForeColor = change >= 0 ? Color.DarkGreen : Color.DarkRed;
             }
+
+            RefreshTotalBalanceAsync(userId.Value);
 
             MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
