@@ -26,11 +26,12 @@ namespace Personal_Investment_App
             listView1.Columns.Clear();
             listView1.Columns.Add("Nazwa", 150);
             listView1.Columns.Add("Liczba Akcji", 100);
+            listView1.Columns.Add("Cena zakupu Akcji", 100);
             listView1.Columns.Add("Data", 100);
             listView1.Columns.Add("Oczekiwany Zwrot", 140);
             listView1.Columns.Add("Stop Loss", 100);
             listView1.Columns.Add("Typ", 80);
-            listView1.Columns.Add("Cena zamknięcia", 140);
+            listView1.Columns.Add("Aktualna Cena", 140);
             listView1.Columns.Add("Aktualny Bilans", 140);
 
             listView1.Items.Clear();
@@ -46,6 +47,7 @@ namespace Personal_Investment_App
             {
                 var item = new ListViewItem(inv.Name);
                 item.SubItems.Add($"{inv.NumberOfShares} szt");
+                item.SubItems.Add(inv.BuyPrice.ToString("C"));
                 item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
                 item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
                 item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
@@ -173,6 +175,7 @@ namespace Personal_Investment_App
                     var item = new ListViewItem();
                     item.SubItems.Add(inv.Name);
                     item.SubItems.Add($"{inv.NumberOfShares} szt");
+                    item.SubItems.Add(inv.BuyPrice.ToString("C"));
                     item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
                     item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
                     item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
@@ -549,7 +552,7 @@ namespace Personal_Investment_App
                 }
 
                 // Ustaw aktualną cenę (kolumna 6)
-                if (item.SubItems.Count <= 6)
+                if (item.SubItems.Count <= 7)
                     item.SubItems.Add(currentPrice.Value.ToString("F2"));
                 else
                     item.SubItems[6].Text = currentPrice.Value.ToString("F2");
@@ -558,7 +561,7 @@ namespace Personal_Investment_App
                 decimal change = ((currentPrice.Value - buyPrice) / buyPrice) * 100;
                 string bilansText = change >= 0 ? $"+{change:F2}%" : $"{change:F2}%";
 
-                if (item.SubItems.Count <= 7)
+                if (item.SubItems.Count <= 8)
                     item.SubItems.Add(bilansText);
                 else
                     item.SubItems[7].Text = bilansText;

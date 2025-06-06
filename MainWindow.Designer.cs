@@ -182,7 +182,7 @@ namespace Personal_Investment_App
             MaximizeBox = false;
             MinimizeBox = false;
             ControlBox = true;
-            ClientSize = new Size(1200, 640);
+            ClientSize = new Size(1300, 640);
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Personal Investments";
             Controls.Add(panelMain);
