@@ -293,7 +293,8 @@ namespace DatabaseConnection
                 try
                 {
                     // 1. Pobranie aktualnej ceny
-                    decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(investment.Name);
+                    decimal? currentPrice = await FinnhubService.GetCurrentQuoteAsync(investment.Name);
+                    //decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(investment.Name);
 
                     if (currentPrice == null && useMockOnFail)
                     {

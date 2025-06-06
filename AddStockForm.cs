@@ -138,7 +138,8 @@ namespace Personal_Investment_App
             }
             else
             {
-                buyPrice = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
+                buyPrice = await FinnhubService.GetCurrentQuoteAsync(textBoxName.Text.Trim());
+                //buyPrice = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
 
                 if (buyPrice == null)
                 {
@@ -192,7 +193,8 @@ namespace Personal_Investment_App
             try
             {
 
-                decimal? close = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
+                //decimal? close = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
+                decimal? close = await FinnhubService.GetCurrentQuoteAsync(ticker);
                 MessageBox.Show($"Aktualna cena zamknięcia dla {ticker}: {close} USD", "Cena akcji", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)

@@ -256,7 +256,8 @@ namespace Personal_Investment_App
             }
             else
             {
-                var latest = await AlphaVantageService.GetLatestClosePriceAsync(investmentName);
+                var latest = await FinnhubService.GetCurrentQuoteAsync(investmentName);
+                //var latest = await AlphaVantageService.GetLatestClosePriceAsync(investmentName);
                 if (latest == null)
                 {
                     MessageBox.Show("Nie udało się pobrać aktualnej ceny z API.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -659,7 +660,8 @@ namespace Personal_Investment_App
 }
                 else
                 {
-                    currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
+                    currentPrice = await FinnhubService.GetCurrentQuoteAsync(symbol);
+                    //currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
 
                     if (currentPrice == null && useMockOnFail && inwestycja.MockPrice.HasValue)
                     {
