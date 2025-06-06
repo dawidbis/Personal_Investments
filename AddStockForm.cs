@@ -17,14 +17,16 @@ namespace Personal_Investment_App
     {
         private readonly DatabaseManager dbManager;
         private readonly int userId;
+        private readonly bool useMockPrice;
 
         public Investment CreatedInvestment { get; private set; }
 
-        public AddStockForm(DatabaseManager dbManager, int userId)
+        public AddStockForm(DatabaseManager dbManager, int userId, bool useMockPrice = false)
         {
             InitializeComponent();
             this.dbManager = dbManager;
             this.userId = userId;
+            this.useMockPrice = useMockPrice;
 
             buttonSave.Click += buttonSave_ClickAsync;
 
@@ -33,7 +35,12 @@ namespace Personal_Investment_App
             textBoxName.TextChanged += TextBoxName_TextChanged;
             textBoxName.GotFocus += TextBoxName_GotFocus;
             textBoxName.LostFocus += TextBoxName_LostFocus;
+
+            // Ukryj/odkryj pole ceny testowej
+            textBoxMockPrice.Visible = useMockPrice;
+            labelMockPrice.Visible = useMockPrice;
         }
+
 
         private readonly string placeholderText = "Podaj ticker NASDAQ np. GOOGL";
         private bool isPlaceholderActive = true;
@@ -115,12 +122,29 @@ namespace Personal_Investment_App
                 return;
             }
 
-            decimal? buyPrice = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
+            decimal? buyPrice = null;
+            decimal? mockPrice = null;
 
-            if (buyPrice == null)
+            if (useMockPrice)
             {
-                MessageBox.Show("Nie udało się pobrać ceny akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                if (!decimal.TryParse(textBoxMockPrice.Text, out var mock))
+                {
+                    MessageBox.Show("Podaj prawidłową cenę testową.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                mockPrice = mock;
+
+            }
+            else
+            {
+                buyPrice = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
+
+                if (buyPrice == null)
+                {
+                    MessageBox.Show("Nie udało się pobrać ceny akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
 
             var stockType = dbManager.GetOrCreateStockInvestmentType();
@@ -133,7 +157,8 @@ namespace Personal_Investment_App
                 ExpectedReturnPercent = decimal.Parse(textBoxExpectedReturn.Text) / 100m,
                 StopLossPercent = decimal.Parse(txtStopLoss.Text) / 100m,
                 Notes = textBoxNotes.Text,
-                BuyPrice= (decimal)buyPrice,
+                BuyPrice = buyPrice,
+                MockPrice = mockPrice,
                 TypeId = stockType.Id,
                 UserId = userId
             };

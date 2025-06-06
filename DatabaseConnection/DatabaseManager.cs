@@ -269,7 +269,10 @@ namespace DatabaseConnection
 
             return true;
         }
-        public async Task<List<string>> CheckInvestmentsAutomaticallyAsync(int userId)
+        public async Task<List<string>> CheckInvestmentsAutomaticallyAsync(
+    int userId,
+    bool useMockOnFail = false,
+    Dictionary<string, decimal>? testPricesFromUI = null)
         {
             var alerts = new List<string>();
 
@@ -289,27 +292,46 @@ namespace DatabaseConnection
 
                 try
                 {
+                    // 1. Pobranie aktualnej ceny
                     decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(investment.Name);
 
-                    if (currentPrice == null)
+                    if (currentPrice == null && useMockOnFail)
                     {
-                        alerts.Add($"[BŁĄD] Brak danych dla symbolu {investment.Name}.");
+                        // Priorytet 1: Testowa cena z UI (np. ListView)
+                        if (testPricesFromUI != null && testPricesFromUI.TryGetValue(investment.Name, out decimal testPriceFromUI))
+                        {
+                            currentPrice = testPriceFromUI;
+                            alerts.Add($"[INFO] Użyto ceny testowej z UI jako aktualnej dla {investment.Name}: {currentPrice.Value:F2}");
+                        }
+                        // Priorytet 2: MockPrice z bazy
+                        else if (investment.MockPrice.HasValue)
+                        {
+                            currentPrice = investment.MockPrice.Value;
+                            alerts.Add($"[INFO] Użyto testowej ceny (MockPrice) jako aktualnej dla {investment.Name}: {currentPrice.Value:F2}");
+                        }
+                    }
+
+                    // 2. Pobranie ceny zakupu
+                    decimal? buyPrice = investment.BuyPrice;
+
+                    if ((buyPrice == null || buyPrice == 0) && useMockOnFail && investment.MockPrice.HasValue)
+                    {
+                        buyPrice = investment.MockPrice.Value;
+                        alerts.Add($"[INFO] Użyto testowej ceny (MockPrice) jako ceny zakupu dla {investment.Name}: {buyPrice.Value:F2}");
+                    }
+
+                    if (buyPrice == null || buyPrice == 0)
+                    {
+                        alerts.Add($"[BŁĄD] Inwestycja {investment.Name} nie ma poprawnej ceny zakupu (ani BuyPrice, ani MockPrice przy włączonej fladze).");
                         continue;
                     }
 
-                    if (investment.BuyPrice == null || investment.BuyPrice == 0)
-                    {
-                        alerts.Add($"[BŁĄD] Inwestycja {investment.Name} nie ma zapisanej poprawnej ceny zakupu.");
-                        continue;
-                    }
-
-                    decimal change = (currentPrice.Value - investment.BuyPrice) / investment.BuyPrice;
+                    // 3. Obliczenia i logika sprzedaży
+                    decimal change = (currentPrice.Value - buyPrice.Value) / buyPrice.Value;
                     decimal percentChange = change * 100;
 
-                    // Informacyjny alert o aktualnym stanie
-                    alerts.Add($"[INFO] {investment.Name}: zmiana {percentChange:F2}% (kupiono za {investment.BuyPrice:F2}, obecnie {currentPrice.Value:F2})");
+                    alerts.Add($"[INFO] {investment.Name}: zmiana {percentChange:F2}% (kupiono za {buyPrice.Value:F2}, obecnie {currentPrice.Value:F2})");
 
-                    // Sprawdzenie warunków sprzedaży
                     if (change <= -investment.StopLossPercent || change >= investment.ExpectedReturnPercent)
                     {
                         investment.IsSold = true;
@@ -329,8 +351,10 @@ namespace DatabaseConnection
                 }
             }
 
+            await this.SaveChangesAsync();
             return alerts;
         }
+
 
 
 

@@ -1,6 +1,7 @@
 #pragma warning disable CS0436
 using DatabaseConnection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic.ApplicationServices;
 using Polygon_api;
 using ProgramLogic;
 using System.Text.Json;
@@ -17,6 +18,7 @@ namespace Personal_Investment_App
         public bool Wylogowano { get; private set; } = false;
         private readonly string zalogowanyUzytkownik;
         private Timer autoCheckTimer;
+        private bool IsTrybTestowy => checkBoxTrybTestowy.Checked;
 
         private void SetupListView(int userId)
         {
@@ -45,9 +47,12 @@ namespace Personal_Investment_App
             int index = 0;
             foreach (var inv in inwestycje)
             {
-                var item = new ListViewItem(inv.Name);
+                var item = new ListViewItem(inv.Name); // <- to jest pierwszy element (kolumna „Nazwa”)
                 item.SubItems.Add($"{inv.NumberOfShares} szt");
-                item.SubItems.Add(inv.BuyPrice.ToString("C"));
+
+                decimal? cenaZakupu = IsTrybTestowy ? inv.MockPrice : inv.BuyPrice;
+                item.SubItems.Add(cenaZakupu?.ToString("C") ?? "Brak");
+
                 item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
                 item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
                 item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
@@ -87,7 +92,7 @@ namespace Personal_Investment_App
             }
 
             autoCheckTimer = new Timer();
-            autoCheckTimer.Interval = 10 * 60 * 1000;
+            autoCheckTimer.Interval = 10 * 60 * 100;
             autoCheckTimer.Tick += AutoCheckTimer_Tick;
             autoCheckTimer.Start(); 
         }
@@ -95,15 +100,35 @@ namespace Personal_Investment_App
         private async void AutoCheckTimer_Tick(object sender, EventArgs e)
         {
             int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+            if (userId == null)
+                return;
 
             try
             {
-                var alerts = await dbManager.CheckInvestmentsAutomaticallyAsync(userId.Value);
+                // Zbieranie cen z ListView
+                var testPrices = new Dictionary<string, decimal>();
+                foreach (ListViewItem item in listView1.Items)
+                {
+                    string symbol = item.SubItems[0].Text;
+
+                    if (item.SubItems.Count > 7 && decimal.TryParse(item.SubItems[7].Text, out decimal parsed))
+                    {
+                        testPrices[symbol] = parsed;
+                    }
+                }
+
+                // Przekazanie słownika do metody
+                var alerts = await dbManager.CheckInvestmentsAutomaticallyAsync(
+                    userId.Value,
+                    IsTrybTestowy,
+                    testPrices
+                );
 
                 if (alerts.Any())
                 {
                     string message = string.Join(Environment.NewLine, alerts);
                     MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    SetupListView(userId.Value); // Odśwież listę
                 }
             }
             catch (Exception ex)
@@ -162,7 +187,7 @@ namespace Personal_Investment_App
                 return;
             }
 
-            var form = new AddStockForm(dbManager, userId.Value);
+            var form = new AddStockForm(dbManager, userId.Value, IsTrybTestowy);
 
             form.FormClosed += (s, args) =>
             {
@@ -175,7 +200,10 @@ namespace Personal_Investment_App
                     var item = new ListViewItem();
                     item.SubItems.Add(inv.Name);
                     item.SubItems.Add($"{inv.NumberOfShares} szt");
-                    item.SubItems.Add(inv.BuyPrice.ToString("C"));
+
+                    decimal? cenaZakupu = IsTrybTestowy ? inv.MockPrice : inv.BuyPrice;
+                    item.SubItems.Add(cenaZakupu?.ToString("C") ?? "Brak");
+
                     item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
                     item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
                     item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
@@ -207,34 +235,47 @@ namespace Personal_Investment_App
             int investmentId = (int)selectedItem.Tag;
 
             var confirm = MessageBox.Show(
-                $"Czy na pewno chcesz sprzedać inwestycję \"{investmentName}\"?\nZostanie zapisana w historii jako sprzedana po aktualnej cenie rynkowej.",
+                $"Czy na pewno chcesz sprzedać inwestycję \"{investmentName}\"?",
                 "Potwierdź sprzedaż",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (confirm != DialogResult.Yes) return;
 
-            var candles = await AlphaVantageService.GetDailyCandlesAsync(investmentName); // zakładamy że nazwa == symbol
-            var latest = candles.OrderByDescending(c => c.Date).FirstOrDefault();
+            decimal marketPrice;
 
-            if (latest == null)
+            if (IsTrybTestowy)
             {
-                MessageBox.Show("Nie udało się pobrać aktualnej ceny dla tej inwestycji.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                var aktualnaCenaTekst = selectedItem.SubItems[7].Text;
 
-            decimal marketPrice = latest.C;
+                if (!decimal.TryParse(aktualnaCenaTekst, out marketPrice))
+                {
+                    MessageBox.Show("Nie można odczytać aktualnej ceny z listy.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+            }
+            else
+            {
+                var latest = await AlphaVantageService.GetLatestClosePriceAsync(investmentName);
+                if (latest == null)
+                {
+                    MessageBox.Show("Nie udało się pobrać aktualnej ceny z API.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                marketPrice = (decimal)latest;
+            }
 
             bool success = dbManager.SellInvestment(investmentId, marketPrice);
 
             if (success)
             {
-                MessageBox.Show($"Inwestycja \"{investmentName}\" została sprzedana po cenie {marketPrice:C}.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Inwestycja \"{investmentName}\" została sprzedana po cenie {marketPrice}.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
                 if (userId.HasValue)
                 {
-                    SetupListView(userId.Value); // Odśwież listę
+                    SetupListView(userId.Value);
                 }
             }
             else
@@ -242,6 +283,8 @@ namespace Personal_Investment_App
                 MessageBox.Show("Nie udało się sprzedać inwestycji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
 
         private void eksportujDaneToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -281,6 +324,7 @@ namespace Personal_Investment_App
                                 i.ExpectedReturnPercent,
                                 i.StopLossPercent,
                                 i.BuyPrice,
+                                i.MockPrice,
                                 i.Notes,
                                 i.IsSold,
                                 ReturnsHistory = i.ReturnsHistories.Select(r => new
@@ -303,6 +347,7 @@ namespace Personal_Investment_App
                                 i.ExpectedReturnPercent,
                                 i.StopLossPercent,
                                 i.BuyPrice,
+                                i.MockPrice,
                                 i.Notes,
                                 i.IsSold,
                                 SaleHistory = i.ReturnsHistories.Select(r => new
@@ -375,6 +420,18 @@ namespace Personal_Investment_App
             }
         }
 
+        private decimal? GetNullableDecimal(JsonElement element, string propertyName)
+        {
+            if (element.TryGetProperty(propertyName, out var prop))
+            {
+                if (prop.ValueKind == JsonValueKind.Number)
+                    return prop.GetDecimal();
+                if (prop.ValueKind == JsonValueKind.Null)
+                    return null;
+            }
+            return null;
+        }
+
         private void ImportInvestments(JsonElement root, string propertyName, bool isSold, int userId)
         {
             if (!root.TryGetProperty(propertyName, out JsonElement investments))
@@ -385,12 +442,15 @@ namespace Personal_Investment_App
                 string name = inv.GetProperty("Name").GetString();
                 string typeName = inv.GetProperty("Type").GetString();
                 string categoryName = inv.GetProperty("Category").GetString();
-                int amountInvested = inv.GetProperty("AmountInvested").GetInt32();
+                int numberOfShares = inv.GetProperty("NumberOfShares").GetInt32();
                 DateTime dateOfInvestment = inv.GetProperty("DateOfInvestment").GetDateTime();
-                decimal expectedReturn = inv.GetProperty("ExpectedReturn").GetDecimal();
-                decimal StopLossPercent = inv.GetProperty("StopLoss").GetDecimal();
-                decimal BuyPrice = inv.GetProperty("BuyPrice").GetDecimal();
-                string notes = inv.GetProperty("Notes").GetString();
+                decimal expectedReturn = GetNullableDecimal(inv, "ExpectedReturnPercent") ?? 0;
+                decimal stopLoss = GetNullableDecimal(inv, "StopLossPercent") ?? 0;
+                decimal? buyPrice = GetNullableDecimal(inv, "BuyPrice");
+                decimal? mockPrice = GetNullableDecimal(inv, "MockPrice");
+                string notes = inv.TryGetProperty("Notes", out var notesProp) && notesProp.ValueKind != JsonValueKind.Null
+                ? notesProp.GetString()
+                : null;
 
                 // Znajdź lub dodaj kategorię
                 var category = dbManager.InvestmentCategories.FirstOrDefault(c => c.Name == categoryName);
@@ -423,11 +483,12 @@ namespace Personal_Investment_App
                     Name = name,
                     TypeId = type.Id,
                     UserId = userId,
-                    NumberOfShares = amountInvested,
+                    NumberOfShares = numberOfShares,
                     DateOfInvestment = dateOfInvestment,
                     ExpectedReturnPercent = expectedReturn,
-                    StopLossPercent= StopLossPercent,
-                    BuyPrice = BuyPrice,
+                    StopLossPercent= stopLoss,
+                    BuyPrice = buyPrice,
+                    MockPrice = mockPrice,
                     Notes = notes,
                     IsSold = isSold
                 };
@@ -468,7 +529,7 @@ namespace Personal_Investment_App
                 SetupListView(userId); // Odśwież listę inwestycji
             }
         }
-        public async Task RefreshTotalBalanceAsync(int userId)
+        public async Task RefreshTotalBalanceAsync(int userId, bool useMockOnFail = false, Dictionary<string, decimal>? pricesFromListView = null)
         {
             decimal totalInvested = 0;
             decimal totalCurrentValue = 0;
@@ -481,15 +542,37 @@ namespace Personal_Investment_App
 
             foreach (var inv in inwestycjeUzytkownika)
             {
-                if (inv.BuyPrice == null || inv.NumberOfShares == 0)
+                if (inv.NumberOfShares == 0)
                     continue;
 
-                decimal invested = inv.BuyPrice * inv.NumberOfShares;
+                decimal? buyPrice = inv.BuyPrice;
+                if ((buyPrice == null || buyPrice == 0) && useMockOnFail && inv.MockPrice.HasValue)
+                {
+                    buyPrice = inv.MockPrice.Value;
+                }
+
+                if (buyPrice == null || buyPrice == 0)
+                    continue;
+
+                decimal invested = buyPrice.Value * inv.NumberOfShares;
                 totalInvested += invested;
 
                 if (!inv.IsSold)
                 {
-                    decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(inv.Name);
+                    decimal? currentPrice = null;
+                    if (pricesFromListView != null && pricesFromListView.TryGetValue(inv.Name, out decimal fromUI))
+                    {
+                        currentPrice = fromUI;
+                    }
+                    else
+                    {
+                        currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(inv.Name);
+                        if (currentPrice == null && useMockOnFail && inv.MockPrice.HasValue)
+                        {
+                            currentPrice = inv.MockPrice.Value;
+                        }
+                    }
+
                     if (currentPrice != null)
                     {
                         totalCurrentValue += currentPrice.Value * inv.NumberOfShares;
@@ -514,6 +597,7 @@ namespace Personal_Investment_App
             labelBilans.ForeColor = totalChange >= 0 ? Color.DarkGreen : Color.DarkRed;
         }
 
+
         private async void btnOdswiez_Click(object sender, EventArgs e)
         {
             int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
@@ -523,7 +607,8 @@ namespace Personal_Investment_App
                 return;
             }
 
-            // Pobierz wszystkie inwestycje użytkownika (niesprzedane)
+            bool useMockOnFail = checkBoxTrybTestowy.Checked;
+
             var inwestycjeUzytkownika = dbManager.Investments
                 .Where(i => i.UserId == userId && !i.IsSold)
                 .ToList();
@@ -533,46 +618,108 @@ namespace Personal_Investment_App
                 var item = listView1.Items[i];
                 string symbol = item.SubItems[0].Text;
 
-                // Znajdź inwestycję w bazie danych
                 var inwestycja = inwestycjeUzytkownika.FirstOrDefault(i => i.Name == symbol);
-                if (inwestycja == null || inwestycja.BuyPrice == null || inwestycja.BuyPrice == 0)
+                if (inwestycja == null)
                 {
                     item.ForeColor = Color.Gray;
                     continue;
                 }
 
-                decimal buyPrice = inwestycja.BuyPrice;
+                decimal? buyPrice = null;
 
-                // Pobierz cenę z API
-                decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
+                if (useMockOnFail && inwestycja.MockPrice.HasValue)
+                {
+                    buyPrice = inwestycja.MockPrice.Value;
+                }
+                else
+                {
+                    buyPrice = inwestycja.BuyPrice;
+                }
+
+                if (buyPrice == null || buyPrice == 0)
+                {
+                    item.ForeColor = Color.Gray;
+                    continue;
+                }
+
+                decimal? currentPrice;
+
+                if (checkBoxTrybTestowy.Checked)
+{
+                // Wymuszona testowa cena aktualna
+                if (decimal.TryParse(textBoxAktualnaCenaTest.Text, out decimal testPrice))
+                {
+                    currentPrice = testPrice;
+                }
+                else
+                {
+                    MessageBox.Show("Nieprawidłowa wartość testowej ceny!", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+}
+                else
+                {
+                    currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
+
+                    if (currentPrice == null && useMockOnFail && inwestycja.MockPrice.HasValue)
+                    {
+                        currentPrice = inwestycja.MockPrice.Value;
+                    }
+                }
+
                 if (currentPrice == null)
                 {
                     item.ForeColor = Color.Orange;
                     continue;
                 }
 
-                // Ustaw aktualną cenę (kolumna 6)
                 if (item.SubItems.Count <= 7)
                     item.SubItems.Add(currentPrice.Value.ToString("F2"));
                 else
-                    item.SubItems[6].Text = currentPrice.Value.ToString("F2");
+                    item.SubItems[7].Text = currentPrice.Value.ToString("F2");
 
-                // Oblicz bilans
-                decimal change = ((currentPrice.Value - buyPrice) / buyPrice) * 100;
+                decimal totalBuyValue = buyPrice.Value * inwestycja.NumberOfShares;
+                decimal totalCurrentValue = currentPrice.Value * inwestycja.NumberOfShares;
+
+                decimal change = ((totalCurrentValue - totalBuyValue) / totalBuyValue) * 100;
+
                 string bilansText = change >= 0 ? $"+{change:F2}%" : $"{change:F2}%";
 
                 if (item.SubItems.Count <= 8)
                     item.SubItems.Add(bilansText);
                 else
-                    item.SubItems[7].Text = bilansText;
+                    item.SubItems[8].Text = bilansText;
 
-                // Pokoloruj cały wiersz w zależności od zysku/straty
                 item.ForeColor = change >= 0 ? Color.DarkGreen : Color.DarkRed;
             }
 
-            RefreshTotalBalanceAsync(userId.Value);
+            var cenyZListView = new Dictionary<string, decimal>();
+            foreach (ListViewItem item in listView1.Items)
+            {
+                string symbol = item.SubItems[0].Text;
+                if (item.SubItems.Count > 7 && decimal.TryParse(item.SubItems[7].Text, out decimal cena))
+                {
+                    cenyZListView[symbol] = cena;
+                }
+            }
+
+            await RefreshTotalBalanceAsync(userId.Value, useMockOnFail, cenyZListView); // PRZEKAZUJ FLAGĘ DALEJ
 
             MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void checkBoxTrybTestowy_CheckedChanged(object sender, EventArgs e)
+        {
+            bool widoczny = checkBoxTrybTestowy.Checked;
+            labelTestPrice.Visible = widoczny;
+            textBoxAktualnaCenaTest.Visible = widoczny;
+
+            // Odśwież listę inwestycji, jeśli trzeba
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+            if (userId != null)
+            {
+                SetupListView(userId.Value);
+            }
         }
     }
 }

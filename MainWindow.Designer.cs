@@ -135,6 +135,33 @@ namespace Personal_Investment_App
             labelBilans.AutoSize = true;
             labelBilans.Text = "Bilans ogólny: BILANS";
 
+            checkBoxTrybTestowy = new CheckBox();
+            checkBoxTrybTestowy.ForeColor = Color.White;
+            checkBoxTrybTestowy.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            checkBoxTrybTestowy.Location = new Point(10, 120);
+            checkBoxTrybTestowy.AutoSize = true;
+            checkBoxTrybTestowy.Text = "Tryb testowy";
+            checkBoxTrybTestowy.CheckedChanged += checkBoxTrybTestowy_CheckedChanged;
+            panelUser.Controls.Add(checkBoxTrybTestowy);
+
+            // Etykieta do pola aktualnej ceny
+            labelTestPrice = new Label();
+            labelTestPrice.ForeColor = Color.White;
+            labelTestPrice.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+            labelTestPrice.Location = new Point(10, 150);
+            labelTestPrice.AutoSize = true;
+            labelTestPrice.Text = "Aktualna cena (test):";
+            labelTestPrice.Visible = false;
+            panelUser.Controls.Add(labelTestPrice);
+
+            // Pole tekstowe do wpisania aktualnej ceny
+            textBoxAktualnaCenaTest = new TextBox(); // zadeklaruj wcześniej jako pole klasy
+            textBoxAktualnaCenaTest.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+            textBoxAktualnaCenaTest.Location = new Point(10, 170);
+            textBoxAktualnaCenaTest.Width = 160;
+            textBoxAktualnaCenaTest.Visible = false;
+            panelUser.Controls.Add(textBoxAktualnaCenaTest);
+
             // panelMain
             panelMain.Dock = DockStyle.Fill;
             panelMain.BackColor = Color.FromArgb(25, 25, 35);
@@ -222,6 +249,9 @@ namespace Personal_Investment_App
         private ListView listView1;
         private ImageList imageList1;
         private Button btnOdswiez;
+        private CheckBox checkBoxTrybTestowy;
+        private TextBox textBoxAktualnaCenaTest;
+        private Label labelTestPrice;
 
         public class DarkToolStripRenderer : ToolStripProfessionalRenderer
         {

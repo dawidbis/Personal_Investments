@@ -24,7 +24,8 @@ namespace ProgramLogic
         [Range(-100, 100)]
         [Column(TypeName = "decimal(5,2)")]
         public decimal StopLossPercent { get; set; }
-        public decimal BuyPrice { get; set; }
+        public decimal? BuyPrice { get; set; }
+        public decimal? MockPrice { get; set; }
         public string Notes { get; set; }
         public bool IsSold { get; set; }
 
