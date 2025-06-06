@@ -5,6 +5,8 @@ using Polygon_api;
 using ProgramLogic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Windows.Forms;
+using Timer = System.Windows.Forms.Timer;
 
 namespace Personal_Investment_App
 {
@@ -14,6 +16,7 @@ namespace Personal_Investment_App
         private DatabaseManager dbManager;
         public bool Wylogowano { get; private set; } = false;
         private readonly string zalogowanyUzytkownik;
+        private Timer autoCheckTimer;
 
         private void SetupListView(int userId)
         {
@@ -22,12 +25,11 @@ namespace Personal_Investment_App
 
             listView1.Columns.Clear();
             listView1.Columns.Add("Nazwa", 150);
-            listView1.Columns.Add("Kwota", 100);
+            listView1.Columns.Add("Liczba Akcji", 100);
             listView1.Columns.Add("Data", 100);
             listView1.Columns.Add("Oczekiwany Zwrot", 140);
-            listView1.Columns.Add("Typ", 100);
-            listView1.Columns.Add("Ryzyko", 80);
-            listView1.Columns.Add("Kategoria", 100);
+            listView1.Columns.Add("Stop Loss", 100);
+            listView1.Columns.Add("Typ", 80);
             listView1.Columns.Add("Cena zamknięcia", 140);
 
             listView1.Items.Clear();
@@ -42,12 +44,11 @@ namespace Personal_Investment_App
             foreach (var inv in inwestycje)
             {
                 var item = new ListViewItem(inv.Name);
-                item.SubItems.Add(inv.AmountInvested.ToString("C"));
+                item.SubItems.Add($"{inv.NumberOfShares} szt");
                 item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
-                item.SubItems.Add(inv.ExpectedReturn.ToString("P2"));
+                item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
+                item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
                 item.SubItems.Add(inv.Type?.Name ?? "Brak");
-                item.SubItems.Add(inv.Type?.RiskLevel ?? "Brak");
-                item.SubItems.Add(inv.Type?.Category?.Name ?? "Brak");
                 item.SubItems.Add("...");
 
                 item.ImageIndex = (inv.Type?.Category?.Name == "Akcje") ? 1 : -1;
@@ -79,6 +80,31 @@ namespace Personal_Investment_App
             if (userId.HasValue)
             {
                 SetupListView(userId.Value);
+            }
+
+            autoCheckTimer = new Timer();
+            autoCheckTimer.Interval = 10 * 60 * 100;
+            autoCheckTimer.Tick += AutoCheckTimer_Tick;
+            autoCheckTimer.Start(); 
+        }
+
+        private async void AutoCheckTimer_Tick(object sender, EventArgs e)
+        {
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+
+            try
+            {
+                var alerts = await dbManager.CheckInvestmentsAutomaticallyAsync(userId.Value);
+
+                if (alerts.Any())
+                {
+                    string message = string.Join(Environment.NewLine, alerts);
+                    MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd automatycznego sprawdzania inwestycji: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -144,11 +170,11 @@ namespace Personal_Investment_App
 
                     var item = new ListViewItem();
                     item.SubItems.Add(inv.Name);
-                    item.SubItems.Add(inv.AmountInvested.ToString("C"));
+                    item.SubItems.Add($"{inv.NumberOfShares} szt");
                     item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
-                    item.SubItems.Add(inv.ExpectedReturn.ToString("P2"));
+                    item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
+                    item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
                     item.SubItems.Add(type?.Name ?? "Nieznany");
-                    item.SubItems.Add(type?.RiskLevel ?? "Nieznane");
                     item.SubItems.Add(category?.Name ?? "Brak");
 
                     listView1.Items.Add(item);
@@ -183,8 +209,7 @@ namespace Personal_Investment_App
 
             if (confirm != DialogResult.Yes) return;
 
-            var candleService = new AlphaVantageService();
-            var candles = await candleService.GetDailyCandlesAsync(investmentName); // zakładamy że nazwa == symbol
+            var candles = await AlphaVantageService.GetDailyCandlesAsync(investmentName); // zakładamy że nazwa == symbol
             var latest = candles.OrderByDescending(c => c.Date).FirstOrDefault();
 
             if (latest == null)
@@ -246,9 +271,11 @@ namespace Personal_Investment_App
                                 i.Name,
                                 Type = i.Type?.Name,
                                 Category = i.Type?.Category?.Name,
-                                i.AmountInvested,
+                                i.NumberOfShares,
                                 i.DateOfInvestment,
-                                i.ExpectedReturn,
+                                i.ExpectedReturnPercent,
+                                i.StopLossPercent,
+                                i.BuyPrice,
                                 i.Notes,
                                 i.IsSold,
                                 ReturnsHistory = i.ReturnsHistories.Select(r => new
@@ -266,9 +293,11 @@ namespace Personal_Investment_App
                                 i.Name,
                                 Type = i.Type?.Name,
                                 Category = i.Type?.Category?.Name,
-                                i.AmountInvested,
+                                i.NumberOfShares,
                                 i.DateOfInvestment,
-                                i.ExpectedReturn,
+                                i.ExpectedReturnPercent,
+                                i.StopLossPercent,
+                                i.BuyPrice,
                                 i.Notes,
                                 i.IsSold,
                                 SaleHistory = i.ReturnsHistories.Select(r => new
@@ -351,9 +380,11 @@ namespace Personal_Investment_App
                 string name = inv.GetProperty("Name").GetString();
                 string typeName = inv.GetProperty("Type").GetString();
                 string categoryName = inv.GetProperty("Category").GetString();
-                decimal amountInvested = inv.GetProperty("AmountInvested").GetDecimal();
+                int amountInvested = inv.GetProperty("AmountInvested").GetInt32();
                 DateTime dateOfInvestment = inv.GetProperty("DateOfInvestment").GetDateTime();
                 decimal expectedReturn = inv.GetProperty("ExpectedReturn").GetDecimal();
+                decimal StopLossPercent = inv.GetProperty("StopLoss").GetDecimal();
+                decimal BuyPrice = inv.GetProperty("BuyPrice").GetDecimal();
                 string notes = inv.GetProperty("Notes").GetString();
 
                 // Znajdź lub dodaj kategorię
@@ -376,7 +407,6 @@ namespace Personal_Investment_App
                     type = new InvestmentType
                     {
                         Name = typeName,
-                        RiskLevel = "Nieznany",
                         CategoryId = category.Id
                     };
                     dbManager.InvestmentTypes.Add(type);
@@ -388,9 +418,11 @@ namespace Personal_Investment_App
                     Name = name,
                     TypeId = type.Id,
                     UserId = userId,
-                    AmountInvested = amountInvested,
+                    NumberOfShares = amountInvested,
                     DateOfInvestment = dateOfInvestment,
-                    ExpectedReturn = expectedReturn,
+                    ExpectedReturnPercent = expectedReturn,
+                    StopLossPercent= StopLossPercent,
+                    BuyPrice = BuyPrice,
                     Notes = notes,
                     IsSold = isSold
                 };
@@ -434,25 +466,20 @@ namespace Personal_Investment_App
 
         private async void btnOdswiez_Click(object sender, EventArgs e)
         {
-            var candleService = new AlphaVantageService();
-
             for (int i = 0; i < listView1.Items.Count; i++)
             {
                 var item = listView1.Items[i];
-
-                // ticker jest w kolumnie 0 („Nazwa”), nie w 1
                 string symbol = item.SubItems[0].Text;
 
-                var candles = await candleService.GetDailyCandlesAsync(symbol);
-                var latest = candles.OrderByDescending(c => c.Date).FirstOrDefault();
-                string lastClose = latest?.C.ToString("F2") ?? "Brak";
+                decimal? close = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
 
-                // kolumna "Cena zamknięcia" ma indeks 7
-                if (item.SubItems.Count <= 7)
+                string lastClose = close.HasValue ? close.Value.ToString("F2") : "Brak";
+
+                // kolumna "Cena zamknięcia" ma indeks 6
+                if (item.SubItems.Count <= 6)
                     item.SubItems.Add(lastClose);
                 else
-                    item.SubItems[7].Text = lastClose;
-
+                    item.SubItems[6].Text = lastClose;
             }
 
             MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);

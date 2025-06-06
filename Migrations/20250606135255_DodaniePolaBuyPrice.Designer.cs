@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Personal_Investment_App.Migrations
 {
     [DbContext(typeof(DatabaseManager))]
-    [Migration("20250603204124_Mus")]
-    partial class Mus
+    [Migration("20250606135255_DodaniePolaBuyPrice")]
+    partial class DodaniePolaBuyPrice
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,14 +33,14 @@ namespace Personal_Investment_App.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("AmountInvested")
+                    b.Property<decimal>("BuyPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("DateOfInvestment")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("ExpectedReturn")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<decimal>("ExpectedReturnPercent")
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("IsSold")
                         .HasColumnType("bit");
@@ -52,6 +52,12 @@ namespace Personal_Investment_App.Migrations
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumberOfShares")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("StopLossPercent")
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
@@ -101,10 +107,6 @@ namespace Personal_Investment_App.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RiskLevel")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

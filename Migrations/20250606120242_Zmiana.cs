@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Personal_Investment_App.Migrations
 {
     /// <inheritdoc />
-    public partial class Mus : Migration
+    public partial class Zmiana : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -62,8 +62,7 @@ namespace Personal_Investment_App.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RiskLevel = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -113,9 +112,10 @@ namespace Personal_Investment_App.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     TypeId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AmountInvested = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    NumberOfShares = table.Column<int>(type: "int", nullable: false),
                     DateOfInvestment = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpectedReturn = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ExpectedReturnPercent = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    StopLossPercent = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsSold = table.Column<bool>(type: "bit", nullable: false)
                 },

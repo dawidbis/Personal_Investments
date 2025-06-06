@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Polygon_api;
 
 namespace Personal_Investment_App
 {
@@ -25,7 +26,7 @@ namespace Personal_Investment_App
             this.dbManager = dbManager;
             this.userId = userId;
 
-            buttonSave.Click += buttonSave_Click;
+            buttonSave.Click += buttonSave_ClickAsync;
 
             SetPlaceholder();
 
@@ -84,7 +85,7 @@ namespace Personal_Investment_App
             }
         }
 
-        private void buttonSave_Click(object sender, EventArgs e)
+        private async void buttonSave_ClickAsync(object sender, EventArgs e)
         {
 
             if (string.IsNullOrWhiteSpace(textBoxName.Text) || isPlaceholderActive)
@@ -114,15 +115,25 @@ namespace Personal_Investment_App
                 return;
             }
 
+            decimal? buyPrice = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
+
+            if (buyPrice == null)
+            {
+                MessageBox.Show("Nie udało się pobrać ceny akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var stockType = dbManager.GetOrCreateStockInvestmentType();
 
             var investment = new Investment
             {
                 Name = textBoxName.Text.Trim(),
-                AmountInvested = decimal.Parse(textBoxAmount.Text),
+                NumberOfShares = int.Parse(textBoxAmount.Text),
                 DateOfInvestment = dateTimePicker.Value,
-                ExpectedReturn = decimal.Parse(textBoxExpectedReturn.Text) / 100m,
+                ExpectedReturnPercent = decimal.Parse(textBoxExpectedReturn.Text) / 100m,
+                StopLossPercent = decimal.Parse(txtStopLoss.Text) / 100m,
                 Notes = textBoxNotes.Text,
+                BuyPrice= (decimal)buyPrice,
                 TypeId = stockType.Id,
                 UserId = userId
             };
@@ -141,6 +152,28 @@ namespace Personal_Investment_App
         private void textBoxExpectedReturn_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private async void btnCenaAkcji_ClickAsync(object sender, EventArgs e)
+        {
+            string ticker = textBoxName.Text.Trim().ToUpper();
+
+            if (string.IsNullOrWhiteSpace(ticker) || isPlaceholderActive)
+            {
+                MessageBox.Show("Najpierw podaj symbol akcji (ticker).", "Brak danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+
+                decimal? close = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
+                MessageBox.Show($"Aktualna cena zamknięcia dla {ticker}: {close} USD", "Cena akcji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Wystąpił błąd podczas pobierania danych: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

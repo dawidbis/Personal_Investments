@@ -4,22 +4,19 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Polygon_api
 {
-    public class AlphaVantageService
+    public static class AlphaVantageService
     {
-        private readonly HttpClient _client;
-        private readonly string _apiKey = "JP2T1FCU998BJUCK";
+        private static readonly HttpClient _client = new HttpClient();
+        private static readonly string _apiKey = "6A5KD56KS742XIUZ";
 
-        public AlphaVantageService()
-        {
-            _client = new HttpClient();
-        }
-
-        public async Task<List<AlphaVantage>> GetDailyCandlesAsync(string ticker)
+        public static async Task<List<AlphaVantage>> GetDailyCandlesAsync(string ticker)
         {
             var url = $"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=1min&outputsize=compact&apikey={_apiKey}";
+
             var response = await _client.GetStringAsync(url);
 
             var fullResponse = JsonConvert.DeserializeObject<AlphaVantageResponse>(response);
@@ -30,7 +27,7 @@ namespace Polygon_api
             return MapToCandles(ticker, fullResponse);
         }
 
-        private List<AlphaVantage> MapToCandles(string ticker, AlphaVantageResponse response)
+        private static List<AlphaVantage> MapToCandles(string ticker, AlphaVantageResponse response)
         {
             return response.TimeSeriesDaily.Select(kvp => new AlphaVantage
             {
@@ -42,6 +39,19 @@ namespace Polygon_api
                 C = decimal.Parse(kvp.Value.Close, CultureInfo.InvariantCulture),
                 V = long.Parse(kvp.Value.Volume, CultureInfo.InvariantCulture)
             }).ToList();
+        }
+        public static async Task<decimal?> GetLatestClosePriceAsync(string ticker)
+        {
+            try
+            {
+                var candles = await GetDailyCandlesAsync(ticker);
+                var latest = candles.OrderByDescending(c => c.Date).FirstOrDefault();
+                return latest?.C;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

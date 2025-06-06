@@ -1,19 +1,20 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Personal_Investment_App.DatabaseConnection;
+using Polygon_api;
+using ProgramLogic;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using ProgramLogic;
-using System;
-using Microsoft.Extensions.Logging;
 
 
 namespace DatabaseConnection
 {
     public class DatabaseManager : DbContext
     {
-        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=NowaBaza;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Personalne;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         public DbSet<User> Users { get; set; }
         public DbSet<Investment> Investments { get; set; }
         public DbSet<InvestmentType> InvestmentTypes { get; set; }
@@ -232,7 +233,6 @@ namespace DatabaseConnection
                 stockType = new InvestmentType
                 {
                     Name = "Akcje",
-                    RiskLevel = "Średni", // Możesz dopasować wg logiki aplikacji
                     CategoryId = akcjeCategory.Id
                 };
 
@@ -269,6 +269,72 @@ namespace DatabaseConnection
 
             return true;
         }
+        public async Task<List<string>> CheckInvestmentsAutomaticallyAsync(int userId)
+        {
+            var alerts = new List<string>();
+
+            var investments = this.Investments
+                .Include(i => i.Type).ThenInclude(t => t.Category)
+                .Include(i => i.ReturnsHistories)
+                .Where(i => i.UserId == userId && !i.IsSold)
+                .ToList();
+
+            foreach (var investment in investments)
+            {
+                if (string.IsNullOrWhiteSpace(investment.Name))
+                {
+                    alerts.Add($"[BŁĄD] Inwestycja '{investment.Name}' nie ma przypisanego symbolu.");
+                    continue;
+                }
+
+                try
+                {
+                    decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(investment.Name);
+
+                    if (currentPrice == null)
+                    {
+                        alerts.Add($"[BŁĄD] Brak danych dla symbolu {investment.Name}.");
+                        continue;
+                    }
+
+                    if (investment.BuyPrice == null || investment.BuyPrice == 0)
+                    {
+                        alerts.Add($"[BŁĄD] Inwestycja {investment.Name} nie ma zapisanej poprawnej ceny zakupu.");
+                        continue;
+                    }
+
+                    decimal change = (currentPrice.Value - investment.BuyPrice) / investment.BuyPrice;
+                    decimal percentChange = change * 100;
+
+                    // Informacyjny alert o aktualnym stanie
+                    alerts.Add($"[INFO] {investment.Name}: zmiana {percentChange:F2}% (kupiono za {investment.BuyPrice:F2}, obecnie {currentPrice.Value:F2})");
+
+                    // Sprawdzenie warunków sprzedaży
+                    if (change <= -investment.StopLossPercent || change >= investment.ExpectedReturnPercent)
+                    {
+                        investment.IsSold = true;
+
+                        investment.ReturnsHistories.Add(new ReturnsHistory
+                        {
+                            Date = DateTime.Now,
+                            Value = currentPrice.Value
+                        });
+
+                        alerts.Add($"[SPRZEDAŻ] {investment.Name} sprzedana: {percentChange:F2}% zmiany (limit osiągnięty).");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    alerts.Add($"[BŁĄD] {investment.Name}: {ex.Message}");
+                }
+            }
+
+            return alerts;
+        }
+
+
+
+
     }
 }
   
