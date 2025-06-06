@@ -692,7 +692,7 @@ namespace Personal_Investment_App
                 else
                     item.SubItems[8].Text = bilansText;
 
-                item.ForeColor = change >= 0 ? Color.DarkGreen : Color.DarkRed;
+                item.ForeColor = change >= 0 ? Color.LightGreen : Color.Red;
             }
 
             var cenyZListView = new Dictionary<string, decimal>();
