@@ -293,10 +293,10 @@ namespace DatabaseConnection
                 try
                 {
                     // 1. Pobranie aktualnej ceny
-                    decimal? currentPrice = await FinnhubService.GetCurrentQuoteAsync(investment.Name);
+                    decimal? currentPrice=null;
                     //decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(investment.Name);
 
-                    if (currentPrice == null && useMockOnFail)
+                    if (useMockOnFail)
                     {
                         // Priorytet 1: Testowa cena z UI (np. ListView)
                         if (testPricesFromUI != null && testPricesFromUI.TryGetValue(investment.Name, out decimal testPriceFromUI))
@@ -311,9 +311,12 @@ namespace DatabaseConnection
                             alerts.Add($"[INFO] Użyto testowej ceny (MockPrice) jako aktualnej dla {investment.Name}: {currentPrice.Value:F2}");
                         }
                     }
-
-                    // 2. Pobranie ceny zakupu
-                    decimal? buyPrice = investment.BuyPrice;
+                    else
+                    {
+                        currentPrice = await FinnhubService.GetCurrentQuoteAsync(investment.Name);
+                    }
+                        // 2. Pobranie ceny zakupu
+                        decimal? buyPrice = investment.BuyPrice;
 
                     if ((buyPrice == null || buyPrice == 0) && useMockOnFail && investment.MockPrice.HasValue)
                     {

@@ -50,7 +50,7 @@ namespace Personal_Investment_App
                 var item = new ListViewItem(inv.Name); // <- to jest pierwszy element (kolumna „Nazwa”)
                 item.SubItems.Add($"{inv.NumberOfShares} szt");
 
-                decimal? cenaZakupu = IsTrybTestowy ? inv.MockPrice : inv.BuyPrice;
+                decimal? cenaZakupu = inv.BuyPrice ?? inv.MockPrice;
                 item.SubItems.Add(cenaZakupu?.ToString("C") ?? "Brak");
 
                 item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
@@ -628,9 +628,13 @@ namespace Personal_Investment_App
 
                 decimal? buyPrice = null;
 
-                if (useMockOnFail && inwestycja.MockPrice.HasValue)
+                if (useMockOnFail && inwestycja.BuyPrice.HasValue)
                 {
-                    buyPrice = inwestycja.MockPrice.Value;
+                    buyPrice = inwestycja.BuyPrice.Value;
+                }
+                else if(useMockOnFail && inwestycja.MockPrice.HasValue)
+                {
+                    buyPrice=inwestycja.MockPrice.Value;
                 }
                 else
                 {
