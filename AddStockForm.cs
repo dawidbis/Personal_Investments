@@ -192,9 +192,14 @@ namespace Personal_Investment_App
 
             try
             {
-
-                //decimal? close = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
                 decimal? close = await FinnhubService.GetCurrentQuoteAsync(ticker);
+
+                if (close == null || close <= 0)
+                {
+                    MessageBox.Show($"Nie znaleziono danych dla podanego tickera: {ticker}. Upewnij się, że symbol jest poprawny.", "Błędny ticker", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 MessageBox.Show($"Aktualna cena zamknięcia dla {ticker}: {close} USD", "Cena akcji", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -202,5 +207,6 @@ namespace Personal_Investment_App
                 MessageBox.Show($"Wystąpił błąd podczas pobierania danych: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
     }
 }
