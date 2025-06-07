@@ -324,7 +324,7 @@ namespace DatabaseConnection
                     alerts.Add($"[INFO] {investment.Name}: zmiana {percentChange:F2}% (kupiono za {buyPrice.Value:F2}, obecnie {currentPrice.Value:F2})");
 
                     if ((investment.ExpectedReturnPercent > 0 && change >= investment.ExpectedReturnPercent) ||
-                    (investment.StopLossPercent > 0 && change <= -investment.StopLossPercent))
+                    (investment.StopLossPercent < 0 && change <= investment.StopLossPercent))
                     {
                         investment.IsSold = true;
 
