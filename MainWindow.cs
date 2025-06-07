@@ -564,7 +564,7 @@ namespace Personal_Investment_App
             string result = totalChange >= 0 ? $"+{totalChange:F2}%" : $"{totalChange:F2}%";
 
             labelBilans.Text = $"Bilans ogólny: {result}";
-            labelBilans.ForeColor = totalChange >= 0 ? Color.DarkGreen : Color.DarkRed;
+            labelBilans.ForeColor = totalChange > 0 ? Color.LightGreen : totalChange < 0 ? Color.Red : Color.Orange;
         }
 
 
@@ -661,7 +661,7 @@ namespace Personal_Investment_App
                 else
                     item.SubItems[8].Text = bilansText;
 
-                item.ForeColor = change >= 0 ? Color.LightGreen : Color.Red;
+                item.ForeColor = change > 0 ? Color.LightGreen : change < 0 ? Color.Red : Color.Orange;
             }
 
             var cenyZListView = new Dictionary<string, decimal>();
