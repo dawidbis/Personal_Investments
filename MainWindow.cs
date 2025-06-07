@@ -20,8 +20,13 @@ namespace Personal_Investment_App
         private Timer autoCheckTimer;
         private bool IsTrybTestowy => checkBoxTrybTestowy.Checked;
 
+        private enum WidokAkcji { Aktywne, Historia }
+        private WidokAkcji aktualnyWidok = WidokAkcji.Aktywne;
+
         private void SetupListView(int userId)
         {
+            aktualnyWidok = WidokAkcji.Aktywne;
+
             listView1.View = View.Details;
             listView1.FullRowSelect = true;
 
@@ -126,7 +131,7 @@ namespace Personal_Investment_App
                 if (alerts.Any())
                 {
                     string message = string.Join(Environment.NewLine, alerts);
-                    MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    //MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     SetupListView(userId.Value); // Odśwież listę
                 }
             }
@@ -574,12 +579,20 @@ namespace Personal_Investment_App
 
         private async void btnOdswiez_Click(object sender, EventArgs e)
         {
+            if (aktualnyWidok == WidokAkcji.Historia)
+            {
+                btnHistoria_Click(sender, e); // po prostu ponownie załaduj historię
+                return;
+            }
+
             int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
             if (userId == null)
             {
                 MessageBox.Show("Nie znaleziono zalogowanego użytkownika.");
                 return;
             }
+
+            SetupListView((int)userId);
 
             bool useMockOnFail = checkBoxTrybTestowy.Checked;
 
@@ -667,13 +680,13 @@ namespace Personal_Investment_App
                 else
                     item.SubItems[8].Text = bilansText;
 
-                item.ForeColor = change > 0 ? Color.LightGreen : change < 0 ? Color.Red : Color.Orange;
+                item.ForeColor = change > 0 ? Color.LightGreen : change < 0 ? Color.Red : Color.Yellow;
             }
 
             // ⬇️ NAJWAŻNIEJSZA CZĘŚĆ, KTÓREJ BRAKOWAŁO ⬇️
             await RefreshTotalBalanceAsync(userId.Value, useMockOnFail, cenyZListView);
 
-            MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
 
@@ -690,6 +703,88 @@ namespace Personal_Investment_App
             {
                 SetupListView(userId.Value);
             }
+        }
+
+        private void btnHistoria_Click(object sender, EventArgs e)
+        {
+            aktualnyWidok = WidokAkcji.Historia;
+
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+            if (userId == null)
+            {
+                MessageBox.Show("Nie znaleziono zalogowanego użytkownika.");
+                return;
+            }
+
+            listView1.View = View.Details;
+            listView1.FullRowSelect = true;
+            listView1.Columns.Clear();
+            listView1.Items.Clear();
+
+            listView1.Columns.Add("Nazwa", 150);
+            listView1.Columns.Add("Liczba Akcji", 100);
+            listView1.Columns.Add("Cena Zakupu", 100);
+            listView1.Columns.Add("Data Zakupu", 100);
+            listView1.Columns.Add("Data Sprzedaży", 120);
+            listView1.Columns.Add("Wartość Sprzedaży", 130);
+            listView1.Columns.Add("Zysk/Strata", 100);
+            listView1.Columns.Add("Typ", 100);
+
+            var sprzedaneInwestycje = dbManager.Investments
+                .Include(i => i.Type)
+                .ThenInclude(t => t.Category)
+                .Include(i => i.ReturnsHistories)
+                .Where(i => i.UserId == userId && i.IsSold)
+                .ToList();
+
+            int index = 0;
+            foreach (var inv in sprzedaneInwestycje)
+            {
+                var ostatniaSprzedaz = inv.ReturnsHistories
+                    .OrderByDescending(r => r.Date)
+                    .FirstOrDefault();
+
+                if (ostatniaSprzedaz == null)
+                    continue;
+
+                decimal buyPrice = inv.BuyPrice;
+                int numberOfShares = inv.NumberOfShares;
+                decimal totalBuy = buyPrice * numberOfShares;
+                decimal totalSell = ostatniaSprzedaz.Value * numberOfShares;
+
+                decimal changePercent = totalBuy != 0m
+                    ? ((totalSell - totalBuy) / totalBuy) * 100m
+                    : 0m;
+
+                var item = new ListViewItem(inv.Name);
+                item.SubItems.Add($"{numberOfShares} szt");
+                item.SubItems.Add($"{buyPrice:F2} USD");
+                item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
+                item.SubItems.Add(ostatniaSprzedaz.Date.ToShortDateString());
+                item.SubItems.Add($"{ostatniaSprzedaz.Value:F2} USD");
+                item.SubItems.Add($"{(changePercent >= 0 ? "+" : "")}{changePercent:F2}%");
+                item.SubItems.Add(inv.Type?.Name ?? "Brak");
+
+                item.ImageIndex = (inv.Type?.Category?.Name == "Akcje") ? 1 : -1;
+
+                item.BackColor = (index % 2 == 0)
+                    ? Color.Black
+                    : Color.FromArgb(60, 0, 90);
+
+                item.ForeColor = changePercent > 0 ? Color.LightGreen :
+                                 changePercent < 0 ? Color.Red :
+                                 Color.Yellow;
+
+                listView1.Items.Add(item);
+                index++;
+            }
+        }
+
+        private void btnAktualne_Click(object sender, EventArgs e)
+        {
+            aktualnyWidok = WidokAkcji.Aktywne;
+
+            btnOdswiez_Click(sender, e); // Odśwież aktywne inwestycje
         }
     }
 }

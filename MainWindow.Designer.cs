@@ -1,6 +1,8 @@
 ﻿
 
 
+
+
 namespace Personal_Investment_App
 {
     partial class MainWindow
@@ -41,7 +43,9 @@ namespace Personal_Investment_App
             groupBox1 = new GroupBox();
             listView1 = new ListView();
             imageList1 = new ImageList(components);
-            btnOdswiez = new Button();
+            btnOdswiez= new Button();
+            btnHistoria = new Button();
+            btnAktualne = new Button();
 
             menuStrip2.SuspendLayout();
             panelUser.SuspendLayout();
@@ -168,6 +172,8 @@ namespace Personal_Investment_App
             panelMain.BackColor = Color.FromArgb(25, 25, 35);
             panelMain.Controls.Add(groupBox1);
             panelMain.Controls.Add(btnOdswiez);
+            panelMain.Controls.Add(btnHistoria);
+            panelMain.Controls.Add(btnAktualne);
 
             groupBox1.Dock = DockStyle.Top;
             groupBox1.Height = 480;
@@ -195,7 +201,7 @@ namespace Personal_Investment_App
             imageList1.Images.SetKeyName(3, "bars.png");
 
             btnOdswiez.Text = "Odśwież dane";
-            btnOdswiez.Location = new Point(30, 500);
+            btnOdswiez.Location = new Point(350, 500);
             btnOdswiez.Size = new Size(150, 40);
             btnOdswiez.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnOdswiez.BackColor = Color.FromArgb(100, 40, 160);
@@ -204,6 +210,28 @@ namespace Personal_Investment_App
             btnOdswiez.FlatAppearance.BorderColor = Color.White;
             btnOdswiez.FlatAppearance.BorderSize = 1;
             btnOdswiez.Click += btnOdswiez_Click;
+
+            btnHistoria.Text = "Historia sprzedaży";
+            btnHistoria.Location = new Point(190, 500);
+            btnHistoria.Size = new Size(150, 40);
+            btnHistoria.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnHistoria.BackColor = Color.FromArgb(100, 40, 160);
+            btnHistoria.ForeColor = Color.White;
+            btnHistoria.FlatStyle = FlatStyle.Flat;
+            btnHistoria.FlatAppearance.BorderColor = Color.White;
+            btnHistoria.FlatAppearance.BorderSize = 1;
+            btnHistoria.Click += btnHistoria_Click;
+
+            btnAktualne.Text = "Aktywne inwestycje";
+            btnAktualne.Location = new Point(30, 500);
+            btnAktualne.Size = new Size(150, 40);
+            btnAktualne.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnAktualne.BackColor = Color.FromArgb(100, 40, 160);
+            btnAktualne.ForeColor = Color.White;
+            btnAktualne.FlatStyle = FlatStyle.Flat;
+            btnAktualne.FlatAppearance.BorderColor = Color.White;
+            btnAktualne.FlatAppearance.BorderSize = 1;
+            btnAktualne.Click += btnAktualne_Click;
 
             // MainWindow
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -250,6 +278,8 @@ namespace Personal_Investment_App
         private ListView listView1;
         private ImageList imageList1;
         private Button btnOdswiez;
+        private Button btnHistoria;
+        private Button btnAktualne;
         private CheckBox checkBoxTrybTestowy;
         private TextBox textBoxAktualnaCenaTest;
         private Label labelTestPrice;
