@@ -99,6 +99,9 @@ namespace Personal_Investment_App
             autoCheckTimer.Interval = 10 * 60 * 100;
             autoCheckTimer.Tick += AutoCheckTimer_Tick;
             autoCheckTimer.Start(); 
+
+            SetupListView(userId ?? 0); // Ustawienie listy inwestycji przy starcie
+            btnOdswiez_Click(null, null); // Odświeżenie danych inwestycji
         }
 
         private async void AutoCheckTimer_Tick(object sender, EventArgs e)
@@ -131,14 +134,15 @@ namespace Personal_Investment_App
                 if (alerts.Any())
                 {
                     string message = string.Join(Environment.NewLine, alerts);
-                    //MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    SetupListView(userId.Value); // Odśwież listę
+                    //MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Błąd automatycznego sprawdzania inwestycji: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            btnOdswiez_Click(sender, e); // Odśwież listę inwestycji po sprawdzeniu
         }
 
         private void inwestycjePersonalneToolStripMenuItem_Click(object sender, EventArgs e)
@@ -224,7 +228,7 @@ namespace Personal_Investment_App
 
         private async void sprzedajToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count == 0)
+            if (listView1.SelectedItems.Count == 0 || aktualnyWidok == WidokAkcji.Historia)
             {
                 MessageBox.Show("Najpierw wybierz inwestycję z listy.", "Brak wyboru", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
