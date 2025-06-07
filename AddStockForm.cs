@@ -90,7 +90,6 @@ namespace Personal_Investment_App
 
         private async void buttonSave_ClickAsync(object sender, EventArgs e)
         {
-
             if (string.IsNullOrWhiteSpace(textBoxName.Text) || isPlaceholderActive)
             {
                 MessageBox.Show("Podaj nazwę akcji (ticker).", "Wymagane", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -109,34 +108,49 @@ namespace Personal_Investment_App
                 return;
             }
 
+            if (!decimal.TryParse(txtStopLoss.Text, out var stopLoss))
+            {
+                MessageBox.Show("Podaj prawidłowy poziom Stop Loss.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            // Retrieve InvestmentType for stocks
-            var type = dbManager.GetOrCreateStockInvestmentType();
-            if (type == null)
+            // Walidacja logiczna
+            if (expectedReturn <= 0)
+            {
+                MessageBox.Show("Oczekiwany zwrot musi być większy niż 0%.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (stopLoss >= 0)
+            {
+                MessageBox.Show("Stop Loss musi być wartością ujemną (np. -5).", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Pobranie typu inwestycji
+            var stockType = dbManager.GetOrCreateStockInvestmentType();
+            if (stockType == null)
             {
                 MessageBox.Show("Nie znaleziono typu inwestycji 'Akcje' w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-           
+            // Pobranie ceny akcji
             decimal? buyPrice = await FinnhubService.GetCurrentQuoteAsync(textBoxName.Text.Trim());
-
             if (buyPrice == null)
             {
                 MessageBox.Show("Nie udało się pobrać ceny akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            
 
-            var stockType = dbManager.GetOrCreateStockInvestmentType();
-
+            // Utworzenie inwestycji
             var investment = new Investment
             {
                 Name = textBoxName.Text.Trim(),
-                NumberOfShares = int.Parse(textBoxAmount.Text),
+                NumberOfShares = (int)amount,
                 DateOfInvestment = dateTimePicker.Value,
-                ExpectedReturnPercent = decimal.Parse(textBoxExpectedReturn.Text) / 100m,
-                StopLossPercent = decimal.Parse(txtStopLoss.Text) / 100m,
+                ExpectedReturnPercent = expectedReturn / 100m,
+                StopLossPercent = stopLoss / 100m,
                 Notes = textBoxNotes.Text,
                 BuyPrice = buyPrice.Value,
                 TypeId = stockType.Id,
@@ -148,6 +162,7 @@ namespace Personal_Investment_App
             MessageBox.Show("Inwestycja została dodana.");
             this.Close();
         }
+
 
         private void textBoxAmount_TextChanged(object sender, EventArgs e)
         {
