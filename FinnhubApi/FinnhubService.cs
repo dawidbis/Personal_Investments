@@ -8,7 +8,7 @@ namespace Polygon_api
         private static readonly HttpClient _client = new HttpClient();
         private static readonly string _apiKey = "d11k9ihr01qjtpe7e510d11k9ihr01qjtpe7e51g";
 
-        public static async Task<List<AlphaVantage>> GetMinuteCandlesAsync(string ticker)
+        public static async Task<List<FinnHubQuote>> GetMinuteCandlesAsync(string ticker)
         {
             // Czas w Unix time (ostatnie 60 minut)
             var to = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -20,25 +20,25 @@ namespace Polygon_api
             var candleResponse = JsonConvert.DeserializeObject<FinnhubCandleResponse>(response);
 
             if (candleResponse?.c == null || candleResponse.s != "ok")
-                return new List<AlphaVantage>();
+                return new List<FinnHubQuote>();
 
             return MapToCandles(ticker, candleResponse);
         }
 
-        private static List<AlphaVantage> MapToCandles(string ticker, FinnhubCandleResponse response)
+        private static List<FinnHubQuote> MapToCandles(string ticker, FinnhubCandleResponse response)
         {
-            var candles = new List<AlphaVantage>();
+            var candles = new List<FinnHubQuote>();
 
             for (int i = 0; i < response.t.Length; i++)
             {
-                candles.Add(new AlphaVantage
+                candles.Add(new FinnHubQuote
                 {
                     Ticker = ticker,
                     Date = DateTimeOffset.FromUnixTimeSeconds(response.t[i]).UtcDateTime,
-                    O = response.o[i],
-                    H = response.h[i],
-                    L = response.l[i],
-                    C = response.c[i],
+                    o = response.o[i],
+                    h = response.h[i],
+                    l = response.l[i],
+                    c = response.c[i],
                     V = response.v[i]
                 });
             }
@@ -48,11 +48,25 @@ namespace Polygon_api
 
         public static async Task<decimal?> GetCurrentQuoteAsync(string symbol)
         {
-            var url = $"https://finnhub.io/api/v1/quote?symbol={symbol}&token={_apiKey}";
-            var json = await _client.GetStringAsync(url);
-            var quote = JsonConvert.DeserializeObject<FinnHubQuote>(json);
+            try
+            {
+                var url = $"https://finnhub.io/api/v1/quote?symbol={symbol}&token={_apiKey}";
+                var json = await _client.GetStringAsync(url);
+                var quote = JsonConvert.DeserializeObject<FinnHubQuote>(json);
 
-            return quote?.c;
+                // Walidacja: brak danych = ticker nie istnieje
+                if (quote == null || quote.c == null || quote.c == 0 || quote.t == 0)
+                {
+                    return null;
+                }
+
+                return quote.c;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Wystąpił nieoczekiwany błąd{ex.Message}");
+                return null;
+            }
         }
     }
 }

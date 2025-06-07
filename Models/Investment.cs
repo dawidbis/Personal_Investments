@@ -18,14 +18,13 @@ namespace ProgramLogic
         public string Name { get; set; }
         public int NumberOfShares { get; set; }
         public DateTime DateOfInvestment { get; set; }
-        [Range(-100, 100)]
+        [Range(0.01, 100)]
         [Column(TypeName = "decimal(5,2)")]
         public decimal ExpectedReturnPercent { get; set; }
-        [Range(-100, 100)]
+        [Range(-100, -0.01)]
         [Column(TypeName = "decimal(5,2)")]
         public decimal StopLossPercent { get; set; }
-        public decimal? BuyPrice { get; set; }
-        public decimal? MockPrice { get; set; }
+        public decimal BuyPrice { get; set; }
         public string Notes { get; set; }
         public bool IsSold { get; set; }
 

@@ -50,7 +50,7 @@ namespace Personal_Investment_App
                 var item = new ListViewItem(inv.Name); // <- to jest pierwszy element (kolumna „Nazwa”)
                 item.SubItems.Add($"{inv.NumberOfShares} szt");
 
-                decimal? cenaZakupu = inv.BuyPrice ?? inv.MockPrice;
+                decimal? cenaZakupu = inv.BuyPrice;
                 item.SubItems.Add(cenaZakupu?.ToString("C") ?? "Brak");
 
                 item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
@@ -201,7 +201,7 @@ namespace Personal_Investment_App
                     item.SubItems.Add(inv.Name);
                     item.SubItems.Add($"{inv.NumberOfShares} szt");
 
-                    decimal? cenaZakupu = IsTrybTestowy ? inv.MockPrice : inv.BuyPrice;
+                    decimal? cenaZakupu = inv.BuyPrice;
                     item.SubItems.Add(cenaZakupu?.ToString("C") ?? "Brak");
 
                     item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
@@ -257,7 +257,7 @@ namespace Personal_Investment_App
             else
             {
                 var latest = await FinnhubService.GetCurrentQuoteAsync(investmentName);
-                //var latest = await AlphaVantageService.GetLatestClosePriceAsync(investmentName);
+
                 if (latest == null)
                 {
                     MessageBox.Show("Nie udało się pobrać aktualnej ceny z API.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -325,7 +325,6 @@ namespace Personal_Investment_App
                                 i.ExpectedReturnPercent,
                                 i.StopLossPercent,
                                 i.BuyPrice,
-                                i.MockPrice,
                                 i.Notes,
                                 i.IsSold,
                                 ReturnsHistory = i.ReturnsHistories.Select(r => new
@@ -348,7 +347,6 @@ namespace Personal_Investment_App
                                 i.ExpectedReturnPercent,
                                 i.StopLossPercent,
                                 i.BuyPrice,
-                                i.MockPrice,
                                 i.Notes,
                                 i.IsSold,
                                 SaleHistory = i.ReturnsHistories.Select(r => new
@@ -421,18 +419,6 @@ namespace Personal_Investment_App
             }
         }
 
-        private decimal? GetNullableDecimal(JsonElement element, string propertyName)
-        {
-            if (element.TryGetProperty(propertyName, out var prop))
-            {
-                if (prop.ValueKind == JsonValueKind.Number)
-                    return prop.GetDecimal();
-                if (prop.ValueKind == JsonValueKind.Null)
-                    return null;
-            }
-            return null;
-        }
-
         private void ImportInvestments(JsonElement root, string propertyName, bool isSold, int userId)
         {
             if (!root.TryGetProperty(propertyName, out JsonElement investments))
@@ -445,10 +431,9 @@ namespace Personal_Investment_App
                 string categoryName = inv.GetProperty("Category").GetString();
                 int numberOfShares = inv.GetProperty("NumberOfShares").GetInt32();
                 DateTime dateOfInvestment = inv.GetProperty("DateOfInvestment").GetDateTime();
-                decimal expectedReturn = GetNullableDecimal(inv, "ExpectedReturnPercent") ?? 0;
-                decimal stopLoss = GetNullableDecimal(inv, "StopLossPercent") ?? 0;
-                decimal? buyPrice = GetNullableDecimal(inv, "BuyPrice");
-                decimal? mockPrice = GetNullableDecimal(inv, "MockPrice");
+                decimal expectedReturn = inv.GetProperty("ExpectedReturnPercent").GetDecimal();
+                decimal stopLoss = inv.GetProperty("StopLossPercent").GetDecimal();
+                decimal buyPrice = inv.GetProperty("BuyPrice").GetDecimal();
                 string notes = inv.TryGetProperty("Notes", out var notesProp) && notesProp.ValueKind != JsonValueKind.Null
                 ? notesProp.GetString()
                 : null;
@@ -489,7 +474,6 @@ namespace Personal_Investment_App
                     ExpectedReturnPercent = expectedReturn,
                     StopLossPercent= stopLoss,
                     BuyPrice = buyPrice,
-                    MockPrice = mockPrice,
                     Notes = notes,
                     IsSold = isSold
                 };
@@ -547,11 +531,7 @@ namespace Personal_Investment_App
                     continue;
 
                 decimal? buyPrice = inv.BuyPrice;
-                if ((buyPrice == null || buyPrice == 0) && useMockOnFail && inv.MockPrice.HasValue)
-                {
-                    buyPrice = inv.MockPrice.Value;
-                }
-
+                
                 if (buyPrice == null || buyPrice == 0)
                     continue;
 
@@ -567,11 +547,7 @@ namespace Personal_Investment_App
                     }
                     else
                     {
-                        currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(inv.Name);
-                        if (currentPrice == null && useMockOnFail && inv.MockPrice.HasValue)
-                        {
-                            currentPrice = inv.MockPrice.Value;
-                        }
+                        currentPrice = await FinnhubService.GetCurrentQuoteAsync(inv.Name);
                     }
 
                     if (currentPrice != null)
@@ -627,20 +603,9 @@ namespace Personal_Investment_App
                 }
 
                 decimal? buyPrice = null;
-
-                if (useMockOnFail && inwestycja.BuyPrice.HasValue)
-                {
-                    buyPrice = inwestycja.BuyPrice.Value;
-                }
-                else if(useMockOnFail && inwestycja.MockPrice.HasValue)
-                {
-                    buyPrice=inwestycja.MockPrice.Value;
-                }
-                else
-                {
-                    buyPrice = inwestycja.BuyPrice;
-                }
-
+                
+                buyPrice = inwestycja.BuyPrice;
+               
                 if (buyPrice == null || buyPrice == 0)
                 {
                     item.ForeColor = Color.Gray;
@@ -649,28 +614,35 @@ namespace Personal_Investment_App
 
                 decimal? currentPrice;
 
-                if (checkBoxTrybTestowy.Checked)
-{
-                // Wymuszona testowa cena aktualna
-                if (decimal.TryParse(textBoxAktualnaCenaTest.Text, out decimal testPrice))
+                if (checkBoxTrybTestowy.Checked && listView1.SelectedItems.Count == 0)
                 {
-                    currentPrice = testPrice;
-                }
-                else
-                {
-                    MessageBox.Show("Nieprawidłowa wartość testowej ceny!", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Zaznacz przynajmniej jedną inwestycję, aby ustawić testową cenę.", "Brak zaznaczenia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-}
+
+                if (checkBoxTrybTestowy.Checked)
+                {
+                    if (item.Selected)
+                    {
+                        if (decimal.TryParse(textBoxAktualnaCenaTest.Text, out decimal testPrice))
+                        {
+                            currentPrice = testPrice;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Nieprawidłowa wartość testowej ceny!", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // Pomijamy niezaznaczone elementy w trybie testowym
+                        continue;
+                    }
+                }
                 else
                 {
                     currentPrice = await FinnhubService.GetCurrentQuoteAsync(symbol);
-                    //currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(symbol);
-
-                    if (currentPrice == null && useMockOnFail && inwestycja.MockPrice.HasValue)
-                    {
-                        currentPrice = inwestycja.MockPrice.Value;
-                    }
                 }
 
                 if (currentPrice == null)

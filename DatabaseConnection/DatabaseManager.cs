@@ -14,7 +14,7 @@ namespace DatabaseConnection
 {
     public class DatabaseManager : DbContext
     {
-        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Personalne;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+        public string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Personalia;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         public DbSet<User> Users { get; set; }
         public DbSet<Investment> Investments { get; set; }
         public DbSet<InvestmentType> InvestmentTypes { get; set; }
@@ -294,7 +294,6 @@ namespace DatabaseConnection
                 {
                     // 1. Pobranie aktualnej ceny
                     decimal? currentPrice=null;
-                    //decimal? currentPrice = await AlphaVantageService.GetLatestClosePriceAsync(investment.Name);
 
                     if (useMockOnFail)
                     {
@@ -304,12 +303,6 @@ namespace DatabaseConnection
                             currentPrice = testPriceFromUI;
                             alerts.Add($"[INFO] Użyto ceny testowej z UI jako aktualnej dla {investment.Name}: {currentPrice.Value:F2}");
                         }
-                        // Priorytet 2: MockPrice z bazy
-                        else if (investment.MockPrice.HasValue)
-                        {
-                            currentPrice = investment.MockPrice.Value;
-                            alerts.Add($"[INFO] Użyto testowej ceny (MockPrice) jako aktualnej dla {investment.Name}: {currentPrice.Value:F2}");
-                        }
                     }
                     else
                     {
@@ -317,12 +310,6 @@ namespace DatabaseConnection
                     }
                         // 2. Pobranie ceny zakupu
                         decimal? buyPrice = investment.BuyPrice;
-
-                    if ((buyPrice == null || buyPrice == 0) && useMockOnFail && investment.MockPrice.HasValue)
-                    {
-                        buyPrice = investment.MockPrice.Value;
-                        alerts.Add($"[INFO] Użyto testowej ceny (MockPrice) jako ceny zakupu dla {investment.Name}: {buyPrice.Value:F2}");
-                    }
 
                     if (buyPrice == null || buyPrice == 0)
                     {
@@ -336,7 +323,8 @@ namespace DatabaseConnection
 
                     alerts.Add($"[INFO] {investment.Name}: zmiana {percentChange:F2}% (kupiono za {buyPrice.Value:F2}, obecnie {currentPrice.Value:F2})");
 
-                    if (change <= -investment.StopLossPercent || change >= investment.ExpectedReturnPercent)
+                    if ((investment.ExpectedReturnPercent > 0 && change >= investment.ExpectedReturnPercent) ||
+                    (investment.StopLossPercent > 0 && change <= -investment.StopLossPercent))
                     {
                         investment.IsSold = true;
 

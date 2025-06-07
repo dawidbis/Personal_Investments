@@ -35,10 +35,6 @@ namespace Personal_Investment_App
             textBoxName.TextChanged += TextBoxName_TextChanged;
             textBoxName.GotFocus += TextBoxName_GotFocus;
             textBoxName.LostFocus += TextBoxName_LostFocus;
-
-            // Ukryj/odkryj pole ceny testowej
-            textBoxMockPrice.Visible = useMockPrice;
-            labelMockPrice.Visible = useMockPrice;
         }
 
 
@@ -103,7 +99,7 @@ namespace Personal_Investment_App
 
             if (!decimal.TryParse(textBoxAmount.Text, out var amount))
             {
-                MessageBox.Show("Podaj prawidłową kwotę zainwestowaną.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Podaj prawidłową liczbę akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -122,31 +118,15 @@ namespace Personal_Investment_App
                 return;
             }
 
-            decimal? buyPrice = null;
-            decimal? mockPrice = null;
+           
+            decimal? buyPrice = await FinnhubService.GetCurrentQuoteAsync(textBoxName.Text.Trim());
 
-            if (useMockPrice)
+            if (buyPrice == null)
             {
-                if (!decimal.TryParse(textBoxMockPrice.Text, out var mock))
-                {
-                    MessageBox.Show("Podaj prawidłową cenę testową.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                mockPrice = mock;
-
+                MessageBox.Show("Nie udało się pobrać ceny akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            else
-            {
-                buyPrice = await FinnhubService.GetCurrentQuoteAsync(textBoxName.Text.Trim());
-                //buyPrice = await AlphaVantageService.GetLatestClosePriceAsync(textBoxName.Text.Trim());
-
-                if (buyPrice == null)
-                {
-                    MessageBox.Show("Nie udało się pobrać ceny akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-            }
+            
 
             var stockType = dbManager.GetOrCreateStockInvestmentType();
 
@@ -158,8 +138,7 @@ namespace Personal_Investment_App
                 ExpectedReturnPercent = decimal.Parse(textBoxExpectedReturn.Text) / 100m,
                 StopLossPercent = decimal.Parse(txtStopLoss.Text) / 100m,
                 Notes = textBoxNotes.Text,
-                BuyPrice = buyPrice,
-                MockPrice = mockPrice,
+                BuyPrice = buyPrice.Value,
                 TypeId = stockType.Id,
                 UserId = userId
             };

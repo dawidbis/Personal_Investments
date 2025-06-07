@@ -31,8 +31,6 @@
             txtStopLoss = new TextBox();
             label1 = new Label();
             btnCenaAkcji = new Button();
-            textBoxMockPrice = new TextBox();
-            labelMockPrice = new Label();
             SuspendLayout();
             // 
             // buttonSave
@@ -185,31 +183,13 @@
             btnCenaAkcji.Text = "Sprawdź Cenę Akcji";
             btnCenaAkcji.UseVisualStyleBackColor = false;
             btnCenaAkcji.Click += btnCenaAkcji_ClickAsync;
-            //
-            // labelMockPrice
-            // 
-            labelMockPrice.AutoSize = true;
-            labelMockPrice.ForeColor = SystemColors.Window;
-            labelMockPrice.Location = new Point(40, 270);
-            labelMockPrice.Name = "labelMockPrice";
-            labelMockPrice.Size = new Size(90, 15);
-            labelMockPrice.Text = "Cena testowa:";
-            // 
-            // textBoxMockPrice
-            // 
-            textBoxMockPrice.BackColor = Color.FromArgb(30, 30, 30);
-            textBoxMockPrice.BorderStyle = BorderStyle.FixedSingle;
-            textBoxMockPrice.ForeColor = Color.White;
-            textBoxMockPrice.Location = new Point(169, 270);
-            textBoxMockPrice.Name = "textBoxMockPrice";
-            textBoxMockPrice.Size = new Size(200, 23);
             // 
             // AddStockForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(420, 320);
+            ClientSize = new Size(420, 265);
             Controls.Add(btnCenaAkcji);
             Controls.Add(label1);
             Controls.Add(txtStopLoss);
@@ -224,8 +204,6 @@
             Controls.Add(textBoxAmount);
             Controls.Add(textBoxName);
             Controls.Add(buttonSave);
-            Controls.Add(labelMockPrice);
-            Controls.Add(textBoxMockPrice);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "AddStockForm";
@@ -252,8 +230,6 @@
         private TextBox txtStopLoss;
         private Label label1;
         private Button btnCenaAkcji;
-        private TextBox textBoxMockPrice;
-        private Label labelMockPrice;
 
     }
 }
