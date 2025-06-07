@@ -49,10 +49,7 @@ namespace Personal_Investment_App
             {
                 var item = new ListViewItem(inv.Name); // <- to jest pierwszy element (kolumna „Nazwa”)
                 item.SubItems.Add($"{inv.NumberOfShares} szt");
-
-                decimal? cenaZakupu = inv.BuyPrice;
-                item.SubItems.Add(cenaZakupu?.ToString("C") ?? "Brak");
-
+                item.SubItems.Add($"{inv.BuyPrice} USD" ?? "Brak");
                 item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
                 item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
                 item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
@@ -200,15 +197,11 @@ namespace Personal_Investment_App
                     var item = new ListViewItem();
                     item.SubItems.Add(inv.Name);
                     item.SubItems.Add($"{inv.NumberOfShares} szt");
-
-                    decimal? cenaZakupu = inv.BuyPrice;
-                    item.SubItems.Add(cenaZakupu?.ToString("C") ?? "Brak");
-
+                    item.SubItems.Add($"{inv.BuyPrice} USD" ?? "Brak");
                     item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
                     item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
                     item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
                     item.SubItems.Add(type?.Name ?? "Nieznany");
-                    item.SubItems.Add(category?.Name ?? "Brak");
 
                     listView1.Items.Add(item);
                 }
@@ -654,7 +647,7 @@ namespace Personal_Investment_App
                 if (item.SubItems.Count <= 7)
                     item.SubItems.Add(currentPrice.Value.ToString("F2"));
                 else
-                    item.SubItems[7].Text = currentPrice.Value.ToString("F2");
+                    item.SubItems[7].Text = $"{currentPrice.Value.ToString("F2")} USD";
 
                 decimal totalBuyValue = buyPrice.Value * inwestycja.NumberOfShares;
                 decimal totalCurrentValue = currentPrice.Value * inwestycja.NumberOfShares;
