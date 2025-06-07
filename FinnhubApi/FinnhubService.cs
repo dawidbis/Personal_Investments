@@ -68,5 +68,29 @@ namespace Polygon_api
                 return null;
             }
         }
+
+        public static async Task<decimal?> GetHistoricalClosePriceAsync(string symbol, DateTime date)
+        {
+            try
+            {
+                var from = new DateTimeOffset(date.Date).ToUnixTimeSeconds();
+                var to = new DateTimeOffset(date.Date.AddDays(1)).ToUnixTimeSeconds(); // Zakres: jeden dzień
+
+                string url = $"https://finnhub.io/api/v1/stock/candle?symbol={symbol}&resolution=D&from={from}&to={to}&token={_apiKey}";
+
+                var response = await _client.GetStringAsync(url);
+                var candleResponse = JsonConvert.DeserializeObject<FinnhubCandleResponse>(response);
+
+                if (candleResponse == null || candleResponse.c == null || candleResponse.c.Length == 0 || candleResponse.s != "ok")
+                    return null;
+
+                return candleResponse.c[0]; // Cena zamknięcia (close)
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd pobierania danych historycznych: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Polygon_api;
+using Personal_Investment_App.FinnhubApi;
 
 namespace Personal_Investment_App
 {
@@ -17,16 +18,14 @@ namespace Personal_Investment_App
     {
         private readonly DatabaseManager dbManager;
         private readonly int userId;
-        private readonly bool useMockPrice;
 
         public Investment CreatedInvestment { get; private set; }
 
-        public AddStockForm(DatabaseManager dbManager, int userId, bool useMockPrice = false)
+        public AddStockForm(DatabaseManager dbManager, int userId)
         {
             InitializeComponent();
             this.dbManager = dbManager;
             this.userId = userId;
-            this.useMockPrice = useMockPrice;
 
             buttonSave.Click += buttonSave_ClickAsync;
 
@@ -88,6 +87,17 @@ namespace Personal_Investment_App
             }
         }
 
+        public static DateTime GetLastTradingDay(DateTime date)
+        {
+            // Jeśli weekend, cofnij do piątku
+            while (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                date = date.AddDays(-1);
+            }
+
+            return date;
+        }
+
         private async void buttonSave_ClickAsync(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxName.Text) || isPlaceholderActive)
@@ -136,10 +146,30 @@ namespace Personal_Investment_App
             }
 
             // Pobranie ceny akcji
-            decimal? buyPrice = await FinnhubService.GetCurrentQuoteAsync(textBoxName.Text.Trim());
+            DateTime selectedDate = dateTimePicker.Value.Date;
+            if (selectedDate > DateTime.Today)
+            {
+                MessageBox.Show("Data inwestycji nie może być z przyszłości.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            decimal? buyPrice;
+
+            if (selectedDate < DateTime.Today)
+            {
+                // Jeśli data jest wcześniejsza niż dziś → użyj Polygon.io
+                DateTime tradingDate = PolygonService.GetLastTradingDay(selectedDate);
+                buyPrice = await PolygonService.GetHistoricalClosePriceAsync(textBoxName.Text.Trim(), tradingDate);
+            }
+            else
+            {
+                // Jeśli dziś → użyj Finnhub do pobrania bieżącej ceny
+                buyPrice = await FinnhubService.GetCurrentQuoteAsync(textBoxName.Text.Trim());
+            }
+
             if (buyPrice == null)
             {
-                MessageBox.Show("Nie udało się pobrać ceny akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Nie udało się pobrać ceny akcji dla wybranej daty.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -184,17 +214,37 @@ namespace Personal_Investment_App
                 return;
             }
 
+            DateTime selectedDate = dateTimePicker.Value.Date;
+            DateTime today = DateTime.Now.Date;
+
             try
             {
-                decimal? close = await FinnhubService.GetCurrentQuoteAsync(ticker);
+                decimal? price;
 
-                if (close == null || close <= 0)
+                if (selectedDate < today)
                 {
-                    MessageBox.Show($"Nie znaleziono danych dla podanego tickera: {ticker}. Upewnij się, że symbol jest poprawny.", "Błędny ticker", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+                    // Pobierz historyczną cenę z Polygon.io
+                    price = await PolygonService.GetHistoricalClosePriceAsync(ticker, selectedDate);
+                    if (price == null)
+                    {
+                        MessageBox.Show($"Brak danych historycznych dla {ticker} z dnia {selectedDate:yyyy-MM-dd}.", "Brak danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
 
-                MessageBox.Show($"Aktualna cena zamknięcia dla {ticker}: {close} USD", "Cena akcji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Cena zamknięcia dla {ticker} z dnia {selectedDate:yyyy-MM-dd}: {price:F2} USD", "Cena historyczna", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    // Pobierz aktualną cenę z Finnhub
+                    price = await FinnhubService.GetCurrentQuoteAsync(ticker);
+                    if (price == null || price <= 0)
+                    {
+                        MessageBox.Show($"Nie znaleziono aktualnych danych dla tickera: {ticker}.", "Błąd danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    MessageBox.Show($"Aktualna cena dla {ticker}: {price:F2} USD", "Cena bieżąca", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
             catch (Exception ex)
             {

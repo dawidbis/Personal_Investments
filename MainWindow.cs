@@ -184,7 +184,7 @@ namespace Personal_Investment_App
                 return;
             }
 
-            var form = new AddStockForm(dbManager, userId.Value, IsTrybTestowy);
+            var form = new AddStockForm(dbManager, userId.Value);
 
             form.FormClosed += (s, args) =>
             {
@@ -507,7 +507,7 @@ namespace Personal_Investment_App
                 SetupListView(userId); // Odśwież listę inwestycji
             }
         }
-        public async Task RefreshTotalBalanceAsync(int userId, bool useMockOnFail = false, Dictionary<string, decimal>? pricesFromListView = null)
+        public async Task RefreshTotalBalanceAsync(int userId, bool useMockOnFail = false, Dictionary<int, decimal>? pricesFromListView = null)
         {
             decimal totalInvested = 0;
             decimal totalCurrentValue = 0;
@@ -524,7 +524,6 @@ namespace Personal_Investment_App
                     continue;
 
                 decimal? buyPrice = inv.BuyPrice;
-                
                 if (buyPrice == null || buyPrice == 0)
                     continue;
 
@@ -534,7 +533,8 @@ namespace Personal_Investment_App
                 if (!inv.IsSold)
                 {
                     decimal? currentPrice = null;
-                    if (pricesFromListView != null && pricesFromListView.TryGetValue(inv.Name, out decimal fromUI))
+
+                    if (pricesFromListView != null && pricesFromListView.TryGetValue(inv.Id, out decimal fromUI))
                     {
                         currentPrice = fromUI;
                     }
@@ -568,6 +568,7 @@ namespace Personal_Investment_App
         }
 
 
+
         private async void btnOdswiez_Click(object sender, EventArgs e)
         {
             int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
@@ -579,41 +580,40 @@ namespace Personal_Investment_App
 
             bool useMockOnFail = checkBoxTrybTestowy.Checked;
 
-            var inwestycjeUzytkownika = dbManager.Investments
-                .Where(i => i.UserId == userId && !i.IsSold)
-                .ToList();
-
-            for (int i = 0; i < listView1.Items.Count; i++)
+            // Pobierz inwestycje użytkownika z bazy danych
+            List<Investment> inwestycjeUzytkownika;
+            using (var context = new DatabaseManager())
             {
-                var item = listView1.Items[i];
-                string symbol = item.SubItems[0].Text;
+                inwestycjeUzytkownika = context.Investments
+                    .Where(i => i.UserId == userId && !i.IsSold)
+                    .ToList();
+            }
 
-                var inwestycja = inwestycjeUzytkownika.FirstOrDefault(i => i.Name == symbol);
+            var cenyZListView = new Dictionary<int, decimal>(); // Klucz: Investment.Id
+
+            foreach (ListViewItem item in listView1.Items)
+            {
+                if (item.Tag is not int investmentId)
+                    continue;
+
+                var inwestycja = inwestycjeUzytkownika.FirstOrDefault(i => i.Id == investmentId);
                 if (inwestycja == null)
                 {
                     item.ForeColor = Color.Gray;
                     continue;
                 }
 
-                decimal? buyPrice = null;
-                
-                buyPrice = inwestycja.BuyPrice;
-               
+                decimal? buyPrice = inwestycja.BuyPrice;
                 if (buyPrice == null || buyPrice == 0)
                 {
                     item.ForeColor = Color.Gray;
                     continue;
                 }
 
-                decimal? currentPrice;
+                decimal? currentPrice = null;
 
-                if (checkBoxTrybTestowy.Checked && listView1.SelectedItems.Count == 0)
-                {
-                    MessageBox.Show("Zaznacz przynajmniej jedną inwestycję, aby ustawić testową cenę.", "Brak zaznaczenia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (checkBoxTrybTestowy.Checked)
+                // TRYB TESTOWY
+                if (useMockOnFail)
                 {
                     if (item.Selected)
                     {
@@ -629,13 +629,12 @@ namespace Personal_Investment_App
                     }
                     else
                     {
-                        // Pomijamy niezaznaczone elementy w trybie testowym
-                        continue;
+                        continue; // pomijamy niezaznaczone
                     }
                 }
                 else
                 {
-                    currentPrice = await FinnhubService.GetCurrentQuoteAsync(symbol);
+                    currentPrice = await FinnhubService.GetCurrentQuoteAsync(inwestycja.Name);
                 }
 
                 if (currentPrice == null)
@@ -644,16 +643,20 @@ namespace Personal_Investment_App
                     continue;
                 }
 
-                if (item.SubItems.Count <= 7)
-                    item.SubItems.Add(currentPrice.Value.ToString("F2"));
-                else
-                    item.SubItems[7].Text = $"{currentPrice.Value.ToString("F2")} USD";
+                // Dodajemy aktualną cenę do słownika
+                cenyZListView[investmentId] = currentPrice.Value;
 
+                // Wyświetlanie aktualnej ceny
+                if (item.SubItems.Count <= 7)
+                    item.SubItems.Add($"{currentPrice.Value:F2} USD");
+                else
+                    item.SubItems[7].Text = $"{currentPrice.Value:F2} USD";
+
+                // Oblicz bilans
                 decimal totalBuyValue = buyPrice.Value * inwestycja.NumberOfShares;
                 decimal totalCurrentValue = currentPrice.Value * inwestycja.NumberOfShares;
 
                 decimal change = ((totalCurrentValue - totalBuyValue) / totalBuyValue) * 100;
-
                 string bilansText = change >= 0 ? $"+{change:F2}%" : $"{change:F2}%";
 
                 if (item.SubItems.Count <= 8)
@@ -664,20 +667,13 @@ namespace Personal_Investment_App
                 item.ForeColor = change > 0 ? Color.LightGreen : change < 0 ? Color.Red : Color.Orange;
             }
 
-            var cenyZListView = new Dictionary<string, decimal>();
-            foreach (ListViewItem item in listView1.Items)
-            {
-                string symbol = item.SubItems[0].Text;
-                if (item.SubItems.Count > 7 && decimal.TryParse(item.SubItems[7].Text, out decimal cena))
-                {
-                    cenyZListView[symbol] = cena;
-                }
-            }
-
-            await RefreshTotalBalanceAsync(userId.Value, useMockOnFail, cenyZListView); // PRZEKAZUJ FLAGĘ DALEJ
+            // ⬇️ NAJWAŻNIEJSZA CZĘŚĆ, KTÓREJ BRAKOWAŁO ⬇️
+            await RefreshTotalBalanceAsync(userId.Value, useMockOnFail, cenyZListView);
 
             MessageBox.Show("Dane zostały odświeżone.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
+
 
         private void checkBoxTrybTestowy_CheckedChanged(object sender, EventArgs e)
         {
