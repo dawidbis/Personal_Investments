@@ -149,7 +149,7 @@ namespace Personal_Investment_App
             checkBoxTrybTestowy = new CheckBox();
             checkBoxTrybTestowy.ForeColor = Color.White;
             checkBoxTrybTestowy.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            checkBoxTrybTestowy.Location = new Point(10, 120);
+            checkBoxTrybTestowy.Location = new Point(10, 150);
             checkBoxTrybTestowy.AutoSize = true;
             checkBoxTrybTestowy.Text = "Tryb testowy";
             checkBoxTrybTestowy.CheckedChanged += checkBoxTrybTestowy_CheckedChanged;
@@ -160,7 +160,7 @@ namespace Personal_Investment_App
             labelTestPrice = new Label();
             labelTestPrice.ForeColor = Color.White;
             labelTestPrice.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
-            labelTestPrice.Location = new Point(10, 150);
+            labelTestPrice.Location = new Point(10, 180);
             labelTestPrice.AutoSize = true;
             labelTestPrice.Text = "Aktualna cena (test):";
             labelTestPrice.Visible = false;
@@ -169,7 +169,7 @@ namespace Personal_Investment_App
             // Pole tekstowe do wpisania aktualnej ceny
             textBoxAktualnaCenaTest = new TextBox(); // zadeklaruj wcześniej jako pole klasy
             textBoxAktualnaCenaTest.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
-            textBoxAktualnaCenaTest.Location = new Point(10, 170);
+            textBoxAktualnaCenaTest.Location = new Point(10, 200);
             textBoxAktualnaCenaTest.Width = 160;
             textBoxAktualnaCenaTest.Visible = false;
             panelUser.Controls.Add(textBoxAktualnaCenaTest);
