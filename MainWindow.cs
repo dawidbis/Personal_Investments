@@ -112,19 +112,24 @@ namespace Personal_Investment_App
 
             try
             {
-                // Zbieranie cen z ListView
+                // Zbieranie testowych cen z ListView (SubItem[7] = Aktualna cena)
                 var testPrices = new Dictionary<string, decimal>();
                 foreach (ListViewItem item in listView1.Items)
                 {
                     string symbol = item.SubItems[0].Text;
 
-                    if (item.SubItems.Count > 7 && decimal.TryParse(item.SubItems[7].Text, out decimal parsed))
+                    if (item.SubItems.Count > 7)
                     {
-                        testPrices[symbol] = parsed;
+                        string cenaTekst = item.SubItems[7].Text.Replace(" USD", "").Trim();
+
+                        if (decimal.TryParse(cenaTekst, out decimal parsed))
+                        {
+                            testPrices[symbol] = parsed;
+                        }
                     }
                 }
 
-                // Przekazanie słownika do metody
+                // Przekazanie testowych cen do metody logiki inwestycyjnej
                 var alerts = await dbManager.CheckInvestmentsAutomaticallyAsync(
                     userId.Value,
                     IsTrybTestowy,
@@ -134,7 +139,8 @@ namespace Personal_Investment_App
                 if (alerts.Any())
                 {
                     string message = string.Join(Environment.NewLine, alerts);
-                    //MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    // Możesz dodać logowanie do np. TextBox / ListBox zamiast MessageBox
+                    MessageBox.Show(message, "Alert inwestycyjny", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
@@ -142,7 +148,8 @@ namespace Personal_Investment_App
                 MessageBox.Show($"Błąd automatycznego sprawdzania inwestycji: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            btnOdswiez_Click(sender, e); // Odśwież listę inwestycji po sprawdzeniu
+            // Odśwież dane po automatycznej kontroli
+            btnOdswiez_Click(sender, e);
         }
 
         private void inwestycjePersonalneToolStripMenuItem_Click(object sender, EventArgs e)
@@ -596,7 +603,21 @@ namespace Personal_Investment_App
                 return;
             }
 
+            var zaznaczoneId = listView1.SelectedItems
+            .Cast<ListViewItem>()
+            .Where(i => i.Tag is int)
+            .Select(i => (int)i.Tag)
+            .ToHashSet();
+
             SetupListView((int)userId);
+
+            foreach (ListViewItem item in listView1.Items)
+            {
+                if (item.Tag is int id && zaznaczoneId.Contains(id))
+                {
+                    item.Selected = true;
+                }
+            }
 
             bool useMockOnFail = checkBoxTrybTestowy.Checked;
 
@@ -666,11 +687,14 @@ namespace Personal_Investment_App
                 // Dodajemy aktualną cenę do słownika
                 cenyZListView[investmentId] = currentPrice.Value;
 
+                // Upewnij się, że są wystarczające subitemy
+                while (item.SubItems.Count <= 8)
+                {
+                    item.SubItems.Add(""); // wypełni brakujące pola
+                }
+
                 // Wyświetlanie aktualnej ceny
-                if (item.SubItems.Count <= 7)
-                    item.SubItems.Add($"{currentPrice.Value:F2} USD");
-                else
-                    item.SubItems[7].Text = $"{currentPrice.Value:F2} USD";
+                item.SubItems[7].Text = $"{currentPrice.Value:F2} USD";
 
                 // Oblicz bilans
                 decimal totalBuyValue = buyPrice.Value * inwestycja.NumberOfShares;
@@ -679,11 +703,7 @@ namespace Personal_Investment_App
                 decimal change = ((totalCurrentValue - totalBuyValue) / totalBuyValue) * 100;
                 string bilansText = change >= 0 ? $"+{change:F2}%" : $"{change:F2}%";
 
-                if (item.SubItems.Count <= 8)
-                    item.SubItems.Add(bilansText);
-                else
-                    item.SubItems[8].Text = bilansText;
-
+                item.SubItems[8].Text = bilansText;
                 item.ForeColor = change > 0 ? Color.LightGreen : change < 0 ? Color.Red : Color.Yellow;
             }
 

@@ -286,45 +286,63 @@ namespace DatabaseConnection
             {
                 if (string.IsNullOrWhiteSpace(investment.Name))
                 {
-                    alerts.Add($"[BŁĄD] Inwestycja '{investment.Name}' nie ma przypisanego symbolu.");
+                    alerts.Add($"[BŁĄD] Inwestycja bez symbolu (ID: {investment.Id}) nie może być przetworzona.");
                     continue;
                 }
 
                 try
                 {
-                    // 1. Pobranie aktualnej ceny
-                    decimal? currentPrice=null;
+                    decimal? currentPrice = null;
 
-                    if (useMockOnFail)
+                    if (useMockOnFail && testPricesFromUI != null &&
+                        testPricesFromUI.TryGetValue(investment.Name, out decimal testPriceFromUI))
                     {
-                        // Priorytet 1: Testowa cena z UI (np. ListView)
-                        if (testPricesFromUI != null && testPricesFromUI.TryGetValue(investment.Name, out decimal testPriceFromUI))
-                        {
-                            currentPrice = testPriceFromUI;
-                            alerts.Add($"[INFO] Użyto ceny testowej z UI jako aktualnej dla {investment.Name}: {currentPrice.Value:F2}");
-                        }
+                        currentPrice = testPriceFromUI;
+                        //alerts.Add($"[INFO] Użyto ceny testowej z UI dla {investment.Name}: {currentPrice.Value:F2}");
                     }
                     else
                     {
                         currentPrice = await FinnhubService.GetCurrentQuoteAsync(investment.Name);
                     }
-                        // 2. Pobranie ceny zakupu
-                        decimal? buyPrice = investment.BuyPrice;
 
-                    if (buyPrice == null || buyPrice == 0)
+                    if (!currentPrice.HasValue)
                     {
-                        alerts.Add($"[BŁĄD] Inwestycja {investment.Name} nie ma poprawnej ceny zakupu (ani BuyPrice, ani MockPrice przy włączonej fladze).");
+                        //alerts.Add($"[BŁĄD] Nie udało się pobrać aktualnej ceny dla {investment.Name}.");
                         continue;
                     }
 
-                    // 3. Obliczenia i logika sprzedaży
+                    decimal? buyPrice = investment.BuyPrice;
+
+                    if (!buyPrice.HasValue || buyPrice == 0)
+                    {
+                        //alerts.Add($"[BŁĄD] Inwestycja {investment.Name} nie ma poprawnej ceny zakupu.");
+                        continue;
+                    }
+
                     decimal change = (currentPrice.Value - buyPrice.Value) / buyPrice.Value;
                     decimal percentChange = change * 100;
 
-                    alerts.Add($"[INFO] {investment.Name}: zmiana {percentChange:F2}% (kupiono za {buyPrice.Value:F2}, obecnie {currentPrice.Value:F2})");
+                    // Log ogólny (do celów debugowania lub dziennika)
+                    //alerts.Add($"[INFO] {investment.Name}: zmiana {percentChange:F2}% (kupiono za {buyPrice.Value:F2}, obecnie {currentPrice.Value:F2})");
 
-                    if ((investment.ExpectedReturnPercent > 0 && change >= investment.ExpectedReturnPercent) ||
-                    (investment.StopLossPercent < 0 && change <= investment.StopLossPercent))
+                    // Sprawdzenie warunków sprzedaży
+                    bool shouldSell = false;
+                    string sellReason = "";
+
+                    if (investment.ExpectedReturnPercent > 0 && change >= investment.ExpectedReturnPercent)
+                    {
+                        shouldSell = true;
+                        decimal przekroczenie = (change - investment.ExpectedReturnPercent)*100;
+                        sellReason = $"[SPRZEDAŻ] {investment.Name}: przekroczono oczekiwany zwrot o {przekroczenie:F2}%.";
+                    }
+                    else if (investment.StopLossPercent < 0 && change <= investment.StopLossPercent)
+                    {
+                        shouldSell = true;
+                        decimal przekroczenie = (investment.StopLossPercent - change)*100;
+                        sellReason = $"[SPRZEDAŻ] {investment.Name}: przekroczono limit straty o {przekroczenie:F2}%.";
+                    }
+
+                    if (shouldSell)
                     {
                         investment.IsSold = true;
 
@@ -334,7 +352,7 @@ namespace DatabaseConnection
                             Value = currentPrice.Value
                         });
 
-                        alerts.Add($"[SPRZEDAŻ] {investment.Name} sprzedana: {percentChange:F2}% zmiany (limit osiągnięty).");
+                        alerts.Add(sellReason);
                     }
                 }
                 catch (Exception ex)
@@ -346,6 +364,7 @@ namespace DatabaseConnection
             await this.SaveChangesAsync();
             return alerts;
         }
+
 
 
 
