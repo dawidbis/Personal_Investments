@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic.ApplicationServices;
 using Polygon_api;
 using ProgramLogic;
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows.Forms;
@@ -31,15 +32,15 @@ namespace Personal_Investment_App
             listView1.FullRowSelect = true;
 
             listView1.Columns.Clear();
-            listView1.Columns.Add("Nazwa", 150);
+            listView1.Columns.Add("Nazwa", 100);
             listView1.Columns.Add("Liczba Akcji", 100);
-            listView1.Columns.Add("Cena zakupu Akcji", 100);
+            listView1.Columns.Add("Cena zakupu Akcji", 154);
             listView1.Columns.Add("Data", 100);
-            listView1.Columns.Add("Oczekiwany Zwrot", 140);
-            listView1.Columns.Add("Stop Loss", 100);
-            listView1.Columns.Add("Typ", 80);
+            listView1.Columns.Add("Oczekiwany Zwrot", 130);
+            listView1.Columns.Add("Stop Loss", 80);
+            listView1.Columns.Add("Typ", 60);
             listView1.Columns.Add("Aktualna Cena", 140);
-            listView1.Columns.Add("Aktualny Bilans", 140);
+            listView1.Columns.Add("Aktualny Bilans", 190);
 
             listView1.Items.Clear();
 
@@ -98,7 +99,7 @@ namespace Personal_Investment_App
             autoCheckTimer = new Timer();
             autoCheckTimer.Interval = 10 * 60 * 100;
             autoCheckTimer.Tick += AutoCheckTimer_Tick;
-            autoCheckTimer.Start(); 
+            autoCheckTimer.Start();
 
             SetupListView(userId ?? 0); // Ustawienie listy inwestycji przy starcie
             btnOdswiez_Click(null, null); // Odświeżenie danych inwestycji
@@ -483,7 +484,7 @@ namespace Personal_Investment_App
                     NumberOfShares = numberOfShares,
                     DateOfInvestment = dateOfInvestment,
                     ExpectedReturnPercent = expectedReturn,
-                    StopLossPercent= stopLoss,
+                    StopLossPercent = stopLoss,
                     BuyPrice = buyPrice,
                     Notes = notes,
                     IsSold = isSold
@@ -532,6 +533,10 @@ namespace Personal_Investment_App
             decimal totalCurrentValue = 0;
             decimal totalSoldValue = 0;
 
+            // Nowe zmienne do aktualnego bilansu (dla niesprzedanych)
+            decimal aktualnieZainwestowane = 0;
+            decimal aktualnaWartosc = 0;
+
             var inwestycjeUzytkownika = dbManager.Investments
                 .Include(i => i.ReturnsHistories)
                 .Where(i => i.UserId == userId)
@@ -551,6 +556,8 @@ namespace Personal_Investment_App
 
                 if (!inv.IsSold)
                 {
+                    aktualnieZainwestowane += invested;
+
                     decimal? currentPrice = null;
 
                     if (pricesFromListView != null && pricesFromListView.TryGetValue(inv.Id, out decimal fromUI))
@@ -559,12 +566,21 @@ namespace Personal_Investment_App
                     }
                     else
                     {
-                        currentPrice = await FinnhubService.GetCurrentQuoteAsync(inv.Name);
+                        try
+                        {
+                            currentPrice = await FinnhubService.GetCurrentQuoteAsync(inv.Name);
+                        }
+                        catch
+                        {
+                            if (useMockOnFail) currentPrice = buyPrice;
+                        }
                     }
 
                     if (currentPrice != null)
                     {
-                        totalCurrentValue += currentPrice.Value * inv.NumberOfShares;
+                        decimal currentValue = currentPrice.Value * inv.NumberOfShares;
+                        totalCurrentValue += currentValue;
+                        aktualnaWartosc += currentValue;
                     }
                 }
                 else
@@ -579,13 +595,22 @@ namespace Personal_Investment_App
             }
 
             decimal totalFinal = totalCurrentValue + totalSoldValue;
-            decimal totalChange = totalInvested == 0 ? 0 : ((totalFinal - totalInvested) / totalInvested) * 100;
-            string result = totalChange >= 0 ? $"+{totalChange:F2}%" : $"{totalChange:F2}%";
+            decimal totalChange = totalFinal - totalInvested;
+            decimal aktualnyBilans = aktualnaWartosc - aktualnieZainwestowane;
 
-            labelBilans.Text = $"Bilans ogólny: {result}";
-            labelBilans.ForeColor = totalChange > 0 ? Color.LightGreen : totalChange < 0 ? Color.Red : Color.Orange;
+            string znak = totalChange >= 0 ? "+" : "";
+            string znakAktualny = aktualnyBilans >= 0 ? "+" : "";
+
+            labelBilans.Text = $"Bilans konta:         {znak}{totalChange:F2} USD";
+            labelBilans.ForeColor = totalChange > 0 ? Color.LightGreen :
+                                    totalChange < 0 ? Color.Red :
+                                                      Color.Gold;
+
+            labelBilansAktualny.Text = $"Bilans aktualny:   {znakAktualny}{aktualnyBilans:F2} USD";
+            labelBilansAktualny.ForeColor = aktualnyBilans > 0 ? Color.LightGreen :
+                                            aktualnyBilans < 0 ? Color.Red :
+                                                                 Color.Gold;
         }
-
 
 
         private async void btnOdswiez_Click(object sender, EventArgs e)
@@ -699,9 +724,10 @@ namespace Personal_Investment_App
                 // Oblicz bilans
                 decimal totalBuyValue = buyPrice.Value * inwestycja.NumberOfShares;
                 decimal totalCurrentValue = currentPrice.Value * inwestycja.NumberOfShares;
+                decimal valueChange = totalCurrentValue - totalBuyValue;
 
                 decimal change = ((totalCurrentValue - totalBuyValue) / totalBuyValue) * 100;
-                string bilansText = change >= 0 ? $"+{change:F2}%" : $"{change:F2}%";
+                string bilansText = change >= 0 ? $"{valueChange} USD,   +{change:F2}%" : $"{valueChange} USD,   {change:F2}%";
 
                 item.SubItems[8].Text = bilansText;
                 item.ForeColor = change > 0 ? Color.LightGreen : change < 0 ? Color.Red : Color.Yellow;
@@ -751,7 +777,7 @@ namespace Personal_Investment_App
             listView1.Columns.Add("Data Zakupu", 100);
             listView1.Columns.Add("Data Sprzedaży", 120);
             listView1.Columns.Add("Wartość Sprzedaży", 130);
-            listView1.Columns.Add("Zysk/Strata", 100);
+            listView1.Columns.Add("Zysk/Strata", 254);
             listView1.Columns.Add("Typ", 100);
 
             var sprzedaneInwestycje = dbManager.Investments
@@ -775,6 +801,7 @@ namespace Personal_Investment_App
                 int numberOfShares = inv.NumberOfShares;
                 decimal totalBuy = buyPrice * numberOfShares;
                 decimal totalSell = ostatniaSprzedaz.Value * numberOfShares;
+                decimal changeValue = totalSell - totalBuy;
 
                 decimal changePercent = totalBuy != 0m
                     ? ((totalSell - totalBuy) / totalBuy) * 100m
@@ -786,7 +813,7 @@ namespace Personal_Investment_App
                 item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
                 item.SubItems.Add(ostatniaSprzedaz.Date.ToShortDateString());
                 item.SubItems.Add($"{ostatniaSprzedaz.Value:F2} USD");
-                item.SubItems.Add($"{(changePercent >= 0 ? "+" : "")}{changePercent:F2}%");
+                item.SubItems.Add($"{changeValue:F2} USD,   {(changePercent >= 0 ? "+" : "")}{changePercent:F2}%");
                 item.SubItems.Add(inv.Type?.Name ?? "Brak");
 
                 item.ImageIndex = (inv.Type?.Category?.Name == "Akcje") ? 1 : -1;
@@ -809,6 +836,92 @@ namespace Personal_Investment_App
             aktualnyWidok = WidokAkcji.Aktywne;
 
             btnOdswiez_Click(sender, e); // Odśwież aktywne inwestycje
+        }
+
+        private void generujRaportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var form = new ReportForm())
+            {
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    bool sprzedane = form.FiltrSprzedane;
+                    bool filtrTicker = form.FiltrTickerAktywny;
+                    string ticker = form.Ticker?.ToUpper();
+                    DateTime dataOd = form.DataOd.Date;
+                    DateTime dataDo = form.DataDo.Date;
+
+                    int userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik) ?? 0;
+
+                    // Wyłącznie sprzedane inwestycje
+                    var query = dbManager.Investments
+                        .Where(inv => inv.UserId == userId && inv.IsSold)
+                        .Where(inv => inv.DateOfInvestment >= dataOd && inv.DateOfInvestment <= dataDo);
+
+                    if (filtrTicker && !string.IsNullOrEmpty(ticker))
+                    {
+                        query = query.Where(inv => inv.Name.ToUpper() == ticker);
+                    }
+
+                    var investments = query.ToList();
+
+                    decimal wartoscZainwestowana = 0;
+                    decimal wartoscUzyskana = 0;
+
+                    foreach (var inv in investments)
+                    {
+                        decimal kupno = inv.BuyPrice * inv.NumberOfShares;
+                        wartoscZainwestowana += kupno;
+
+                        var sprzedaz = inv.ReturnsHistories
+                            .OrderByDescending(r => r.Date)
+                            .FirstOrDefault();
+
+                        if (sprzedaz != null)
+                        {
+                            wartoscUzyskana += sprzedaz.Value * inv.NumberOfShares;
+                        }
+                        else
+                        {
+                            wartoscUzyskana += kupno;
+                        }
+                    }
+
+                    decimal zysk = wartoscUzyskana - wartoscZainwestowana;
+
+                    // Wyznacz kolor w zależności od wyniku
+                    Color kolorZysku;
+                    if (zysk > 0)
+                        kolorZysku = Color.LightGreen;
+                    else if (zysk < 0)
+                        kolorZysku = Color.Red;
+                    else
+                        kolorZysku = Color.Gold;
+
+                    // Buduj nagłówek
+                    string zakres = $"Raport za okres: \n   {dataOd:yyyy-MM-dd} do {dataDo:yyyy-MM-dd}";
+                    string filtrAkcji = filtrTicker && !string.IsNullOrEmpty(ticker)
+                        ? $"dla akcji: {ticker}"
+                        : "dla wszystkich akcji";
+
+                    string naglowek = $"{zakres}\n{filtrAkcji}";
+
+                    var culture = new System.Globalization.CultureInfo("en-US");
+
+                    // Przygotuj labelRaport
+                    labelRaport.Text =
+                        $"{naglowek}\n\n" +
+                        $"Wartość zainwestowana:\n   {wartoscZainwestowana:F2} USD\n" +
+                        $"Wartość uzyskana ze sprzedaży:\n   {wartoscUzyskana:F2} USD\n" +
+                        $"Zysk / Strata:\n    {zysk:F2} USD";
+
+                    labelRaport.ForeColor = kolorZysku;
+   
+                    labelRaport.Visible = true;
+
+                    if (!panelUser.Controls.Contains(labelRaport))
+                        panelUser.Controls.Add(labelRaport);
+                }
+            }
         }
     }
 }

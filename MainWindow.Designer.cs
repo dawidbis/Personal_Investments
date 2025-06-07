@@ -39,6 +39,7 @@ namespace Personal_Investment_App
             panelUser = new Panel();
             labelWelcome = new Label();
             labelBilans=new Label();
+            labelBilansAktualny =new Label();
             panelMain = new Panel();
             groupBox1 = new GroupBox();
             listView1 = new ListView();
@@ -67,20 +68,18 @@ namespace Personal_Investment_App
 
             menuStrip2.Items.AddRange(new ToolStripItem[] {
             inwestycjePersonalneToolStripMenuItem,
-            generujRaportToolStripMenuItem,
+            generujRaportToolStripMenuItem,    
             eksportujDaneToolStripMenuItem,
             importujDaneToolStripMenuItem,
             UsunKontoToolStripMenuItem,
             wylogujToolStripMenuItem1,
             sprzedajToolStripMenuItem
-        });
-
-            inwestycjePersonalneToolStripMenuItem.Text = "Dodaj inwestycję";
-
-            inwestycjePersonalneToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
-            akcjaToolStripMenuItem, obligacjaToolStripMenuItem,
-            kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem
-        });
+            });
+                inwestycjePersonalneToolStripMenuItem.Text = "Dodaj inwestycję";
+                inwestycjePersonalneToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
+                akcjaToolStripMenuItem, obligacjaToolStripMenuItem,
+                kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem
+            });
 
             akcjaToolStripMenuItem.Text = "Akcja";
             akcjaToolStripMenuItem.Click += akcjaToolStripMenuItem_Click;
@@ -89,6 +88,7 @@ namespace Personal_Investment_App
             surowiecToolStripMenuItem.Text = "Surowiec";
 
             generujRaportToolStripMenuItem.Text = "Generuj raport";
+            generujRaportToolStripMenuItem.Click += generujRaportToolStripMenuItem_Click;
             eksportujDaneToolStripMenuItem.Text = "Eksportuj dane";
             eksportujDaneToolStripMenuItem.Click += eksportujDaneToolStripMenuItem_Click;
             importujDaneToolStripMenuItem.Text = "Importuj dane";
@@ -97,7 +97,7 @@ namespace Personal_Investment_App
             UsunKontoToolStripMenuItem.Click += UsunKontoToolStripMenuItem_Click;
             wylogujToolStripMenuItem1.Text = "Wyloguj";
             wylogujToolStripMenuItem1.Click += wylogujToolStripMenuItem1_Click;
-            sprzedajToolStripMenuItem.Text = "Sprzedaj wybrane inwestycje";
+            sprzedajToolStripMenuItem.Text = "Sprzedaj zaznaczoną inwestycję";
             sprzedajToolStripMenuItem.Click += sprzedajToolStripMenuItem_Click;
           
 
@@ -106,14 +106,14 @@ namespace Personal_Investment_App
             {
                 parent.Padding = new Padding(15, 10, 15, 10);
                 parent.ForeColor = Color.White;
+                parent.Margin = new Padding(10, 0, 0, 0); // przesunięcie w dół'
 
                 foreach (ToolStripItem subItem in parent.DropDownItems)
                 {
                     subItem.BackColor = Color.FromArgb(25, 25, 35);
                     subItem.ForeColor = Color.White;
-                    subItem.Padding = new Padding(20, 15, 20, 15); // większy padding góra-dół
-                    subItem.Height = 45;
-                    subItem.Margin = new Padding(0, 5, 0, 5); // przesunięcie w dół
+                    subItem.Padding = new Padding(6, 7, 6, 7); // większy padding góra-dół
+                    subItem.Height = 25;   
                     subItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
                     subItem.MouseEnter += (s, e) => { menuStrip2.Cursor = Cursors.Hand; };
                     subItem.MouseLeave += (s, e) => { menuStrip2.Cursor = Cursors.Default; };
@@ -122,7 +122,7 @@ namespace Personal_Investment_App
 
             // panelUser
             panelUser.Dock = DockStyle.Left;
-            panelUser.Width = 200;
+            panelUser.Width = 300;
             panelUser.BackColor = Color.FromArgb(10, 10, 10);
             panelUser.Controls.Add(labelWelcome);
             panelUser.Controls.Add(labelBilans);
@@ -138,6 +138,13 @@ namespace Personal_Investment_App
             labelBilans.Location = new Point(10, 80);
             labelBilans.AutoSize = true;
             labelBilans.Text = "Bilans ogólny: BILANS";
+
+
+            labelBilansAktualny.ForeColor = Color.White;
+            labelBilansAktualny.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            labelBilansAktualny.Location = new Point(10, 110);
+            labelBilansAktualny.AutoSize = true;
+            labelBilansAktualny.Text = "Bilans aktualny: BILANS";
 
             checkBoxTrybTestowy = new CheckBox();
             checkBoxTrybTestowy.ForeColor = Color.White;
@@ -174,6 +181,18 @@ namespace Personal_Investment_App
             panelMain.Controls.Add(btnOdswiez);
             panelMain.Controls.Add(btnHistoria);
             panelMain.Controls.Add(btnAktualne);
+
+            labelRaport = new Label()
+            {
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Location = new Point(10, 340), // pod labelBilans (który jest na 80)
+                AutoSize = true,
+                Visible = false // domyślnie niewidoczny
+            };
+
+            panelUser.Controls.Add(labelRaport);
+            panelUser.Controls.Add(labelBilansAktualny);
 
             groupBox1.Dock = DockStyle.Top;
             groupBox1.Height = 480;
@@ -222,7 +241,7 @@ namespace Personal_Investment_App
             btnHistoria.FlatAppearance.BorderSize = 1;
             btnHistoria.Click += btnHistoria_Click;
 
-            btnAktualne.Text = "Aktywne inwestycje";
+            btnAktualne.Text = "Twoje inwestycje";
             btnAktualne.Location = new Point(30, 500);
             btnAktualne.Size = new Size(150, 40);
             btnAktualne.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
@@ -238,7 +257,7 @@ namespace Personal_Investment_App
             MaximizeBox = false;
             MinimizeBox = false;
             ControlBox = true;
-            ClientSize = new Size(1300, 640);
+            ClientSize = new Size(1400, 640);
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Personal Investments";
             Controls.Add(panelMain);
@@ -272,6 +291,7 @@ namespace Personal_Investment_App
         private ToolStripMenuItem sprzedajToolStripMenuItem;
         private Panel panelUser;
         private Label labelWelcome;
+        private Label labelBilansAktualny;
         private Label labelBilans;
         private Panel panelMain;
         private GroupBox groupBox1;
@@ -283,6 +303,7 @@ namespace Personal_Investment_App
         private CheckBox checkBoxTrybTestowy;
         private TextBox textBoxAktualnaCenaTest;
         private Label labelTestPrice;
+        private Label labelRaport;
 
         public class DarkToolStripRenderer : ToolStripProfessionalRenderer
         {
