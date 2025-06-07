@@ -142,6 +142,7 @@ namespace Personal_Investment_App
             checkBoxTrybTestowy.AutoSize = true;
             checkBoxTrybTestowy.Text = "Tryb testowy";
             checkBoxTrybTestowy.CheckedChanged += checkBoxTrybTestowy_CheckedChanged;
+            checkBoxTrybTestowy.Visible = false;
             panelUser.Controls.Add(checkBoxTrybTestowy);
 
             // Etykieta do pola aktualnej ceny

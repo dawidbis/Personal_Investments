@@ -82,6 +82,8 @@ namespace Personal_Investment_App
 
             labelWelcome.Text = $"Cześć, {zalogowanyUzytkownik}!";
 
+            checkBoxTrybTestowy.Visible = zalogowanyUzytkownik.ToLower() == "admin";
+
             int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
             if (userId.HasValue)
             {
@@ -507,6 +509,7 @@ namespace Personal_Investment_App
                 SetupListView(userId); // Odśwież listę inwestycji
             }
         }
+
         public async Task RefreshTotalBalanceAsync(int userId, bool useMockOnFail = false, Dictionary<int, decimal>? pricesFromListView = null)
         {
             decimal totalInvested = 0;
