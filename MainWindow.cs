@@ -280,6 +280,49 @@ namespace Personal_Investment_App
 
             form.Show();
         }
+
+
+        private void obligacjaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
+
+            if (userId == null)
+            {
+                MessageBox.Show("Nie można znaleźć zalogowanego użytkownika w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var form = new AddStockForm(dbManager, userId.Value, InvestmentKind.Kryptowaluta);
+
+            form.FormClosed += (s, args) =>
+            {
+                var inv = form.CreatedInvestment;
+                if (inv != null)
+                {
+                    var type = dbManager.InvestmentTypes.FirstOrDefault(t => t.Id == inv.TypeId);
+                    //var category = dbManager.InvestmentCategories.FirstOrDefault(c => c.Id == type.CategoryId);
+
+                    var item = new ListViewItem();
+                    item.SubItems.Add(inv.Name);
+                    item.SubItems.Add($"{inv.NumberOfShares} szt");
+                    item.SubItems.Add($"{inv.BuyPrice} USD" ?? "Brak");
+                    item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
+                    item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
+                    item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
+                    item.SubItems.Add(type?.Name ?? "Nieznany");
+
+                    listView1.Items.Add(item);
+                }
+
+                if (form.CreatedInvestment != null)
+                {
+                    SetupListView(userId.Value); // Odśwież listę
+                }
+            };
+
+            form.Show();
+        }
+
         private async void sprzedajToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listView1.SelectedItems.Count == 0 || aktualnyWidok == WidokAkcji.Historia)
@@ -792,7 +835,7 @@ namespace Personal_Investment_App
                 decimal valueChange = totalCurrentValue - totalBuyValue;
 
                 decimal change = ((totalCurrentValue - totalBuyValue) / totalBuyValue) * 100;
-                string bilansText = change >= 0 ? $"{valueChange} USD,   +{change:F2}%" : $"{valueChange} USD,   {change:F2}%";
+                string bilansText = change >= 0 ? $"{valueChange:F2} USD,   +{change:F2}%" : $"{valueChange:F2} USD,   {change:F2}%";
 
                 item.SubItems[8].Text = bilansText;
                 item.ForeColor = change > 0 ? Color.LightGreen : change < 0 ? Color.Red : Color.Yellow;
