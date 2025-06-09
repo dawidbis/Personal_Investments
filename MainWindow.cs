@@ -2,6 +2,7 @@
 using DatabaseConnection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic.ApplicationServices;
+using Personal_Investment_App.FinnhubApi;
 using Polygon_api;
 using ProgramLogic;
 using System.Data;
@@ -696,6 +697,7 @@ namespace Personal_Investment_App
             using (var context = new DatabaseManager())
             {
                 inwestycjeUzytkownika = context.Investments
+                    .Include(i => i.Type) // ✅ to jest wymagane!
                     .Where(i => i.UserId == userId && !i.IsSold)
                     .ToList();
             }
@@ -745,7 +747,14 @@ namespace Personal_Investment_App
                 }
                 else
                 {
-                    currentPrice = await FinnhubService.GetCurrentQuoteAsync(inwestycja.Name);
+                    if (inwestycja.Type?.Name == "Akcje")
+                    {
+                        currentPrice = await FinnhubService.GetCurrentQuoteAsync(inwestycja.Name);
+                    }
+                    else if (inwestycja.Type?.Name == "Kryptowaluty")
+                    {
+                        currentPrice = await FinnhubService.GetCurrentCryptoQuoteAsync(inwestycja.Name);
+                    }
                 }
 
                 if (currentPrice == null)

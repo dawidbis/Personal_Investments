@@ -69,12 +69,17 @@ namespace Polygon_api
             }
         }
 
-        public static async Task<decimal?> GetCurrentCryptoQuoteAsync(string cryptoSymbol)
+        public static async Task<decimal?> GetCurrentCryptoQuoteAsync(string userSymbol)
         {
             try
             {
-                // cryptoSymbol np. "BINANCE:BTCUSDT"
-                var url = $"https://finnhub.io/api/v1/quote?symbol={cryptoSymbol}&token={_apiKey}";
+                if (string.IsNullOrWhiteSpace(userSymbol))
+                    return null;
+
+                // Zawsze wymuś format BINANCE:{symbol}USDT
+                string cleanSymbol = userSymbol.Trim().ToUpper();
+                string url = $"https://finnhub.io/api/v1/quote?symbol=BINANCE:{cleanSymbol}USDT&token={_apiKey}";
+
                 var json = await _client.GetStringAsync(url);
                 var quote = JsonConvert.DeserializeObject<FinnHubQuote>(json);
 
@@ -89,6 +94,7 @@ namespace Polygon_api
                 return null;
             }
         }
+
 
     }
 }

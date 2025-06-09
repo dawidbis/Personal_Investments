@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -54,20 +55,33 @@ namespace Personal_Investment_App.FinnhubApi
             try
             {
                 string formattedDate = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                string toSymbol = "USD";  // na stałe
-                string url = $"https://api.polygon.io/v1/open-close/crypto/{fromSymbol.ToUpper()}/{toSymbol}/{formattedDate}?adjusted=true&apiKey={_apiKey}";
+                string toSymbol = "USD"; // na stałe
+                string ticker = $"X:{fromSymbol.ToUpper()}{toSymbol}";
+
+                string url = $"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{formattedDate}/{formattedDate}?adjusted=true&apiKey={_apiKey}";
                 string json = await _client.GetStringAsync(url);
 
-                var result = JsonConvert.DeserializeObject<PolygonCryptoDailyResponse>(json);
+                var result = JsonConvert.DeserializeObject<PolygonAggsResponse>(json);
 
-                if (result.status == "OK")
-                    return result.close;
+                if (result.status == "OK" && result.results != null && result.results.Count > 0)
+                {
+                    var dailyData = result.results[0];
+
+                    // Opcjonalnie wyświetlenie daty zwróconej przez API
+                    DateTime apiDate = DateTimeOffset.FromUnixTimeMilliseconds(dailyData.t).DateTime.Date;
+                    if (apiDate.Date != date.Date)
+                    {
+                        MessageBox.Show($"Uwaga: API zwróciło dane z dnia {apiDate:yyyy-MM-dd}, żądano {formattedDate}");
+                    }
+
+                    return dailyData.c;
+                }
 
                 return null;
             }
             catch (HttpRequestException ex)
             {
-                MessageBox.Show($"Błąd HTTP podczas pobierania danych kryptowalut z Polygon.io: {ex.Message}");
+                MessageBox.Show($"Błąd HTTP podczas pobierania danych: {ex.Message}");
                 return null;
             }
             catch (Exception ex)
@@ -76,7 +90,6 @@ namespace Personal_Investment_App.FinnhubApi
                 return null;
             }
         }
-
 
     }
 }

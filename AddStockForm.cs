@@ -38,7 +38,8 @@ namespace Personal_Investment_App
 
             buttonSave.Click += buttonSave_ClickAsync;
 
-            SetPlaceholder();
+            UpdateFormLabels(); // najpierw ustawiamy placeholderText
+            SetPlaceholder();   // potem ustawiamy go w polu tekstowym
 
             textBoxName.TextChanged += TextBoxName_TextChanged;
             textBoxName.GotFocus += TextBoxName_GotFocus;
@@ -49,14 +50,15 @@ namespace Personal_Investment_App
 
 
 
-        private readonly string placeholderText = "Podaj ticker NASDAQ np. GOOGL";
+        private string placeholderText;
         private bool isPlaceholderActive = true;
 
         private void UpdateFormLabels()
         {
             if (investmentKind == InvestmentKind.Kryptowaluta)
             {
-                lblName.Text = "Nazwa kryptowaluty:";
+                placeholderText = "Podaj ticker Binance np. BTC";
+                lblName.Text = "Ticker kryptowaluty:";
                 lblAmount.Text = "Ilość (np. 0.5 BTC):";
                 lblExpectedReturn.Text = "Oczekiwany zwrot (%):";
                 lblDate.Text = "Data zakupu:";
@@ -67,7 +69,8 @@ namespace Personal_Investment_App
             }
             else
             {
-                lblName.Text = "Nazwa akcji:";
+                placeholderText = "Podaj ticker NASDAQ np. GOOGL";
+                lblName.Text = "Ticker akcji:";
                 lblAmount.Text = "Liczba akcji:";
                 lblExpectedReturn.Text = "Oczekiwany zwrot (%):";
                 lblDate.Text = "Data inwestycji:";
@@ -76,6 +79,8 @@ namespace Personal_Investment_App
                 btnCenaAkcji.Text = "Sprawdź Cenę Akcji";
                 this.Text = "Dodaj akcję";
             }
+
+            SetPlaceholder();
         }
         private void SetPlaceholder()
         {
