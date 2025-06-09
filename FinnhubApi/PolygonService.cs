@@ -48,5 +48,35 @@ namespace Personal_Investment_App.FinnhubApi
                 return null;
             }
         }
+
+        public static async Task<decimal?> GetHistoricalCryptoClosePriceAsync(string fromSymbol, DateTime date)
+        {
+            try
+            {
+                string formattedDate = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                string toSymbol = "USD";  // na stałe
+                string url = $"https://api.polygon.io/v1/open-close/crypto/{fromSymbol.ToUpper()}/{toSymbol}/{formattedDate}?adjusted=true&apiKey={_apiKey}";
+                string json = await _client.GetStringAsync(url);
+
+                var result = JsonConvert.DeserializeObject<PolygonCryptoDailyResponse>(json);
+
+                if (result.status == "OK")
+                    return result.close;
+
+                return null;
+            }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show($"Błąd HTTP podczas pobierania danych kryptowalut z Polygon.io: {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Nieoczekiwany błąd: {ex.Message}");
+                return null;
+            }
+        }
+
+
     }
 }

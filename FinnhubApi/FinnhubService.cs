@@ -69,28 +69,26 @@ namespace Polygon_api
             }
         }
 
-        public static async Task<decimal?> GetHistoricalClosePriceAsync(string symbol, DateTime date)
+        public static async Task<decimal?> GetCurrentCryptoQuoteAsync(string cryptoSymbol)
         {
             try
             {
-                var from = new DateTimeOffset(date.Date).ToUnixTimeSeconds();
-                var to = new DateTimeOffset(date.Date.AddDays(1)).ToUnixTimeSeconds(); // Zakres: jeden dzień
+                // cryptoSymbol np. "BINANCE:BTCUSDT"
+                var url = $"https://finnhub.io/api/v1/quote?symbol={cryptoSymbol}&token={_apiKey}";
+                var json = await _client.GetStringAsync(url);
+                var quote = JsonConvert.DeserializeObject<FinnHubQuote>(json);
 
-                string url = $"https://finnhub.io/api/v1/stock/candle?symbol={symbol}&resolution=D&from={from}&to={to}&token={_apiKey}";
-
-                var response = await _client.GetStringAsync(url);
-                var candleResponse = JsonConvert.DeserializeObject<FinnhubCandleResponse>(response);
-
-                if (candleResponse == null || candleResponse.c == null || candleResponse.c.Length == 0 || candleResponse.s != "ok")
+                if (quote == null || quote.c == null || quote.c == 0 || quote.t == 0)
                     return null;
 
-                return candleResponse.c[0]; // Cena zamknięcia (close)
+                return quote.c;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Błąd pobierania danych historycznych: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Błąd pobierania ceny kryptowaluty: {ex.Message}");
                 return null;
             }
         }
+
     }
 }
