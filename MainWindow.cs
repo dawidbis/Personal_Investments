@@ -302,47 +302,58 @@ namespace Personal_Investment_App
 
             decimal marketPrice;
 
-            if (IsTrybTestowy)
+            using (var context = new DatabaseManager())
             {
-                var aktualnaCenaTekst = selectedItem.SubItems[7].Text;
+                var inwestycja = context.Investments
+                    .Include(i => i.Type)
+                    .FirstOrDefault(i => i.Id == investmentId);
 
-                if (!decimal.TryParse(aktualnaCenaTekst, out marketPrice))
+                if (inwestycja == null || inwestycja.Type == null)
                 {
-                    MessageBox.Show("Nie można odczytać aktualnej ceny z listy.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-            }
-            else
-            {
-                var latest = await FinnhubService.GetCurrentQuoteAsync(investmentName);
-
-                if (latest == null)
-                {
-                    MessageBox.Show("Nie udało się pobrać aktualnej ceny z API.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Nie znaleziono inwestycji lub jej typu.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                marketPrice = (decimal)latest;
-            }
-
-            bool success = dbManager.SellInvestment(investmentId, marketPrice);
-
-            if (success)
-            {
-                MessageBox.Show($"Inwestycja \"{investmentName}\" została sprzedana po cenie {marketPrice}.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
-                if (userId.HasValue)
+                if (IsTrybTestowy)
                 {
-                    SetupListView(userId.Value);
+                    var aktualnaCenaTekst = selectedItem.SubItems[7].Text;
+
+                    if (!decimal.TryParse(aktualnaCenaTekst, out marketPrice))
+                    {
+                        MessageBox.Show("Nie można odczytać aktualnej ceny z listy.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
                 }
-            }
-            else
-            {
-                MessageBox.Show("Nie udało się sprzedać inwestycji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else
+                {
+                    if (inwestycja.Type.Name == "Akcje")
+                    {
+                        var latest = await FinnhubService.GetCurrentQuoteAsync(inwestycja.Name);
+                        if (latest == null)
+                        {
+                            MessageBox.Show("Nie udało się pobrać aktualnej ceny akcji.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        marketPrice = (decimal)latest;
+                    }
+                    else if (inwestycja.Type.Name == "Kryptowaluty")
+                    {
+                        var latest = await FinnhubService.GetCurrentCryptoQuoteAsync(inwestycja.Name);
+                        if (latest == null)
+                        {
+                            MessageBox.Show("Nie udało się pobrać aktualnej ceny kryptowaluty.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        marketPrice = (decimal)latest;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nieobsługiwany typ inwestycji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
             }
         }
-
 
 
         private void eksportujDaneToolStripMenuItem_Click(object sender, EventArgs e)
