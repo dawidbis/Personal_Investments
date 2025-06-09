@@ -87,6 +87,7 @@ namespace Personal_Investment_App
             obligacjaToolStripMenuItem.Text = "Obligacja";
             kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
             surowiecToolStripMenuItem.Text = "Surowiec";
+            surowiecToolStripMenuItem.Click += surowiecToolStripMenuItem_Click;
 
             generujRaportToolStripMenuItem.Text = "Generuj raport";
             generujRaportToolStripMenuItem.Click += generujRaportToolStripMenuItem_Click;
@@ -275,7 +276,6 @@ namespace Personal_Investment_App
             ResumeLayout(false);
             PerformLayout();
         }
-
         #endregion
 
         private MenuStrip menuStrip2;

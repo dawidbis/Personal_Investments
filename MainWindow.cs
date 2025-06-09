@@ -67,7 +67,8 @@ namespace Personal_Investment_App
                 item.ImageIndex = inv.Type?.Category?.Name switch
                 {
                     "Akcje" => 1,           // graph.png
-                    "Kryptowaluty" => 0,    // bitcoin.png
+                    "Kryptowaluty" => 0,    //bitcoin.png   
+                    "Surowce" => 3,          //bars.png
                     _ => -1
                 };
 
@@ -281,7 +282,46 @@ namespace Personal_Investment_App
             form.Show();
         }
 
+        private void surowiecToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
 
+            if (userId == null)
+            {
+                MessageBox.Show("Nie można znaleźć zalogowanego użytkownika w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var form = new AddStockForm(dbManager, userId.Value, InvestmentKind.Surowiec);
+
+            form.FormClosed += (s, args) =>
+            {
+                var inv = form.CreatedInvestment;
+                if (inv != null)
+                {
+                    var type = dbManager.InvestmentTypes.FirstOrDefault(t => t.Id == inv.TypeId);
+                    //var category = dbManager.InvestmentCategories.FirstOrDefault(c => c.Id == type.CategoryId);
+
+                    var item = new ListViewItem();
+                    item.SubItems.Add(inv.Name);
+                    item.SubItems.Add($"{inv.NumberOfShares} szt");
+                    item.SubItems.Add($"{inv.BuyPrice} USD" ?? "Brak");
+                    item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
+                    item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
+                    item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
+                    item.SubItems.Add(type?.Name ?? "Nieznany");
+
+                    listView1.Items.Add(item);
+                }
+
+                if (form.CreatedInvestment != null)
+                {
+                    SetupListView(userId.Value); // Odśwież listę
+                }
+            };
+
+            form.Show();
+        }
         private void obligacjaToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
@@ -385,6 +425,16 @@ namespace Personal_Investment_App
                         if (latest == null)
                         {
                             MessageBox.Show("Nie udało się pobrać aktualnej ceny kryptowaluty.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        marketPrice = (decimal)latest;
+                    }
+                    else if(inwestycja.Type.Name=="Surowce")
+                    {
+                        var latest = await TwelveDataService.GetTodayClosePriceAsync(inwestycja.Name);
+                        if (latest == null)
+                        {
+                            MessageBox.Show("Nie udało się pobrać aktualnej ceny surowca.", "Błąd API", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         marketPrice = (decimal)latest;
@@ -809,6 +859,10 @@ namespace Personal_Investment_App
                     {
                         currentPrice = await FinnhubService.GetCurrentCryptoQuoteAsync(inwestycja.Name);
                     }
+                    else
+                    {
+                        currentPrice=await TwelveDataService.GetTodayClosePriceAsync(inwestycja.Name);
+                    }
                 }
 
                 if (currentPrice == null)
@@ -927,7 +981,8 @@ namespace Personal_Investment_App
                 item.ImageIndex = inv.Type?.Category?.Name switch
                 {
                     "Akcje" => 1,           // graph.png
-                    "Kryptowaluty" => 0,    // bitcoin.png
+                    "Kryptowaluty" => 0,    //bitcoin.png   
+                    "Surowce"=> 3,          //bars.png
                     _ => -1
                 };
 

@@ -17,7 +17,8 @@ namespace Personal_Investment_App
     public enum InvestmentKind
     {
         Akcja,
-        Kryptowaluta
+        Kryptowaluta,
+        Surowiec
     }
 
     public partial class AddStockForm : Form
@@ -67,7 +68,19 @@ namespace Personal_Investment_App
                 btnCenaAkcji.Text = "Sprawdź Cenę Krypto";
                 this.Text = "Dodaj kryptowalutę";
             }
-            else
+            else if (investmentKind == InvestmentKind.Surowiec)
+            {
+                placeholderText = "Podaj ticker surowca np. XAU/USD";
+                lblName.Text = "Ticker surowca:";
+                lblAmount.Text = "Ilość jednostek (np. 1.5 uncji):";
+                lblExpectedReturn.Text = "Oczekiwany zwrot (%):";
+                lblDate.Text = "Data zakupu:";
+                lblNotes.Text = "Notatki:";
+                label1.Text = "Stop Loss (%):";
+                btnCenaAkcji.Text = "Sprawdź Cenę Surowca";
+                this.Text = "Dodaj surowiec";
+            }
+            else // domyślnie akcje
             {
                 placeholderText = "Podaj ticker NASDAQ np. GOOGL";
                 lblName.Text = "Ticker akcji:";
@@ -144,13 +157,13 @@ namespace Personal_Investment_App
         {
             if (string.IsNullOrWhiteSpace(textBoxName.Text) || isPlaceholderActive)
             {
-                MessageBox.Show($"Podaj nazwę {(investmentKind == InvestmentKind.Akcja ? "akcji (ticker)" : "kryptowaluty")}.", "Wymagane", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Podaj nazwę {(investmentKind == InvestmentKind.Akcja ? "akcji (ticker)" : investmentKind == InvestmentKind.Kryptowaluta ? "kryptowaluty" : "surowca")}.", "Wymagane", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!decimal.TryParse(textBoxAmount.Text, out var amount))
             {
-                MessageBox.Show($"Podaj prawidłową liczbę {(investmentKind == InvestmentKind.Akcja ? "akcji" : "jednostek kryptowaluty")}.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Podaj prawidłową liczbę {(investmentKind == InvestmentKind.Akcja ? "akcji" : investmentKind == InvestmentKind.Kryptowaluta ? "jednostek kryptowaluty" : "jednostek surowca")}.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -178,11 +191,11 @@ namespace Personal_Investment_App
                 return;
             }
 
-            // Wybór typu inwestycji
             InvestmentType investmentType = investmentKind switch
             {
                 InvestmentKind.Akcja => dbManager.GetOrCreateStockInvestmentType(),
                 InvestmentKind.Kryptowaluta => dbManager.GetOrCreateCryptoInvestmentType(),
+                InvestmentKind.Surowiec => dbManager.GetOrCreateCommodityInvestmentType(),
                 _ => null
             };
 
@@ -218,17 +231,28 @@ namespace Personal_Investment_App
             {
                 if (selectedDate < DateTime.Today)
                 {
-                    buyPrice = await PolygonService.GetHistoricalCryptoClosePriceAsync(symbol,selectedDate);
+                    buyPrice = await PolygonService.GetHistoricalCryptoClosePriceAsync(symbol, selectedDate);
                 }
                 else
                 {
                     buyPrice = await FinnhubService.GetCurrentCryptoQuoteAsync(symbol);
                 }
             }
+            else if (investmentKind == InvestmentKind.Surowiec)
+            {
+                if (selectedDate < DateTime.Today)
+                {
+                    buyPrice = await TwelveDataService.GetHistoricalClosePriceAsync(symbol, selectedDate);
+                }
+                else
+                {
+                    buyPrice = await TwelveDataService.GetTodayClosePriceAsync(symbol);
+                }
+            }
 
             if (buyPrice == null)
             {
-                MessageBox.Show($"Nie udało się pobrać ceny {(investmentKind == InvestmentKind.Akcja ? "akcji" : "kryptowaluty")} dla wybranej daty.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Nie udało się pobrać ceny {(investmentKind == InvestmentKind.Akcja ? "akcji" : investmentKind == InvestmentKind.Kryptowaluta ? "kryptowaluty" : "surowca")} dla wybranej daty.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -247,9 +271,10 @@ namespace Personal_Investment_App
 
             CreatedInvestment = dbManager.AddInvestment(investment);
 
-            MessageBox.Show($"{(investmentKind == InvestmentKind.Akcja ? "Inwestycja w akcję" : "Inwestycja w kryptowalutę")} została dodana.");
+            MessageBox.Show($"Inwestycja w {(investmentKind == InvestmentKind.Akcja ? "akcję" : investmentKind == InvestmentKind.Kryptowaluta ? "kryptowalutę" : "surowiec")} została dodana.");
             this.Close();
         }
+
 
 
 
@@ -274,7 +299,7 @@ namespace Personal_Investment_App
             }
 
             DateTime selectedDate = dateTimePicker.Value.Date;
-            DateTime today = DateTime.Now.Date;
+            DateTime today = DateTime.UtcNow.Date;
 
             try
             {
@@ -282,17 +307,17 @@ namespace Personal_Investment_App
 
                 if (selectedDate < today)
                 {
-                    // Pobierz cenę historyczną w zależności od rodzaju inwestycji
                     price = investmentKind switch
                     {
                         InvestmentKind.Akcja => await PolygonService.GetHistoricalClosePriceAsync(ticker, selectedDate),
                         InvestmentKind.Kryptowaluta => await PolygonService.GetHistoricalCryptoClosePriceAsync(ticker, selectedDate),
+                        InvestmentKind.Surowiec => await TwelveDataService.GetHistoricalClosePriceAsync(ticker, selectedDate),
                         _ => null
                     };
 
                     if (price == null)
                     {
-                        MessageBox.Show($"Brak danych historycznych dla {ticker} z dnia {selectedDate:yyyy-MM-dd}.", "Brak danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show($"Brak danych historycznych dla {ticker} z dnia {selectedDate:yyyy-MM-dd}. (możliwe, że giełda była zamknięta)", "Brak danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -300,11 +325,11 @@ namespace Personal_Investment_App
                 }
                 else
                 {
-                    // Pobierz aktualną cenę
                     price = investmentKind switch
                     {
                         InvestmentKind.Akcja => await FinnhubService.GetCurrentQuoteAsync(ticker),
                         InvestmentKind.Kryptowaluta => await FinnhubService.GetCurrentCryptoQuoteAsync(ticker),
+                        InvestmentKind.Surowiec => await TwelveDataService.GetTodayClosePriceAsync(ticker),
                         _ => null
                     };
 
@@ -322,6 +347,8 @@ namespace Personal_Investment_App
                 MessageBox.Show($"Wystąpił błąd podczas pobierania danych: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
 
     }
 }

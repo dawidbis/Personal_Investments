@@ -280,6 +280,43 @@ namespace DatabaseConnection
             return cryptoType;
         }
 
+        public InvestmentType GetOrCreateCommodityInvestmentType()
+        {
+            // Znajdź lub utwórz kategorię "Surowce"
+            var commodityCategory = this.InvestmentCategories
+                .FirstOrDefault(c => c.Name == "Surowce");
+
+            if (commodityCategory == null)
+            {
+                commodityCategory = new InvestmentCategory
+                {
+                    Name = "Surowce",
+                    Description = "Inwestycje w surowce takie jak złoto, ropa, srebro itp."
+                };
+                this.InvestmentCategories.Add(commodityCategory);
+                this.SaveChanges();
+            }
+
+            // Znajdź lub utwórz typ inwestycji "Surowce"
+            var commodityType = this.InvestmentTypes
+                .FirstOrDefault(t => t.Name == "Surowce");
+
+            if (commodityType == null)
+            {
+                commodityType = new InvestmentType
+                {
+                    Name = "Surowce",
+                    CategoryId = commodityCategory.Id
+                };
+
+                this.InvestmentTypes.Add(commodityType);
+                this.SaveChanges();
+            }
+
+            return commodityType;
+        }
+
+
         public int? GetUserIdByUsername(string username)
         {
             var user = this.Users.FirstOrDefault(u => u.Username == username);
@@ -347,6 +384,10 @@ namespace DatabaseConnection
                         else if (investment.Type?.Name == "Kryptowaluty")
                         {
                             currentPrice = await FinnhubService.GetCurrentCryptoQuoteAsync(investment.Name);
+                        }
+                        else if(investment.Type?.Name=="Surowce")
+                        {
+                            currentPrice=await TwelveDataService.GetTodayClosePriceAsync(investment.Name);
                         }
                     }
 
