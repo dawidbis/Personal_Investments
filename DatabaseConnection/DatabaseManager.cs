@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Personal_Investment_App.DatabaseConnection;
+using Personal_Investment_App.FinnhubApi;
 using Polygon_api;
 using ProgramLogic;
 using System;
@@ -338,7 +339,15 @@ namespace DatabaseConnection
                     }
                     else
                     {
-                        currentPrice = await FinnhubService.GetCurrentQuoteAsync(investment.Name);
+
+                        if (investment.Type?.Name == "Akcje")
+                        {
+                            currentPrice = await FinnhubService.GetCurrentQuoteAsync(investment.Name);
+                        }
+                        else if (investment.Type?.Name == "Kryptowaluty")
+                        {
+                            currentPrice = await FinnhubService.GetCurrentCryptoQuoteAsync(investment.Name);
+                        }
                     }
 
                     if (!currentPrice.HasValue)
