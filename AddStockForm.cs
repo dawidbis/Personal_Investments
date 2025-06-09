@@ -14,6 +14,12 @@ using Personal_Investment_App.FinnhubApi;
 
 namespace Personal_Investment_App
 {
+    public enum InvestmentKind
+    {
+        Akcja,
+        Kryptowaluta
+    }
+
     public partial class AddStockForm : Form
     {
         private readonly DatabaseManager dbManager;
@@ -21,11 +27,14 @@ namespace Personal_Investment_App
 
         public Investment CreatedInvestment { get; private set; }
 
-        public AddStockForm(DatabaseManager dbManager, int userId)
+        private readonly InvestmentKind investmentKind;
+
+        public AddStockForm(DatabaseManager dbManager, int userId, InvestmentKind kind)
         {
             InitializeComponent();
             this.dbManager = dbManager;
             this.userId = userId;
+            this.investmentKind = kind;
 
             buttonSave.Click += buttonSave_ClickAsync;
 
@@ -34,12 +43,40 @@ namespace Personal_Investment_App
             textBoxName.TextChanged += TextBoxName_TextChanged;
             textBoxName.GotFocus += TextBoxName_GotFocus;
             textBoxName.LostFocus += TextBoxName_LostFocus;
+
+            UpdateFormLabels(); // <-- aktualizacja etykiet zależnie od typu inwestycji
         }
+
 
 
         private readonly string placeholderText = "Podaj ticker NASDAQ np. GOOGL";
         private bool isPlaceholderActive = true;
 
+        private void UpdateFormLabels()
+        {
+            if (investmentKind == InvestmentKind.Kryptowaluta)
+            {
+                lblName.Text = "Nazwa kryptowaluty:";
+                lblAmount.Text = "Ilość (np. 0.5 BTC):";
+                lblExpectedReturn.Text = "Oczekiwany zwrot (%):";
+                lblDate.Text = "Data zakupu:";
+                lblNotes.Text = "Notatki:";
+                label1.Text = "Stop Loss (%):";
+                btnCenaAkcji.Text = "Sprawdź Cenę Krypto";
+                this.Text = "Dodaj kryptowalutę";
+            }
+            else
+            {
+                lblName.Text = "Nazwa akcji:";
+                lblAmount.Text = "Liczba akcji:";
+                lblExpectedReturn.Text = "Oczekiwany zwrot (%):";
+                lblDate.Text = "Data inwestycji:";
+                lblNotes.Text = "Notatki:";
+                label1.Text = "Stop Loss (%):";
+                btnCenaAkcji.Text = "Sprawdź Cenę Akcji";
+                this.Text = "Dodaj akcję";
+            }
+        }
         private void SetPlaceholder()
         {
             isPlaceholderActive = true;
@@ -102,13 +139,13 @@ namespace Personal_Investment_App
         {
             if (string.IsNullOrWhiteSpace(textBoxName.Text) || isPlaceholderActive)
             {
-                MessageBox.Show("Podaj nazwę akcji (ticker).", "Wymagane", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Podaj nazwę {(investmentKind == InvestmentKind.Akcja ? "akcji (ticker)" : "kryptowaluty")}.", "Wymagane", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!decimal.TryParse(textBoxAmount.Text, out var amount))
             {
-                MessageBox.Show("Podaj prawidłową liczbę akcji.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Podaj prawidłową liczbę {(investmentKind == InvestmentKind.Akcja ? "akcji" : "jednostek kryptowaluty")}.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -124,7 +161,6 @@ namespace Personal_Investment_App
                 return;
             }
 
-            // Walidacja logiczna
             if (expectedReturn <= 0)
             {
                 MessageBox.Show("Oczekiwany zwrot musi być większy niż 0%.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -137,15 +173,20 @@ namespace Personal_Investment_App
                 return;
             }
 
-            // Pobranie typu inwestycji
-            var stockType = dbManager.GetOrCreateStockInvestmentType();
-            if (stockType == null)
+            // Wybór typu inwestycji
+            InvestmentType investmentType = investmentKind switch
             {
-                MessageBox.Show("Nie znaleziono typu inwestycji 'Akcje' w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                InvestmentKind.Akcja => dbManager.GetOrCreateStockInvestmentType(),
+                InvestmentKind.Kryptowaluta => dbManager.GetOrCreateCryptoInvestmentType(),
+                _ => null
+            };
+
+            if (investmentType == null)
+            {
+                MessageBox.Show("Nie znaleziono typu inwestycji w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // Pobranie ceny akcji
             DateTime selectedDate = dateTimePicker.Value.Date;
             if (selectedDate > DateTime.Today)
             {
@@ -153,45 +194,58 @@ namespace Personal_Investment_App
                 return;
             }
 
-            decimal? buyPrice;
+            decimal? buyPrice = null;
+            string symbol = textBoxName.Text.Trim();
 
-            if (selectedDate < DateTime.Today)
+            if (investmentKind == InvestmentKind.Akcja)
             {
-                // Jeśli data jest wcześniejsza niż dziś → użyj Polygon.io
-                DateTime tradingDate = PolygonService.GetLastTradingDay(selectedDate);
-                buyPrice = await PolygonService.GetHistoricalClosePriceAsync(textBoxName.Text.Trim(), tradingDate);
+                if (selectedDate < DateTime.Today)
+                {
+                    DateTime tradingDate = PolygonService.GetLastTradingDay(selectedDate);
+                    buyPrice = await PolygonService.GetHistoricalClosePriceAsync(symbol, tradingDate);
+                }
+                else
+                {
+                    buyPrice = await FinnhubService.GetCurrentQuoteAsync(symbol);
+                }
             }
-            else
+            else if (investmentKind == InvestmentKind.Kryptowaluta)
             {
-                // Jeśli dziś → użyj Finnhub do pobrania bieżącej ceny
-                buyPrice = await FinnhubService.GetCurrentQuoteAsync(textBoxName.Text.Trim());
+                if (selectedDate < DateTime.Today)
+                {
+                    buyPrice = await PolygonService.GetHistoricalCryptoClosePriceAsync(symbol,selectedDate);
+                }
+                else
+                {
+                    buyPrice = await FinnhubService.GetCurrentCryptoQuoteAsync(symbol);
+                }
             }
 
             if (buyPrice == null)
             {
-                MessageBox.Show("Nie udało się pobrać ceny akcji dla wybranej daty.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Nie udało się pobrać ceny {(investmentKind == InvestmentKind.Akcja ? "akcji" : "kryptowaluty")} dla wybranej daty.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Utworzenie inwestycji
             var investment = new Investment
             {
-                Name = textBoxName.Text.Trim(),
-                NumberOfShares = (int)amount,
-                DateOfInvestment = dateTimePicker.Value,
+                Name = symbol,
+                NumberOfShares = amount,
+                DateOfInvestment = selectedDate,
                 ExpectedReturnPercent = expectedReturn / 100m,
                 StopLossPercent = stopLoss / 100m,
                 Notes = textBoxNotes.Text,
                 BuyPrice = buyPrice.Value,
-                TypeId = stockType.Id,
+                TypeId = investmentType.Id,
                 UserId = userId
             };
 
             CreatedInvestment = dbManager.AddInvestment(investment);
 
-            MessageBox.Show("Inwestycja została dodana.");
+            MessageBox.Show($"{(investmentKind == InvestmentKind.Akcja ? "Inwestycja w akcję" : "Inwestycja w kryptowalutę")} została dodana.");
             this.Close();
         }
+
 
 
         private void textBoxAmount_TextChanged(object sender, EventArgs e)
@@ -210,7 +264,7 @@ namespace Personal_Investment_App
 
             if (string.IsNullOrWhiteSpace(ticker) || isPlaceholderActive)
             {
-                MessageBox.Show("Najpierw podaj symbol akcji (ticker).", "Brak danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Najpierw podaj symbol instrumentu.", "Brak danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -219,24 +273,36 @@ namespace Personal_Investment_App
 
             try
             {
-                decimal? price;
+                decimal? price = null;
 
                 if (selectedDate < today)
                 {
-                    // Pobierz historyczną cenę z Polygon.io
-                    price = await PolygonService.GetHistoricalClosePriceAsync(ticker, selectedDate);
+                    // Pobierz cenę historyczną w zależności od rodzaju inwestycji
+                    price = investmentKind switch
+                    {
+                        InvestmentKind.Akcja => await PolygonService.GetHistoricalClosePriceAsync(ticker, selectedDate),
+                        InvestmentKind.Kryptowaluta => await PolygonService.GetHistoricalCryptoClosePriceAsync(ticker, selectedDate),
+                        _ => null
+                    };
+
                     if (price == null)
                     {
                         MessageBox.Show($"Brak danych historycznych dla {ticker} z dnia {selectedDate:yyyy-MM-dd}.", "Brak danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
-                    MessageBox.Show($"Cena zamknięcia dla {ticker} z dnia {selectedDate:yyyy-MM-dd}: {price:F2} USD", "Cena historyczna", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Cena z dnia {selectedDate:yyyy-MM-dd} dla {ticker}: {price:F2} USD", "Cena historyczna", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    // Pobierz aktualną cenę z Finnhub
-                    price = await FinnhubService.GetCurrentQuoteAsync(ticker);
+                    // Pobierz aktualną cenę
+                    price = investmentKind switch
+                    {
+                        InvestmentKind.Akcja => await FinnhubService.GetCurrentQuoteAsync(ticker),
+                        InvestmentKind.Kryptowaluta => await FinnhubService.GetCurrentCryptoQuoteAsync(ticker),
+                        _ => null
+                    };
+
                     if (price == null || price <= 0)
                     {
                         MessageBox.Show($"Nie znaleziono aktualnych danych dla tickera: {ticker}.", "Błąd danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);

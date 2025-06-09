@@ -16,7 +16,7 @@ namespace ProgramLogic
         public int UserId { get; set; }
         public int TypeId { get; set; }
         public string Name { get; set; }
-        public int NumberOfShares { get; set; }
+        public decimal NumberOfShares { get; set; }
         public DateTime DateOfInvestment { get; set; }
         [Range(0.01, 100)]
         [Column(TypeName = "decimal(5,2)")]

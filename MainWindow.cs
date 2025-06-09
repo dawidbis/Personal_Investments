@@ -63,7 +63,12 @@ namespace Personal_Investment_App
                 item.SubItems.Add("...");
                 item.SubItems.Add("...");
 
-                item.ImageIndex = (inv.Type?.Category?.Name == "Akcje") ? 1 : -1;
+                item.ImageIndex = inv.Type?.Category?.Name switch
+                {
+                    "Akcje" => 1,           // graph.png
+                    "Kryptowaluty" => 0,    // bitcoin.png
+                    _ => -1
+                };
 
                 // Ustawiamy kolor tła zależnie od indeksu
                 item.BackColor = (index % 2 == 0)
@@ -203,7 +208,7 @@ namespace Personal_Investment_App
                 return;
             }
 
-            var form = new AddStockForm(dbManager, userId.Value);
+            var form = new AddStockForm(dbManager, userId.Value, InvestmentKind.Akcja);
 
             form.FormClosed += (s, args) =>
             {
@@ -211,7 +216,7 @@ namespace Personal_Investment_App
                 if (inv != null)
                 {
                     var type = dbManager.InvestmentTypes.FirstOrDefault(t => t.Id == inv.TypeId);
-                    var category = dbManager.InvestmentCategories.FirstOrDefault(c => c.Id == type.CategoryId);
+                    //var category = dbManager.InvestmentCategories.FirstOrDefault(c => c.Id == type.CategoryId);
 
                     var item = new ListViewItem();
                     item.SubItems.Add(inv.Name);
@@ -233,7 +238,47 @@ namespace Personal_Investment_App
 
             form.Show();
         }
+        
+        private void kryptowalutaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int? userId = dbManager.GetUserIdByUsername(zalogowanyUzytkownik);
 
+            if (userId == null)
+            {
+                MessageBox.Show("Nie można znaleźć zalogowanego użytkownika w bazie.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var form = new AddStockForm(dbManager, userId.Value, InvestmentKind.Kryptowaluta);
+
+            form.FormClosed += (s, args) =>
+            {
+                var inv = form.CreatedInvestment;
+                if (inv != null)
+                {
+                    var type = dbManager.InvestmentTypes.FirstOrDefault(t => t.Id == inv.TypeId);
+                    //var category = dbManager.InvestmentCategories.FirstOrDefault(c => c.Id == type.CategoryId);
+
+                    var item = new ListViewItem();
+                    item.SubItems.Add(inv.Name);
+                    item.SubItems.Add($"{inv.NumberOfShares} szt");
+                    item.SubItems.Add($"{inv.BuyPrice} USD" ?? "Brak");
+                    item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
+                    item.SubItems.Add(inv.ExpectedReturnPercent.ToString("P2"));
+                    item.SubItems.Add(inv.StopLossPercent.ToString("P2"));
+                    item.SubItems.Add(type?.Name ?? "Nieznany");
+
+                    listView1.Items.Add(item);
+                }
+
+                if (form.CreatedInvestment != null)
+                {
+                    SetupListView(userId.Value); // Odśwież listę
+                }
+            };
+
+            form.Show();
+        }
         private async void sprzedajToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listView1.SelectedItems.Count == 0 || aktualnyWidok == WidokAkcji.Historia)
@@ -798,7 +843,7 @@ namespace Personal_Investment_App
                     continue;
 
                 decimal buyPrice = inv.BuyPrice;
-                int numberOfShares = inv.NumberOfShares;
+                decimal numberOfShares = inv.NumberOfShares;
                 decimal totalBuy = buyPrice * numberOfShares;
                 decimal totalSell = ostatniaSprzedaz.Value * numberOfShares;
                 decimal changeValue = totalSell - totalBuy;
@@ -816,7 +861,12 @@ namespace Personal_Investment_App
                 item.SubItems.Add($"{changeValue:F2} USD,   {(changePercent >= 0 ? "+" : "")}{changePercent:F2}%");
                 item.SubItems.Add(inv.Type?.Name ?? "Brak");
 
-                item.ImageIndex = (inv.Type?.Category?.Name == "Akcje") ? 1 : -1;
+                item.ImageIndex = inv.Type?.Category?.Name switch
+                {
+                    "Akcje" => 1,           // graph.png
+                    "Kryptowaluty" => 0,    // bitcoin.png
+                    _ => -1
+                };
 
                 item.BackColor = (index % 2 == 0)
                     ? Color.Black

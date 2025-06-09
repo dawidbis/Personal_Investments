@@ -83,6 +83,7 @@ namespace Personal_Investment_App
 
             akcjaToolStripMenuItem.Text = "Akcja";
             akcjaToolStripMenuItem.Click += akcjaToolStripMenuItem_Click;
+            kryptowalutaToolStripMenuItem.Click += kryptowalutaToolStripMenuItem_Click;
             obligacjaToolStripMenuItem.Text = "Obligacja";
             kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
             surowiecToolStripMenuItem.Text = "Surowiec";

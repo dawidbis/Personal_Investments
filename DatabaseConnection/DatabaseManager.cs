@@ -243,6 +243,42 @@ namespace DatabaseConnection
             return stockType;
         }
 
+        public InvestmentType GetOrCreateCryptoInvestmentType()
+        {
+            // Znajdź lub utwórz kategorię "Kryptowaluty"
+            var cryptoCategory = this.InvestmentCategories
+                .FirstOrDefault(c => c.Name == "Kryptowaluty");
+
+            if (cryptoCategory == null)
+            {
+                cryptoCategory = new InvestmentCategory
+                {
+                    Name = "Kryptowaluty",
+                    Description = "Inwestycje w aktywa cyfrowe, takie jak Bitcoin, Ethereum itp."
+                };
+                this.InvestmentCategories.Add(cryptoCategory);
+                this.SaveChanges();
+            }
+
+            // Znajdź lub utwórz typ inwestycji "Kryptowaluty"
+            var cryptoType = this.InvestmentTypes
+                .FirstOrDefault(t => t.Name == "Kryptowaluty");
+
+            if (cryptoType == null)
+            {
+                cryptoType = new InvestmentType
+                {
+                    Name = "Kryptowaluty",
+                    CategoryId = cryptoCategory.Id
+                };
+
+                this.InvestmentTypes.Add(cryptoType);
+                this.SaveChanges();
+            }
+
+            return cryptoType;
+        }
+
         public int? GetUserIdByUsername(string username)
         {
             var user = this.Users.FirstOrDefault(u => u.Username == username);
