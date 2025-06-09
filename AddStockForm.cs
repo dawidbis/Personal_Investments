@@ -59,7 +59,7 @@ namespace Personal_Investment_App
             {
                 placeholderText = "Podaj ticker Binance np. BTC";
                 lblName.Text = "Ticker kryptowaluty:";
-                lblAmount.Text = "Ilość (np. 0.5 BTC):";
+                lblAmount.Text = "Ilość (np. 0,5):";
                 lblExpectedReturn.Text = "Oczekiwany zwrot (%):";
                 lblDate.Text = "Data zakupu:";
                 lblNotes.Text = "Notatki:";
