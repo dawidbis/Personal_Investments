@@ -11,6 +11,11 @@ obj/
 
 # Ignoruj pliki konfiguracji lokalnej
 appsettings.Local.json
+# Klucze API i konfiguracja wrażliwa
+appsettings.json
+
+# Pliki debugowania TwelveData (te, które zapisujesz na pulpicie)
+TwelveData_HIST_*.json
 
 # Ignoruj pliki bazy danych lokalnej (np. SQLite)
 *.db
