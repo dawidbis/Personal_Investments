@@ -28,6 +28,24 @@ public partial class MainWindow : Form
         DataExportService exportService)
     {
         InitializeComponent();
+        // Ustawienia padding i kolory dla elementów menu i podmenu
+        foreach (ToolStripMenuItem parent in menuStrip2.Items.OfType<ToolStripMenuItem>())
+        {
+            parent.Padding = new Padding(15, 10, 15, 10);
+            parent.ForeColor = Color.White;
+            parent.Margin = new Padding(10, 0, 0, 0); // przesunięcie w dół'
+
+            foreach (ToolStripItem subItem in parent.DropDownItems)
+            {
+                subItem.BackColor = Color.FromArgb(25, 25, 35);
+                subItem.ForeColor = Color.White;
+                subItem.Padding = new Padding(6, 7, 6, 7); // większy padding góra-dół
+                subItem.Height = 25;
+                subItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+                subItem.MouseEnter += (s, e) => { menuStrip2.Cursor = Cursors.Hand; };
+                subItem.MouseLeave += (s, e) => { menuStrip2.Cursor = Cursors.Default; };
+            }
+        }
         _autoCheckTimer = new Timer();
         _autoCheckTimer.Interval = 10 * 60 * 1000; // 10 minut
         _autoCheckTimer.Tick += async (s, e) => {
