@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Personal_Investment.Core.Enums;
 using Personal_Investment.Core.Models;
 using Personal_Investment.Data.Services;
-using Personal_Investment.Core.Enums;
+using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
 
 namespace Personal_Investment.UI.Forms;
@@ -11,16 +12,18 @@ public partial class MainWindow : Form
     private readonly InvestmentService _investmentService;
     private readonly AuthService _authService;
     private readonly DataExportService _exportService;
-    private Timer _autoCheckTimer;
-    private List<Investment> _investments = new();
-    private Timer portfolioTimer;
 
+    private Timer _autoCheckTimer;
     private int _currentUserId;
     private string _zalogowanyUzytkownik;
     public bool Wylogowano { get; private set; } = false;
 
-    // Flaga stanu widoku - pomaga przyciskiowi "Odśwież" wiedzieć co przeładować
+    // Flaga stanu widoku
     private bool _isShowingHistory = false;
+
+    // Zmienne do kontroli limitów API
+    private DateTime _lastRefreshTime = DateTime.MinValue;
+    private const int RefreshCooldownSeconds = 30;
 
     public MainWindow(
         InvestmentService investmentService,
@@ -28,42 +31,115 @@ public partial class MainWindow : Form
         DataExportService exportService)
     {
         InitializeComponent();
-        // Ustawienia padding i kolory dla elementów menu i podmenu
+        // Pod InitializeComponent()
+        listView1.DrawColumnHeader += ListView1_DrawColumnHeader;
+        listView1.DrawItem += ListView1_DrawItem;
+        listView1.DrawSubItem += ListView1_DrawSubItem;
+        this.Resize += MainWindow_Resize;
+        _investmentService = investmentService;
+        _authService = authService;
+        _exportService = exportService;
+
+        AdjustMenuSpacing();
+        SetupMenuStyles();
+        SetupTimers();
+    }
+
+    private void AdjustMenuSpacing()
+    {
+        if (menuStrip2 == null || spacerLeft == null || spacerRight == null) return;
+
+        // 1. Szerokość całego paska menu
+        int menuWidth = menuStrip2.DisplayRectangle.Width;
+
+        // 2. Sumujemy szerokości poszczególnych grup (bez rozpórek)
+        int leftGroupWidth = inwestycjePersonalneToolStripMenuItem.Width + sprzedajToolStripMenuItem.Width;
+        int centerGroupWidth = generujRaportToolStripMenuItem.Width + eksportujDaneToolStripMenuItem.Width + importujDaneToolStripMenuItem.Width;
+        int rightGroupWidth = wylogujToolStripMenuItem1.Width + UsunKontoToolStripMenuItem.Width;
+
+        // Dodajemy marginesy (WinForms dodaje standardowo kilka pikseli między elementami)
+        int totalItemsWidth = leftGroupWidth + centerGroupWidth + rightGroupWidth + 40;
+
+        // 3. Obliczamy wolne miejsce
+        int freeSpace = menuWidth - totalItemsWidth;
+
+        if (freeSpace > 0)
+        {
+            // Wyłączamy AutoSize, żebyśmy mogli sami ustawić Width
+            spacerLeft.AutoSize = false;
+            spacerRight.AutoSize = false;
+
+            // Klucz do sukcesu:
+            // spacerLeft musi odsunąć grupę środkową na sam środek okna.
+            // Połowa okna minus połowa szerokości środkowej grupy minus szerokość lewej grupy.
+            int leftSpacerWidth = (menuWidth / 2) - (centerGroupWidth / 2) - leftGroupWidth;
+
+            // spacerRight wypełnia resztę, wypychając ostatnią grupę do prawej.
+            int rightSpacerWidth = menuWidth - leftSpacerWidth - leftGroupWidth - centerGroupWidth - rightGroupWidth - 20;
+
+            spacerLeft.Width = Math.Max(10, leftSpacerWidth);
+            spacerRight.Width = Math.Max(10, rightSpacerWidth);
+        }
+    }
+
+    private void ListView1_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+    {
+        // Rysujemy ciemne tło nagłówka
+        using (var backBrush = new SolidBrush(Color.FromArgb(15, 15, 15))) // Bardzo ciemny fiolet/czarny
+        {
+            e.Graphics.FillRectangle(backBrush, e.Bounds);
+        }
+
+        // Rysujemy biały tekst nagłówka (wyśrodkowany)
+        TextRenderer.DrawText(e.Graphics, e.Header.Text, e.Font, e.Bounds, Color.White, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+    }
+
+    private void ListView1_DrawItem(object sender, DrawListViewItemEventArgs e)
+    {
+        // To musi być puste lub obsługiwać selekcję, ale domyślnie zostawiamy e.DrawDefault = true;
+        e.DrawDefault = true;
+    }
+
+    private void ListView1_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+    {
+        // To również domyślnie, aby zachować kolory ForeColor (zielony/czerwony)
+        e.DrawDefault = true;
+    }
+
+    private void SetupMenuStyles()
+    {
         foreach (ToolStripMenuItem parent in menuStrip2.Items.OfType<ToolStripMenuItem>())
         {
             parent.Padding = new Padding(15, 10, 15, 10);
             parent.ForeColor = Color.White;
-            parent.Margin = new Padding(10, 0, 0, 0); // przesunięcie w dół'
+            parent.Margin = new Padding(10, 0, 0, 0);
 
             foreach (ToolStripItem subItem in parent.DropDownItems)
             {
                 subItem.BackColor = Color.FromArgb(25, 25, 35);
                 subItem.ForeColor = Color.White;
-                subItem.Padding = new Padding(6, 7, 6, 7); // większy padding góra-dół
-                subItem.Height = 25;
-                subItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+                subItem.Padding = new Padding(6, 7, 6, 7);
                 subItem.MouseEnter += (s, e) => { menuStrip2.Cursor = Cursors.Hand; };
                 subItem.MouseLeave += (s, e) => { menuStrip2.Cursor = Cursors.Default; };
             }
         }
+    }
+
+    private void SetupTimers()
+    {
+        // Jeden timer do automatycznego sprawdzania cen (raz na 10 minut)
         _autoCheckTimer = new Timer();
-        _autoCheckTimer.Interval = 10 * 60 * 1000; // 10 minut
-        _autoCheckTimer.Tick += async (s, e) => {
+        _autoCheckTimer.Interval = 10 * 60 * 1000;
+        _autoCheckTimer.Tick += async (s, e) =>
+        {
             var alerts = await _investmentService.RunAutomaticCheckAsync(_currentUserId);
             if (alerts.Any())
             {
                 MessageBox.Show(string.Join(Environment.NewLine, alerts), "Automatyczna Sprzedaż");
-                RefreshData(); // Odśwież widok, bo statusy IsSold mogły się zmienić
             }
+            RefreshData();
         };
-        portfolioTimer = new System.Windows.Forms.Timer();
-        portfolioTimer.Interval = 300000; // 5 minut (300 000 ms)
-        portfolioTimer.Tick += async (s, e) => await RefreshPortfolioPricesAsync();
-        portfolioTimer.Start();
         _autoCheckTimer.Start();
-        _investmentService = investmentService;
-        _authService = authService;
-        _exportService = exportService;
     }
 
     public void SetUser(string username, int userId)
@@ -71,39 +147,12 @@ public partial class MainWindow : Form
         _zalogowanyUzytkownik = username;
         _currentUserId = userId;
         labelWelcome.Text = $"Cześć, {username}!";
-
-        // Tryb testowy dostępny tylko dla admina (zgodnie z Twoim Designerem)
         checkBoxTrybTestowy.Visible = username.ToLower() == "admin";
 
         RefreshData();
     }
 
-    // --- LOGIKA WIDOKÓW (ListView) ---
-
-    private void SetupActiveColumns()
-    {
-        listView1.Columns.Clear();
-        listView1.Columns.Add("Nazwa", 150);
-        listView1.Columns.Add("Ilość", 80);
-        listView1.Columns.Add("Cena Zakupu", 100);
-        listView1.Columns.Add("Data", 100);
-        listView1.Columns.Add("Cel", 80);
-        listView1.Columns.Add("Stop Loss", 80);
-        listView1.Columns.Add("Typ", 100);
-        listView1.Columns.Add("Zysk/Strata", 130);
-    }
-
-    private void SetupHistoryColumns()
-    {
-        listView1.Columns.Clear();
-        listView1.Columns.Add("Nazwa", 150);
-        listView1.Columns.Add("Ilość", 80);
-        listView1.Columns.Add("Cena Zakupu", 100);
-        listView1.Columns.Add("Data Zakupu", 100);
-        listView1.Columns.Add("Data Sprzedaży", 100);
-        listView1.Columns.Add("Cena Sprzedaży", 100);
-        listView1.Columns.Add("Zysk/Strata", 120);
-    }
+    // --- LOGIKA ODŚWIEŻANIA DANYCH ---
 
     private async void RefreshData()
     {
@@ -116,26 +165,97 @@ public partial class MainWindow : Form
             }
             else
             {
-                // 1. Pobieramy listę aktywnych inwestycji
                 var investments = await _investmentService.GetActiveInvestmentsAsync(_currentUserId);
+                var currentPrices = new Dictionary<int, decimal>();
 
-                // 2. Tworzymy słownik ID -> CenaAktualna, aby serwis wiedział co liczyć
-                // Dzięki temu podsumowanie użyje tych samych cen, które widzi użytkownik
-                var currentPrices = investments.ToDictionary(i => i.Id, i => i.CurrentPrice);
+                foreach (var inv in investments)
+                {
+                    decimal? price;
 
-                // 3. Pobieramy podsumowanie, przekazując słownik cen
+                    // LOGIKA TRYBU TESTOWEGO:
+                    if (checkBoxTrybTestowy.Checked && !string.IsNullOrWhiteSpace(textBoxAktualnaCenaTest.Text))
+                    {
+                        // Jeśli testujemy, parsujemy cenę z TextBoxa
+                        if (decimal.TryParse(textBoxAktualnaCenaTest.Text, out decimal testPrice))
+                        {
+                            price = testPrice;
+                        }
+                        else
+                        {
+                            price = await _investmentService.GetLatestPriceAsync(inv.Name, inv.Type?.Name);
+                        }
+                    }
+                    else
+                    {
+                        // Jeśli nie testujemy, normalnie pobieramy z API
+                        price = await _investmentService.GetLatestPriceAsync(inv.Name, inv.Type?.Name);
+                    }
+
+                    if (price.HasValue)
+                    {
+                        currentPrices[inv.Id] = price.Value;
+                        inv.CurrentPrice = price.Value;
+                    }
+                }
+
                 var summary = await _investmentService.GetAccountSummaryAsync(_currentUserId, currentPrices);
 
-                // 4. Aktualizujemy UI
                 PopulateListView(investments);
                 UpdateSummaryLabels(summary);
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Błąd odświeżania: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Console.WriteLine($"Błąd odświeżania: {ex.Message}");
         }
     }
+
+    private async void btnOdswiez_Click(object sender, EventArgs e)
+    {
+        var secondsPassed = (DateTime.Now - _lastRefreshTime).TotalSeconds;
+        if (secondsPassed < RefreshCooldownSeconds)
+        {
+            int wait = RefreshCooldownSeconds - (int)secondsPassed;
+            MessageBox.Show($"Zwolnij! API potrzebuje odpoczynku. Spróbuj za {wait}s.", "Ograniczenie");
+            return;
+        }
+
+        try
+        {
+            Cursor = Cursors.WaitCursor;
+            _lastRefreshTime = DateTime.Now;
+
+            decimal? priceForCheck = null;
+            if (checkBoxTrybTestowy.Checked && decimal.TryParse(textBoxAktualnaCenaTest.Text, out decimal val))
+            {
+                priceForCheck = val;
+            }
+
+            // Przekazujemy cenę testową (jeśli jest) do automatu
+            var alerts = await _investmentService.RunAutomaticCheckAsync(_currentUserId, priceForCheck);
+
+            if (alerts.Any())
+            {
+                MessageBox.Show(string.Join(Environment.NewLine, alerts), "Automatyczna Sprzedaż");
+            }
+
+            RefreshData();
+        }
+        finally
+        {
+            Cursor = Cursors.Default;
+        }
+    }
+
+    private void checkBoxTrybTestowy_CheckedChanged(object sender, EventArgs e)
+    {
+        bool isChecked = checkBoxTrybTestowy.Checked;
+        // Te kontrolki muszą istnieć w Designerze, żeby to zadziałało:
+        if (labelTestPrice != null) labelTestPrice.Visible = isChecked;
+        if (textBoxAktualnaCenaTest != null) textBoxAktualnaCenaTest.Visible = isChecked;
+    }
+
+    // --- METODY POMOCNICZE UI ---
 
     private void PopulateListView(List<Investment> investments)
     {
@@ -143,6 +263,7 @@ public partial class MainWindow : Form
         SetupActiveColumns();
         listView1.Items.Clear();
 
+        // Zamieniamy na pętlę for, aby mieć indeks (i) do efektu zebry
         for (int i = 0; i < investments.Count; i++)
         {
             var inv = investments[i];
@@ -155,14 +276,13 @@ public partial class MainWindow : Form
             item.SubItems.Add(inv.Type?.Name ?? "Brak");
 
             decimal profitLoss = inv.ProfitLoss;
-            string profitText = (profitLoss >= 0 ? "+" : "") + profitLoss.ToString("F2") + " USD";
+            decimal profitPercent = inv.BuyPrice != 0 ? (inv.CurrentPrice - inv.BuyPrice) / inv.BuyPrice : 0;
+
+            string profitText = $"{(profitLoss >= 0 ? "+" : "")}{profitLoss:F2} USD ({profitPercent:P2})";
             var subItem = item.SubItems.Add(profitText);
 
-            item.UseItemStyleForSubItems = false;
-            subItem.ForeColor = profitLoss >= 0 ? Color.LimeGreen : Color.Red;
-
-            // Ikony z ImageList (zgodnie z Twoim Designerem)
-            item.ImageIndex = inv.Type?.Category?.Name switch
+            // Ustawienie ikon na podstawie typu
+            item.ImageIndex = inv.Type?.Name switch
             {
                 "Kryptowaluty" => 0,
                 "Akcje" => 1,
@@ -170,11 +290,30 @@ public partial class MainWindow : Form
                 _ => 2
             };
 
-            item.BackColor = (i % 2 == 0) ? Color.Black : Color.FromArgb(60, 0, 90);
-            item.ForeColor = Color.White;
+            // --- STYLIZACJA MODERN DARK MODE ---
+
+            // 1. Najpierw ustal kolor tła dla tego wiersza
+            Color rowBackColor = (i % 2 == 0)
+                ? Color.FromArgb(18, 18, 18)  // Główne tło
+                : Color.FromArgb(25, 20, 35); // Subtelny fiolet
+
+            // 2. Wyłączamy dziedziczenie stylów, bo chcemy kolorować tekst Zysku/Straty niezależnie
+            item.UseItemStyleForSubItems = false;
+
+            // 3. PRZECHODZIMY PRZEZ WSZYSTKIE KOMÓRKI (SubItems) i ustawiamy im tło oraz kolor czcionki
+            foreach (ListViewItem.ListViewSubItem sub in item.SubItems)
+            {
+                sub.BackColor = rowBackColor;
+                sub.ForeColor = Color.White; // Domyślny kolor tekstu dla wszystkich komórek
+            }
+
+            // 4. Nadpisujemy kolor TEKSTU (nie tła!) tylko dla ostatniej komórki (Zysk/Strata)
+            subItem.ForeColor = profitLoss >= 0 ? Color.LimeGreen : Color.Tomato; // Tomato jest czytelniejsze na ciemnym tle
+
             item.Tag = inv.Id;
             listView1.Items.Add(item);
         }
+
         listView1.EndUpdate();
     }
 
@@ -184,10 +323,13 @@ public partial class MainWindow : Form
         SetupHistoryColumns();
         listView1.Items.Clear();
 
+        // Używamy for, żeby mieć 'i' do zebry
         for (int i = 0; i < soldInvestments.Count; i++)
         {
             var inv = soldInvestments[i];
             var sale = inv.ReturnsHistories.OrderByDescending(r => r.Date).FirstOrDefault();
+
+            // Tutaj obliczasz zysk - używamy nazwy 'profit'
             decimal profit = (sale?.Value ?? 0) * inv.NumberOfShares - (inv.BuyPrice * inv.NumberOfShares);
 
             var item = new ListViewItem(inv.Name);
@@ -196,11 +338,36 @@ public partial class MainWindow : Form
             item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
             item.SubItems.Add(sale?.Date.ToShortDateString() ?? "-");
             item.SubItems.Add($"{sale?.Value:F2}");
-            item.SubItems.Add($"{profit:F2} USD");
 
-            item.BackColor = (i % 2 == 0) ? Color.Black : Color.FromArgb(60, 0, 90);
-            item.ForeColor = profit >= 0 ? Color.LightGreen : Color.Red;
+            // PRZYPISANIE DO subItem, żeby nie było błędu "podkreślenia na czerwono"
+            var subItem = item.SubItems.Add($"{profit:F2} USD");
+
             item.Tag = inv.Id;
+            item.ImageIndex = inv.Type?.Name switch
+            {
+                "Kryptowaluty" => 0,
+                "Akcje" => 1,
+                "Surowce" => 3,
+                _ => 2
+            };
+
+            // --- STYLIZACJA MODERN DARK MODE ---
+
+            Color rowBackColor = (i % 2 == 0)
+                ? Color.FromArgb(18, 18, 18)
+                : Color.FromArgb(25, 20, 35);
+
+            item.UseItemStyleForSubItems = false;
+
+            foreach (ListViewItem.ListViewSubItem sub in item.SubItems)
+            {
+                sub.BackColor = rowBackColor;
+                sub.ForeColor = Color.White;
+            }
+
+            // Używamy zmiennej 'profit', którą obliczyłeś wyżej
+            subItem.ForeColor = profit >= 0 ? Color.LimeGreen : Color.Tomato;
+
             listView1.Items.Add(item);
         }
         listView1.EndUpdate();
@@ -208,53 +375,62 @@ public partial class MainWindow : Form
 
     private void UpdateSummaryLabels(AccountSummary summary)
     {
-        // Bilans Ogólny (TotalChange)
-        string totalSign = summary.TotalChange >= 0 ? "+" : "";
-        labelBilans.Text = $"Bilans konta: {totalSign}{summary.TotalChange:F2} USD";
-        labelBilans.ForeColor = summary.TotalChange > 0 ? Color.LightGreen :
-                               summary.TotalChange < 0 ? Color.Red : Color.Gold;
+        labelBilans.Text = $"Bilans konta: {(summary.TotalChange >= 0 ? "+" : "")}{summary.TotalChange:F2} USD";
+        labelBilans.ForeColor = summary.TotalChange >= 0 ? Color.LightGreen : Color.Red;
 
-        // Bilans Aktualny (CurrentBalance)
-        string currentSign = summary.CurrentBalance >= 0 ? "+" : "";
-        labelBilansAktualny.Text = $"Bilans aktualny: {currentSign}{summary.CurrentBalance:F2} USD";
-        labelBilansAktualny.ForeColor = summary.CurrentBalance > 0 ? Color.LightGreen :
-                                       summary.CurrentBalance < 0 ? Color.Red : Color.Gold;
+        labelBilansAktualny.Text = $"Bilans aktualny: {(summary.CurrentBalance >= 0 ? "+" : "")}{summary.CurrentBalance:F2} USD";
+        labelBilansAktualny.ForeColor = summary.CurrentBalance >= 0 ? Color.LightGreen : Color.Red;
     }
 
-    // --- OBSŁUGA ZDARZEŃ (Events) ---
-
-    private void btnAktualne_Click(object sender, EventArgs e)
+    private void SetupActiveColumns()
     {
-        _isShowingHistory = false;
-        RefreshData();
+        listView1.Columns.Clear();
+
+        // Pobieramy szerokość bez paska przewijania (dla bezpieczeństwa)
+        int totalWidth = listView1.ClientSize.Width;
+
+        // Definiujemy szerokości jako ułamki całości
+        listView1.Columns.Add("Nazwa", (int)(totalWidth * 0.15), HorizontalAlignment.Left);
+        listView1.Columns.Add("Ilość", (int)(totalWidth * 0.10), HorizontalAlignment.Right);
+        listView1.Columns.Add("Cena Zakupu", (int)(totalWidth * 0.15), HorizontalAlignment.Right);
+        listView1.Columns.Add("Data", (int)(totalWidth * 0.12), HorizontalAlignment.Right);
+        listView1.Columns.Add("Cel", (int)(totalWidth * 0.08), HorizontalAlignment.Right);
+        listView1.Columns.Add("Stop Loss", (int)(totalWidth * 0.10), HorizontalAlignment.Right);
+        listView1.Columns.Add("Typ", (int)(totalWidth * 0.10), HorizontalAlignment.Center);
+
+        // Ostatnia kolumna bierze "resztę" (magiczne -2)
+        listView1.Columns.Add("Zysk/Strata", -2, HorizontalAlignment.Right);
     }
 
-    private void btnHistoria_Click(object sender, EventArgs e)
+    private void SetupHistoryColumns()
     {
-        _isShowingHistory = true;
-        RefreshData();
+        listView1.Columns.Clear();
+
+        // Pobieramy szerokość wnętrza kontrolki
+        int totalWidth = listView1.ClientSize.Width;
+
+        // Musimy mieć DOKŁADNIE tyle samo kolumn, ile dodajemy SubItems w PopulateHistoryListView
+        listView1.Columns.Add("Nazwa", (int)(totalWidth * 0.15), HorizontalAlignment.Left);
+        listView1.Columns.Add("Ilość", (int)(totalWidth * 0.10), HorizontalAlignment.Right);
+        listView1.Columns.Add("Cena Zakupu", (int)(totalWidth * 0.14), HorizontalAlignment.Right);
+        listView1.Columns.Add("Data Kupna", (int)(totalWidth * 0.12), HorizontalAlignment.Right);
+
+        // Zmieniamy nagłówki, bo w historii nie ma "Celu" ani "Stop Lossu"
+        listView1.Columns.Add("Data Sprzedaży", (int)(totalWidth * 0.12), HorizontalAlignment.Right);
+        listView1.Columns.Add("Cena Sprzedaży", (int)(totalWidth * 0.14), HorizontalAlignment.Right);
+
+        // Ostatnia kolumna (Zysk/Strata)
+        listView1.Columns.Add("Zysk/Strata całkowity", -2, HorizontalAlignment.Right);
     }
 
-    private async void btnOdswiez_Click(object sender, EventArgs e)
-    {
-        Cursor = Cursors.WaitCursor;
-        // Jeśli tryb testowy jest włączony, można tu dodać przekazywanie ceny z textBoxAktualnaCenaTest
-        await _investmentService.RunAutomaticCheckAsync(_currentUserId);
-        RefreshData();
-        Cursor = Cursors.Default;
-    }
+    // --- ZDARZENIA MENU I PRZYCISKÓW ---
 
-    private void checkBoxTrybTestowy_CheckedChanged(object sender, EventArgs e)
-    {
-        bool isChecked = checkBoxTrybTestowy.Checked;
-        labelTestPrice.Visible = isChecked;
-        textBoxAktualnaCenaTest.Visible = isChecked;
-    }
+    private void btnAktualne_Click(object sender, EventArgs e) { _isShowingHistory = false; RefreshData(); }
+    private void btnHistoria_Click(object sender, EventArgs e) { _isShowingHistory = true; RefreshData(); }
 
     private async void sprzedajToolStripMenuItem_Click(object sender, EventArgs e)
     {
         if (listView1.SelectedItems.Count == 0 || _isShowingHistory) return;
-
         int invId = (int)listView1.SelectedItems[0].Tag;
         if (MessageBox.Show("Sprzedać wybraną inwestycję?", "Potwierdzenie", MessageBoxButtons.YesNo) == DialogResult.Yes)
         {
@@ -274,21 +450,11 @@ public partial class MainWindow : Form
 
     private async void generujRaportToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        using var form = new ReportForm();
+        var form = Program.ServiceProvider.GetRequiredService<ReportForm>();
         if (form.ShowDialog() == DialogResult.OK)
         {
-            var result = await _investmentService.GenerateReportAsync(
-                _currentUserId,
-                form.DataOd,
-                form.DataDo,
-                form.FiltrTickerAktywny ? form.Ticker : null
-            );
-
-            // Wyświetlanie w labelRaport (który masz w Designerze)
-            labelRaport.Text = $"Raport: {form.DataOd:d} - {form.DataDo:d}\n" +
-                              $"Zainwestowano: {result.TotalInvested:F2} USD\n" +
-                              $"Uzyskano: {result.TotalEarned:F2} USD\n" +
-                              $"Zysk/Strata: {result.Profit:F2} USD";
+            var result = await _investmentService.GenerateReportAsync(_currentUserId, form.DataOd, form.DataDo, form.FiltrTickerAktywny ? form.Ticker : null);
+            labelRaport.Text = $"Raport: {form.DataOd:d} - {form.DataDo:d}\nZysk/Strata: {result.Profit:F2} USD";
             labelRaport.ForeColor = result.Profit >= 0 ? Color.LightGreen : Color.Red;
             labelRaport.Visible = true;
         }
@@ -299,10 +465,9 @@ public partial class MainWindow : Form
         using var ofd = new OpenFileDialog { Filter = "JSON|*.json" };
         if (ofd.ShowDialog() == DialogResult.OK)
         {
-            var success = await _exportService.ImportUserDataAsync(_currentUserId, ofd.FileName);
-            if (success)
+            if (await _exportService.ImportUserDataAsync(_currentUserId, ofd.FileName))
             {
-                MessageBox.Show("Dane zaimportowane pomyślnie!");
+                MessageBox.Show("Zaimportowano pomyślnie!");
                 RefreshData();
             }
         }
@@ -324,91 +489,16 @@ public partial class MainWindow : Form
 
     private void OpenAddForm(InvestmentKind kind)
     {
-        // Pobieramy form z DI, aby miał wstrzyknięte serwisy
         var form = Program.ServiceProvider.GetRequiredService<AddStockForm>();
-        form.SetMode(kind, _currentUserId); // Ustawiamy parametry
-        if (form.ShowDialog() == DialogResult.OK)
-        {
-            RefreshData();
-        }
+        form.SetMode(kind, _currentUserId);
+        if (form.ShowDialog() == DialogResult.OK) RefreshData();
     }
 
-    private async Task RefreshPortfolioPricesAsync()
+    private void wylogujToolStripMenuItem1_Click(object sender, EventArgs e) { Wylogowano = true; this.Close(); }
+
+    private void MainWindow_Resize(object sender, EventArgs e)
     {
-        // Pobieramy aktualną listę inwestycji z ListView lub z bazy
-        // Zakładając, że masz listę załadowanych inwestycji w polu _investments
-        if (_investments == null || !_investments.Any()) return;
-
-        try
-        {
-            // Zmieniamy kursor na klepsydrę
-            this.UseWaitCursor = true;
-
-            foreach (var inv in _investments.Where(i => !i.IsSold))
-            {
-                // Pobieramy nową cenę z serwisu (wykorzystując logikę API)
-                // Używamy Ticker (inv.Name) i Typu (inv.Type.Name)
-                var price = await _investmentService.GetLatestPriceAsync(inv.Name, inv.Type?.Name ?? "Akcja");
-
-                if (price.HasValue)
-                {
-                    inv.CurrentPrice = price.Value;
-                }
-
-                // Małe opóźnienie, aby nie przekroczyć limitu 8 zapytań/min w darmowym API
-                await Task.Delay(500);
-            }
-
-            // Odświeżamy widok listy
-            RefreshListView(_investments);
-
-            // Aktualizujemy etykiety bilansu
-            RefreshData();
-        }
-        catch (Exception ex)
-        {
-            // Logujemy błąd po cichu, żeby timer nie wywalił aplikacji
-            Console.WriteLine($"Błąd auto-odświeżania: {ex.Message}");
-        }
-        finally
-        {
-            this.UseWaitCursor = false;
-        }
-    }
-
-    private void RefreshListView(List<Investment> investments)
-    {
-        listView1.Items.Clear();
-
-        foreach (var inv in investments)
-        {
-            ListViewItem item = new ListViewItem(inv.Name);
-            item.SubItems.Add(inv.NumberOfShares.ToString());
-            item.SubItems.Add(inv.BuyPrice.ToString("N2") + " USD");
-            item.SubItems.Add(inv.DateOfInvestment.ToShortDateString());
-            item.SubItems.Add((inv.ExpectedReturnPercent * 100).ToString("N0") + "%");
-            item.SubItems.Add((inv.StopLossPercent * 100).ToString("N0") + "%");
-            item.SubItems.Add(inv.Type?.Name ?? "Akcja");
-
-            // Obliczanie Zysku/Straty
-            // ProfitLoss to właściwość [NotMapped], którą dodałeś do modelu Investment
-            decimal profitLoss = inv.ProfitLoss;
-            string profitText = (profitLoss >= 0 ? "+" : "") + profitLoss.ToString("N2") + " USD";
-
-            var subItem = item.SubItems.Add(profitText);
-
-            // Kolorowanie: Zielony dla zysku, Czerwony dla straty
-            item.UseItemStyleForSubItems = false; // Pozwala na kolorowanie pojedynczych komórek
-            if (profitLoss > 0) subItem.ForeColor = Color.LimeGreen;
-            else if (profitLoss < 0) subItem.ForeColor = Color.Red;
-
-            listView1.Items.Add(item);
-        }
-    }
-
-    private void wylogujToolStripMenuItem1_Click(object sender, EventArgs e)
-    {
-        Wylogowano = true;
-        this.Close();
+        AdjustMenuSpacing();
+        SetupActiveColumns();
     }
 }

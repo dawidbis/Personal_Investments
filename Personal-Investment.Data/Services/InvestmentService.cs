@@ -54,15 +54,16 @@ public class InvestmentService
     }
 
     // 3. Automatyczne sprawdzanie cen i alerty sprzedaży
-    public async Task<List<string>> RunAutomaticCheckAsync(int userId)
+    public async Task<List<string>> RunAutomaticCheckAsync(int userId, decimal? testPrice = null)
     {
         var alerts = new List<string>();
         var investments = await GetActiveInvestmentsAsync(userId);
 
         foreach (var inv in investments)
         {
-            // ZMIANA: Używamy wstrzykniętych serwisów zamiast statycznych metod
-            decimal? currentPrice = inv.Type?.Name switch
+            // LOGIKA TESTOWA: Jeśli przekazaliśmy testPrice, używamy jej. 
+            // W przeciwnym razie strzelamy do API.
+            decimal? currentPrice = testPrice ?? inv.Type?.Name switch
             {
                 "Akcje" => await _finnhub.GetCurrentQuoteAsync(inv.Name),
                 "Kryptowaluty" => await _finnhub.GetCurrentCryptoQuoteAsync(inv.Name),
@@ -238,7 +239,7 @@ public class InvestmentService
         return typeName switch
         {
             "Akcje" => await _finnhub.GetCurrentQuoteAsync(symbol),
-            "Kryptowaluta" => await _finnhub.GetCurrentCryptoQuoteAsync(symbol),
+            "Kryptowaluty" => await _finnhub.GetCurrentCryptoQuoteAsync(symbol),
             "Surowce" => await _twelveData.GetTodayClosePriceAsync(symbol),
             _ => await _finnhub.GetCurrentQuoteAsync(symbol)
         };

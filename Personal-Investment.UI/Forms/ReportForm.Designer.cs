@@ -17,146 +17,151 @@
         private System.Windows.Forms.Button btnZastosuj;
         private System.Windows.Forms.Button btnAnuluj;
 
-        private void InitializeComponent()
-        {
-            this.components = new System.ComponentModel.Container();
+    private void InitializeComponent()
+    {
+        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ReportForm));
+        lblOpisFiltrTicker = new Label();
+        chkFiltrTicker = new CheckBox();
+        txtTicker = new TextBox();
+        lblOpisFiltrWszystkieAkcje = new Label();
+        chkWszystkieAkcje = new CheckBox();
+        lblOpisZakresCzasu = new Label();
+        dtpDataOd = new DateTimePicker();
+        dtpDataDo = new DateTimePicker();
+        btnZastosuj = new Button();
+        btnAnuluj = new Button();
+        SuspendLayout();
+        // 
+        // lblOpisFiltrTicker
+        // 
+        lblOpisFiltrTicker.AutoSize = true;
+        lblOpisFiltrTicker.ForeColor = Color.White;
+        lblOpisFiltrTicker.Location = new Point(20, 20);
+        lblOpisFiltrTicker.Name = "lblOpisFiltrTicker";
+        lblOpisFiltrTicker.Size = new Size(237, 20);
+        lblOpisFiltrTicker.TabIndex = 0;
+        lblOpisFiltrTicker.Text = "Filtruj według konkretnego tickera:";
+        // 
+        // chkFiltrTicker
+        // 
+        chkFiltrTicker.ForeColor = Color.White;
+        chkFiltrTicker.Location = new Point(340, 18);
+        chkFiltrTicker.Name = "chkFiltrTicker";
+        chkFiltrTicker.Size = new Size(18, 24);
+        chkFiltrTicker.TabIndex = 1;
+        chkFiltrTicker.UseVisualStyleBackColor = true;
+        // 
+        // txtTicker
+        // 
+        txtTicker.BackColor = Color.FromArgb(30, 30, 30);
+        txtTicker.BorderStyle = BorderStyle.FixedSingle;
+        txtTicker.ForeColor = Color.White;
+        txtTicker.Location = new Point(20, 45);
+        txtTicker.Name = "txtTicker";
+        txtTicker.Size = new Size(140, 27);
+        txtTicker.TabIndex = 2;
+        // 
+        // lblOpisFiltrWszystkieAkcje
+        // 
+        lblOpisFiltrWszystkieAkcje.AutoSize = true;
+        lblOpisFiltrWszystkieAkcje.ForeColor = Color.White;
+        lblOpisFiltrWszystkieAkcje.Location = new Point(20, 80);
+        lblOpisFiltrWszystkieAkcje.Name = "lblOpisFiltrWszystkieAkcje";
+        lblOpisFiltrWszystkieAkcje.Size = new Size(217, 20);
+        lblOpisFiltrWszystkieAkcje.TabIndex = 3;
+        lblOpisFiltrWszystkieAkcje.Text = "Lub pokaż wszystkie inwestycje:";
+        // 
+        // chkWszystkieAkcje
+        // 
+        chkWszystkieAkcje.ForeColor = Color.White;
+        chkWszystkieAkcje.Location = new Point(340, 78);
+        chkWszystkieAkcje.Name = "chkWszystkieAkcje";
+        chkWszystkieAkcje.Size = new Size(18, 24);
+        chkWszystkieAkcje.TabIndex = 4;
+        chkWszystkieAkcje.UseVisualStyleBackColor = true;
+        // 
+        // lblOpisZakresCzasu
+        // 
+        lblOpisZakresCzasu.AutoSize = true;
+        lblOpisZakresCzasu.ForeColor = Color.White;
+        lblOpisZakresCzasu.Location = new Point(20, 115);
+        lblOpisZakresCzasu.Name = "lblOpisZakresCzasu";
+        lblOpisZakresCzasu.Size = new Size(95, 20);
+        lblOpisZakresCzasu.TabIndex = 5;
+        lblOpisZakresCzasu.Text = "Zakres czasu:";
+        // 
+        // dtpDataOd
+        // 
+        dtpDataOd.Format = DateTimePickerFormat.Short;
+        dtpDataOd.Location = new Point(150, 110);
+        dtpDataOd.Name = "dtpDataOd";
+        dtpDataOd.Size = new Size(120, 27);
+        dtpDataOd.TabIndex = 6;
+        // 
+        // dtpDataDo
+        // 
+        dtpDataDo.Format = DateTimePickerFormat.Short;
+        dtpDataDo.Location = new Point(280, 110);
+        dtpDataDo.Name = "dtpDataDo";
+        dtpDataDo.Size = new Size(120, 27);
+        dtpDataDo.TabIndex = 7;
+        // 
+        // btnZastosuj
+        // 
+        btnZastosuj.BackColor = Color.MediumPurple;
+        btnZastosuj.FlatAppearance.BorderSize = 0;
+        btnZastosuj.FlatStyle = FlatStyle.Flat;
+        btnZastosuj.ForeColor = Color.White;
+        btnZastosuj.Location = new Point(50, 170);
+        btnZastosuj.Name = "btnZastosuj";
+        btnZastosuj.Size = new Size(150, 36);
+        btnZastosuj.TabIndex = 8;
+        btnZastosuj.Text = "OK";
+        btnZastosuj.UseVisualStyleBackColor = false;
+        // 
+        // btnAnuluj
+        // 
+        btnAnuluj.BackColor = Color.MediumPurple;
+        btnAnuluj.FlatAppearance.BorderSize = 0;
+        btnAnuluj.FlatStyle = FlatStyle.Flat;
+        btnAnuluj.ForeColor = Color.White;
+        btnAnuluj.Location = new Point(210, 170);
+        btnAnuluj.Name = "btnAnuluj";
+        btnAnuluj.Size = new Size(150, 36);
+        btnAnuluj.TabIndex = 9;
+        btnAnuluj.Text = "Anuluj";
+        btnAnuluj.UseVisualStyleBackColor = false;
+        // 
+        // ReportForm
+        // 
+        BackColor = Color.Black;
+        ClientSize = new Size(450, 230);
+        Controls.Add(lblOpisFiltrTicker);
+        Controls.Add(chkFiltrTicker);
+        Controls.Add(txtTicker);
+        Controls.Add(lblOpisFiltrWszystkieAkcje);
+        Controls.Add(chkWszystkieAkcje);
+        Controls.Add(lblOpisZakresCzasu);
+        Controls.Add(dtpDataOd);
+        Controls.Add(dtpDataDo);
+        Controls.Add(btnZastosuj);
+        Controls.Add(btnAnuluj);
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        Icon = (Icon)resources.GetObject("$this.Icon");
+        MaximizeBox = false;
+        MinimizeBox = false;
+        Name = "ReportForm";
+        StartPosition = FormStartPosition.CenterParent;
+        Text = "Opcje Raportu";
+        ResumeLayout(false);
+        PerformLayout();
+    }
 
-            this.lblOpisFiltrTicker = new Label();
-            this.chkFiltrTicker = new CheckBox();
-            this.txtTicker = new TextBox();
-
-            this.lblOpisFiltrWszystkieAkcje = new Label();
-            this.chkWszystkieAkcje = new CheckBox();
-
-            this.lblOpisZakresCzasu = new Label();
-            this.dtpDataOd = new DateTimePicker();
-            this.dtpDataDo = new DateTimePicker();
-
-            this.btnZastosuj = new Button();
-            this.btnAnuluj = new Button();
-
-            // 
-            // Form settings
-            // 
-            this.ClientSize = new Size(450, 230);
-            this.BackColor = Color.Black;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.Text = "Opcje Raportu";
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-
-            //
-            // lblOpisFiltrTicker
-            //
-            this.lblOpisFiltrTicker.AutoSize = true;
-            this.lblOpisFiltrTicker.ForeColor = Color.White;
-            this.lblOpisFiltrTicker.Location = new Point(20, 20);
-            this.lblOpisFiltrTicker.Text = "Filtruj według konkretnego tickera:";
-
-            //
-            // chkFiltrTicker
-            //
-            this.chkFiltrTicker.ForeColor = Color.White;
-            this.chkFiltrTicker.Location = new Point(340, 18);
-            this.chkFiltrTicker.Size = new Size(18, 24);
-            this.chkFiltrTicker.UseVisualStyleBackColor = true;
-
-            //
-            // txtTicker
-            //
-            this.txtTicker.BackColor = Color.FromArgb(30, 30, 30);
-            this.txtTicker.BorderStyle = BorderStyle.FixedSingle;
-            this.txtTicker.ForeColor = Color.White;
-            this.txtTicker.Size = new Size(140, 23);
-            this.txtTicker.Location = new Point(20, 45);
-            this.txtTicker.Name = "txtTicker";
-
-            //
-            // lblOpisFiltrWszystkieAkcje
-            //
-            this.lblOpisFiltrWszystkieAkcje.AutoSize = true;
-            this.lblOpisFiltrWszystkieAkcje.ForeColor = Color.White;
-            this.lblOpisFiltrWszystkieAkcje.Location = new Point(20, 80);
-            this.lblOpisFiltrWszystkieAkcje.Text = "Lub pokaż wszystkie inwestycje:";
-
-            //
-            // chkWszystkieAkcje
-            //
-            this.chkWszystkieAkcje.ForeColor = Color.White;
-            this.chkWszystkieAkcje.Location = new Point(340, 78);
-            this.chkWszystkieAkcje.Size = new Size(18, 24);
-            this.chkWszystkieAkcje.UseVisualStyleBackColor = true;
-
-            //
-            // lblOpisZakresCzasu
-            //
-            this.lblOpisZakresCzasu.AutoSize = true;
-            this.lblOpisZakresCzasu.ForeColor = Color.White;
-            this.lblOpisZakresCzasu.Location = new Point(20, 115);
-            this.lblOpisZakresCzasu.Text = "Zakres czasu:";
-
-            //
-            // dtpDataOd
-            //
-            this.dtpDataOd.Format = DateTimePickerFormat.Short;
-            this.dtpDataOd.Location = new Point(150, 110);
-            this.dtpDataOd.Size = new Size(120, 22);
-
-            //
-            // dtpDataDo
-            //
-            this.dtpDataDo.Format = DateTimePickerFormat.Short;
-            this.dtpDataDo.Location = new Point(280, 110);
-            this.dtpDataDo.Size = new Size(120, 22);
-
-            //
-            // btnZastosuj
-            //
-            this.btnZastosuj.Location = new Point(50, 170);
-            this.btnZastosuj.Text = "OK";
-            this.btnZastosuj.UseVisualStyleBackColor = false;
-            this.btnZastosuj.BackColor = Color.MediumPurple;
-            this.btnZastosuj.FlatAppearance.BorderSize = 0;
-            this.btnZastosuj.FlatStyle = FlatStyle.Flat;
-            this.btnZastosuj.ForeColor = Color.White;
-            this.btnZastosuj.Size = new Size(150, 36);
-
-            //
-            // btnAnuluj
-            //
-            this.btnAnuluj.Location = new Point(210, 170);
-            this.btnAnuluj.Text = "Anuluj";
-            this.btnAnuluj.UseVisualStyleBackColor = false;
-            this.btnAnuluj.BackColor = Color.MediumPurple;
-            this.btnAnuluj.FlatAppearance.BorderSize = 0;
-            this.btnAnuluj.FlatStyle = FlatStyle.Flat;
-            this.btnAnuluj.ForeColor = Color.White;
-            this.btnAnuluj.Size = new Size(150, 36);
-
-            //
-            // Add controls
-            //
-            this.Controls.Add(this.lblOpisFiltrTicker);
-            this.Controls.Add(this.chkFiltrTicker);
-            this.Controls.Add(this.txtTicker);
-
-            this.Controls.Add(this.lblOpisFiltrWszystkieAkcje);
-            this.Controls.Add(this.chkWszystkieAkcje);
-
-            this.Controls.Add(this.lblOpisZakresCzasu);
-            this.Controls.Add(this.dtpDataOd);
-            this.Controls.Add(this.dtpDataDo);
-
-            this.Controls.Add(this.btnZastosuj);
-            this.Controls.Add(this.btnAnuluj);
-        }
-
-        /// <summary>
-        /// Zwolnienie zasobów
-        /// </summary>
-        /// <param name="disposing"></param>
-        protected override void Dispose(bool disposing)
+    /// <summary>
+    /// Zwolnienie zasobów
+    /// </summary>
+    /// <param name="disposing"></param>
+    protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
             {

@@ -20,92 +20,113 @@
             base.Dispose(disposing);
         }
 
-        private void InitializeComponent()
-        {
-            this.txtResetCode = new TextBox();
-            this.txtNewPassword = new TextBox();
-            this.txtConfirmPassword = new TextBox();
-            this.btnChangePassword = new Button();
-            this.lblResetCode = new Label();
-            this.lblNewPassword = new Label();
-            this.lblConfirmPassword = new Label();
-
-            // txtResetCode
-            this.txtResetCode.BackColor = Color.FromArgb(30, 30, 30);
-            this.txtResetCode.ForeColor = Color.White;
-            this.txtResetCode.Font = new Font("Segoe UI", 10F);
-            this.txtResetCode.Location = new Point(180, 20);
-            this.txtResetCode.Name = "txtResetCode";
-            this.txtResetCode.Size = new Size(200, 25);
-
-            // txtNewPassword
-            this.txtNewPassword.BackColor = Color.FromArgb(30, 30, 30);
-            this.txtNewPassword.ForeColor = Color.White;
-            this.txtNewPassword.Font = new Font("Segoe UI", 10F);
-            this.txtNewPassword.Location = new Point(180, 60);
-            this.txtNewPassword.Name = "txtNewPassword";
-            this.txtNewPassword.Size = new Size(200, 25);
-            this.txtNewPassword.UseSystemPasswordChar = true;
-
-            // txtConfirmPassword
-            this.txtConfirmPassword.BackColor = Color.FromArgb(30, 30, 30);
-            this.txtConfirmPassword.ForeColor = Color.White;
-            this.txtConfirmPassword.Font = new Font("Segoe UI", 10F);
-            this.txtConfirmPassword.Location = new Point(180, 100);
-            this.txtConfirmPassword.Name = "txtConfirmPassword";
-            this.txtConfirmPassword.Size = new Size(200, 25);
-            this.txtConfirmPassword.UseSystemPasswordChar = true;
-
-            // btnChangePassword
-            this.btnChangePassword.BackColor = Color.MediumPurple;
-            this.btnChangePassword.FlatAppearance.BorderSize = 0;
-            this.btnChangePassword.FlatStyle = FlatStyle.Flat;
-            this.btnChangePassword.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            this.btnChangePassword.ForeColor = Color.White;
-            this.btnChangePassword.Location = new Point(180, 140);
-            this.btnChangePassword.Name = "btnChangePassword";
-            this.btnChangePassword.Size = new Size(200, 40);
-            this.btnChangePassword.Text = "Zmień hasło";
-            this.btnChangePassword.UseVisualStyleBackColor = false;
-            this.btnChangePassword.Click += new EventHandler(this.btnChangePassword_Click);
-
-            // lblResetCode
-            this.lblResetCode.AutoSize = true;
-            this.lblResetCode.ForeColor = Color.White;
-            this.lblResetCode.Location = new Point(60, 25);
-            this.lblResetCode.Name = "lblResetCode";
-            this.lblResetCode.Size = new Size(75, 15);
-            this.lblResetCode.Text = "Kod resetu:";
-
-            // lblNewPassword
-            this.lblNewPassword.AutoSize = true;
-            this.lblNewPassword.ForeColor = Color.White;
-            this.lblNewPassword.Location = new Point(60, 65);
-            this.lblNewPassword.Name = "lblNewPassword";
-            this.lblNewPassword.Size = new Size(74, 15);
-            this.lblNewPassword.Text = "Nowe hasło:";
-
-            // lblConfirmPassword
-            this.lblConfirmPassword.AutoSize = true;
-            this.lblConfirmPassword.ForeColor = Color.White;
-            this.lblConfirmPassword.Location = new Point(60, 105);
-            this.lblConfirmPassword.Name = "lblConfirmPassword";
-            this.lblConfirmPassword.Size = new Size(114, 15);
-            this.lblConfirmPassword.Text = "Potwierdź hasło:";
-
-            // ChangePasswordForm
-            this.BackColor = Color.Black;
-            this.ClientSize = new Size(420, 200);
-            this.Controls.Add(this.lblResetCode);
-            this.Controls.Add(this.lblNewPassword);
-            this.Controls.Add(this.lblConfirmPassword);
-            this.Controls.Add(this.txtResetCode);
-            this.Controls.Add(this.txtNewPassword);
-            this.Controls.Add(this.txtConfirmPassword);
-            this.Controls.Add(this.btnChangePassword);
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = "Zmiana hasła";
-        }
+    private void InitializeComponent()
+    {
+        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChangePasswordForm));
+        txtResetCode = new TextBox();
+        txtNewPassword = new TextBox();
+        txtConfirmPassword = new TextBox();
+        btnChangePassword = new Button();
+        lblResetCode = new Label();
+        lblNewPassword = new Label();
+        lblConfirmPassword = new Label();
+        SuspendLayout();
+        // 
+        // txtResetCode
+        // 
+        txtResetCode.BackColor = Color.FromArgb(30, 30, 30);
+        txtResetCode.Font = new Font("Segoe UI", 10F);
+        txtResetCode.ForeColor = Color.White;
+        txtResetCode.Location = new Point(180, 20);
+        txtResetCode.Name = "txtResetCode";
+        txtResetCode.Size = new Size(200, 30);
+        txtResetCode.TabIndex = 3;
+        // 
+        // txtNewPassword
+        // 
+        txtNewPassword.BackColor = Color.FromArgb(30, 30, 30);
+        txtNewPassword.Font = new Font("Segoe UI", 10F);
+        txtNewPassword.ForeColor = Color.White;
+        txtNewPassword.Location = new Point(180, 60);
+        txtNewPassword.Name = "txtNewPassword";
+        txtNewPassword.Size = new Size(200, 30);
+        txtNewPassword.TabIndex = 4;
+        txtNewPassword.UseSystemPasswordChar = true;
+        // 
+        // txtConfirmPassword
+        // 
+        txtConfirmPassword.BackColor = Color.FromArgb(30, 30, 30);
+        txtConfirmPassword.Font = new Font("Segoe UI", 10F);
+        txtConfirmPassword.ForeColor = Color.White;
+        txtConfirmPassword.Location = new Point(180, 100);
+        txtConfirmPassword.Name = "txtConfirmPassword";
+        txtConfirmPassword.Size = new Size(200, 30);
+        txtConfirmPassword.TabIndex = 5;
+        txtConfirmPassword.UseSystemPasswordChar = true;
+        // 
+        // btnChangePassword
+        // 
+        btnChangePassword.BackColor = Color.MediumPurple;
+        btnChangePassword.FlatAppearance.BorderSize = 0;
+        btnChangePassword.FlatStyle = FlatStyle.Flat;
+        btnChangePassword.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        btnChangePassword.ForeColor = Color.White;
+        btnChangePassword.Location = new Point(180, 140);
+        btnChangePassword.Name = "btnChangePassword";
+        btnChangePassword.Size = new Size(200, 40);
+        btnChangePassword.TabIndex = 6;
+        btnChangePassword.Text = "Zmień hasło";
+        btnChangePassword.UseVisualStyleBackColor = false;
+        btnChangePassword.Click += btnChangePassword_Click;
+        // 
+        // lblResetCode
+        // 
+        lblResetCode.AutoSize = true;
+        lblResetCode.ForeColor = Color.White;
+        lblResetCode.Location = new Point(60, 25);
+        lblResetCode.Name = "lblResetCode";
+        lblResetCode.Size = new Size(83, 20);
+        lblResetCode.TabIndex = 0;
+        lblResetCode.Text = "Kod resetu:";
+        // 
+        // lblNewPassword
+        // 
+        lblNewPassword.AutoSize = true;
+        lblNewPassword.ForeColor = Color.White;
+        lblNewPassword.Location = new Point(60, 65);
+        lblNewPassword.Name = "lblNewPassword";
+        lblNewPassword.Size = new Size(90, 20);
+        lblNewPassword.TabIndex = 1;
+        lblNewPassword.Text = "Nowe hasło:";
+        // 
+        // lblConfirmPassword
+        // 
+        lblConfirmPassword.AutoSize = true;
+        lblConfirmPassword.ForeColor = Color.White;
+        lblConfirmPassword.Location = new Point(60, 105);
+        lblConfirmPassword.Name = "lblConfirmPassword";
+        lblConfirmPassword.Size = new Size(116, 20);
+        lblConfirmPassword.TabIndex = 2;
+        lblConfirmPassword.Text = "Potwierdź hasło:";
+        // 
+        // ChangePasswordForm
+        // 
+        BackColor = Color.Black;
+        ClientSize = new Size(420, 200);
+        Controls.Add(lblResetCode);
+        Controls.Add(lblNewPassword);
+        Controls.Add(lblConfirmPassword);
+        Controls.Add(txtResetCode);
+        Controls.Add(txtNewPassword);
+        Controls.Add(txtConfirmPassword);
+        Controls.Add(btnChangePassword);
+        FormBorderStyle = FormBorderStyle.FixedSingle;
+        Icon = (Icon)resources.GetObject("$this.Icon");
+        MaximizeBox = false;
+        Name = "ChangePasswordForm";
+        StartPosition = FormStartPosition.CenterScreen;
+        Text = "Zmiana hasła";
+        ResumeLayout(false);
+        PerformLayout();
     }
+}
