@@ -61,7 +61,8 @@ public partial class ReportForm : Form
         Ticker = txtTicker.Text.Trim();
         FiltrWszystkieAkcje = chkWszystkieAkcje.Checked;
         DataOd = dtpDataOd.Value.Date;
-        DataDo = dtpDataDo.Value.Date;
+        // Zamiast .Date, ustaw sam koniec wybranego dnia
+        DataDo = dtpDataDo.Value.Date.AddDays(1).AddTicks(-1);
 
         this.DialogResult = DialogResult.OK;
         this.Close();

@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Personal_Investment.Core.Models;
 
 namespace Personal_Investment.Core.Api.Finnhub
 {
@@ -87,6 +88,47 @@ namespace Personal_Investment.Core.Api.Finnhub
             string cleanSymbol = userSymbol.Trim().ToUpper();
             string url = $"https://finnhub.io/api/v1/quote?symbol=BINANCE:{cleanSymbol}USDT&token={_apiKey}";
             return await FetchQuoteAsync(url);
+        }
+
+        // Nowa metoda pomocnicza zwracająca pełny obiekt
+        private async Task<MarketData?> FetchMarketDataAsync(string url)
+        {
+            try
+            {
+                var json = await _client.GetStringAsync(url);
+                var quote = JsonConvert.DeserializeObject<FinnHubQuote>(json);
+
+                if (quote == null || quote.c == 0) return null;
+
+                // FinnhubService.cs ok. linii 105
+                return new MarketData
+                {
+                    // Używamy ?? 0, aby w razie błędu API przypisać zero zamiast błędu
+                    Price = quote.c ?? 0,
+                    PercentChange = quote.dp ?? 0
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // Publiczna metoda dla akcji
+        public async Task<MarketData?> GetFullQuoteAsync(string symbol)
+        {
+            if (string.IsNullOrWhiteSpace(symbol)) return null;
+            string url = $"https://finnhub.io/api/v1/quote?symbol={symbol.ToUpper().Trim()}&token={_apiKey}";
+            return await FetchMarketDataAsync(url);
+        }
+
+        // Publiczna metoda dla krypto
+        public async Task<MarketData?> GetFullCryptoQuoteAsync(string userSymbol)
+        {
+            if (string.IsNullOrWhiteSpace(userSymbol)) return null;
+            string cleanSymbol = userSymbol.Trim().ToUpper();
+            string url = $"https://finnhub.io/api/v1/quote?symbol=BINANCE:{cleanSymbol}USDT&token={_apiKey}";
+            return await FetchMarketDataAsync(url);
         }
     }
 }

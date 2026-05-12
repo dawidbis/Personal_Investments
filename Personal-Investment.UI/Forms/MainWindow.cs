@@ -32,10 +32,23 @@ public partial class MainWindow : Form
     {
         InitializeComponent();
         // Pod InitializeComponent()
+        akcjaToolStripMenuItem.Image = imageList1.Images[1];
+
+        // 2. Kryptowaluta
+        kryptowalutaToolStripMenuItem.Image = imageList1.Images[0];
+
+        // 3. Surowiec
+        surowiecToolStripMenuItem.Image = imageList1.Images[2];
+
+        // Opcjonalnie: upewnij się, że ikony wyświetlają się obok tekstu
+        akcjaToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+        kryptowalutaToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+        surowiecToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
         listView1.DrawColumnHeader += ListView1_DrawColumnHeader;
         listView1.DrawItem += ListView1_DrawItem;
         listView1.DrawSubItem += ListView1_DrawSubItem;
         this.Resize += MainWindow_Resize;
+        this.Load += async (s, e) => await InitialRefreshAsync();
         _investmentService = investmentService;
         _authService = authService;
         _exportService = exportService;
@@ -45,6 +58,27 @@ public partial class MainWindow : Form
         SetupTimers();
     }
 
+    private async Task InitialRefreshAsync()
+    {
+        try
+        {
+            // Opcjonalnie: pokaż kursor oczekiwania
+            Cursor = Cursors.WaitCursor;
+
+            // Pobierz dane dla portfela i listy obserwowanych
+            RefreshData();
+            await UpdateWatchlist();
+        }
+        catch (Exception ex)
+        {
+            // Logowanie błędu, jeśli np. brak internetu przy starcie
+            Console.WriteLine($"Błąd inicjalizacji danych: {ex.Message}");
+        }
+        finally
+        {
+            Cursor = Cursors.Default;
+        }
+    }
     private void AdjustMenuSpacing()
     {
         if (menuStrip2 == null || spacerLeft == null || spacerRight == null) return;
@@ -216,30 +250,14 @@ public partial class MainWindow : Form
         if (secondsPassed < RefreshCooldownSeconds)
         {
             int wait = RefreshCooldownSeconds - (int)secondsPassed;
-            MessageBox.Show($"Zwolnij! API potrzebuje odpoczynku. Spróbuj za {wait}s.", "Ograniczenie");
+            MessageBox.Show($"Zwolnij! Spróbuj za {wait}s.", "Ograniczenie");
             return;
         }
 
         try
         {
             Cursor = Cursors.WaitCursor;
-            _lastRefreshTime = DateTime.Now;
-
-            decimal? priceForCheck = null;
-            if (checkBoxTrybTestowy.Checked && decimal.TryParse(textBoxAktualnaCenaTest.Text, out decimal val))
-            {
-                priceForCheck = val;
-            }
-
-            // Przekazujemy cenę testową (jeśli jest) do automatu
-            var alerts = await _investmentService.RunAutomaticCheckAsync(_currentUserId, priceForCheck);
-
-            if (alerts.Any())
-            {
-                MessageBox.Show(string.Join(Environment.NewLine, alerts), "Automatyczna Sprzedaż");
-            }
-
-            RefreshData();
+            await PerformFullRefreshAsync(showErrors: true);
         }
         finally
         {
@@ -317,6 +335,56 @@ public partial class MainWindow : Form
         listView1.EndUpdate();
     }
 
+    private async Task UpdateWatchlist()
+    {
+        listViewWatchlist.Items.Clear();
+        var trackedTickers = await _investmentService.GetWatchlistAsync();
+
+        foreach (var item in trackedTickers)
+        {
+            // Zakładamy, że InvestmentService zwraca teraz obiekt MarketData { Price, PercentChange }
+            var data = await _investmentService.GetMarketDataAsync(item.Ticker, "Akcje");
+
+            if (data == null) continue;
+
+            // 1. Nazwa (Ticker)
+            var lvItem = new ListViewItem(item.Ticker);
+            lvItem.UseItemStyleForSubItems = false; // <-- TO JEST KLUCZOWA LINIA
+            lvItem.Font = new Font(listViewWatchlist.Font, FontStyle.Bold);
+            lvItem.ForeColor = Color.White;
+
+            // 2. Cena Aktualna
+            lvItem.SubItems.Add($"{data.Price:N2} USD");
+
+            // 3. Zmiana procentowa
+            string sign = data.PercentChange >= 0 ? "+" : "";
+            var subChange = lvItem.SubItems.Add($"{sign}{data.PercentChange:N2}%");
+
+            // --- LOGIKA KOLOROWANIA ---
+            if (data.PercentChange > 0)
+            {
+                subChange.ForeColor = Color.Lime; // Soczysty zielony dla wzrostów
+            }
+            else if (data.PercentChange < 0)
+            {
+                subChange.ForeColor = Color.FromArgb(255, 80, 80); // Jasny czerwony (lepiej widoczny na czarnym)
+            }
+            else
+            {
+                subChange.ForeColor = Color.Gray;
+            }
+
+            listViewWatchlist.Items.Add(lvItem);
+        }
+
+        // Korekta szerokości kolumn, żeby nic nie było ucięte (jak na obrazku image_e09e7a.png)
+        if (listViewWatchlist.Columns.Count >= 3)
+        {
+            listViewWatchlist.Columns[0].Width = 60;
+            listViewWatchlist.Columns[1].Width = 100;
+            listViewWatchlist.Columns[2].Width = 80;
+        }
+    }
     private void PopulateHistoryListView(List<Investment> soldInvestments)
     {
         listView1.BeginUpdate();
@@ -453,8 +521,30 @@ public partial class MainWindow : Form
         var form = Program.ServiceProvider.GetRequiredService<ReportForm>();
         if (form.ShowDialog() == DialogResult.OK)
         {
-            var result = await _investmentService.GenerateReportAsync(_currentUserId, form.DataOd, form.DataDo, form.FiltrTickerAktywny ? form.Ticker : null);
-            labelRaport.Text = $"Raport: {form.DataOd:d} - {form.DataDo:d}\nZysk/Strata: {result.Profit:F2} USD";
+            // Używamy właściwości Ticker z Twojego kodu na image_dfb559.png
+            string wybranyTicker = form.Ticker;
+
+            var result = await _investmentService.GenerateReportAsync(_currentUserId, form.DataOd, form.DataDo, wybranyTicker);
+
+            // Budujemy tekst nagłówka raportu
+            // Sprawdzamy czy właściwość FiltrTickerAktywny z image_dfb559.png jest prawdziwa
+            string naglowek = form.FiltrTickerAktywny && !string.IsNullOrEmpty(wybranyTicker)
+                              ? $"Raport ({wybranyTicker})"
+                              : "Raport ogólny";
+
+            // Obliczanie procentów (opcjonalnie)
+            string infoProcentowe = "";
+            if (result.TotalInvested > 0)
+            {
+                decimal proc = (result.Profit / result.TotalInvested) * 100;
+                infoProcentowe = $" ({(proc >= 0 ? "+" : "")}{proc:N2}%)";
+            }
+
+            // Ustawienie tekstu w labelu
+            labelRaport.Text = $"{naglowek}: {form.DataOd:d} - {form.DataDo:d}\n" +
+                               $"Zysk/Strata: {result.Profit:N2} USD{infoProcentowe}";
+
+            // Kolorowanie zależne od wyniku
             labelRaport.ForeColor = result.Profit >= 0 ? Color.LightGreen : Color.Red;
             labelRaport.Visible = true;
         }
@@ -500,5 +590,61 @@ public partial class MainWindow : Form
     {
         AdjustMenuSpacing();
         SetupActiveColumns();
+    }
+
+    private async void btnAddWatchlist_Click(object sender, EventArgs e)
+    {
+        // Wyświetla okienko z prośbą o ticker
+        string ticker = Microsoft.VisualBasic.Interaction.InputBox(
+            "Wpisz symbol akcji lub kryptowaluty (np. BTC, AAPL):",
+            "Dodaj do obserwowanych",
+            "");
+
+        if (!string.IsNullOrWhiteSpace(ticker))
+        {
+            // 1. Zapisujemy w bazie przez serwis, który wcześniej przygotowaliśmy
+            await _investmentService.AddToWatchlistAsync(ticker.ToUpper());
+
+            // 2. Odświeżamy listę w UI, żeby nowy element od razu się pojawił
+            await UpdateWatchlist();
+        }
+    }
+
+    private async Task PerformFullRefreshAsync(bool showErrors = true)
+    {
+        try
+        {
+            // UI: Przygotowanie danych wejściowych
+            decimal? priceForCheck = null;
+            if (checkBoxTrybTestowy.Checked && decimal.TryParse(textBoxAktualnaCenaTest.Text, out decimal val))
+            {
+                priceForCheck = val;
+            }
+
+            // CORE: Wywołanie logiki biznesowej
+            var alerts = await _investmentService.ExecuteAutomatedCheckAndRefreshAsync(_currentUserId, priceForCheck);
+
+            // UI: Reakcja na wyniki
+            if (alerts.Any() && showErrors)
+            {
+                MessageBox.Show(string.Join(Environment.NewLine, alerts), "Automatyczna Sprzedaż");
+            }
+
+            // UI: Odświeżenie widoków
+            RefreshData();
+            await UpdateWatchlist();
+
+            _lastRefreshTime = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            if (showErrors) MessageBox.Show($"Błąd: {ex.Message}");
+        }
+    }
+
+    private async void timerWatchList_Tick(object sender, EventArgs e)
+    {
+        // Wywołujemy wspólną logikę odświeżania portfela i automatu
+        await PerformFullRefreshAsync(showErrors: false);
     }
 }

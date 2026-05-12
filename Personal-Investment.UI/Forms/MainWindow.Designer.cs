@@ -22,8 +22,8 @@ namespace Personal_Investment.UI.Forms;
     private void InitializeComponent()
     {
         components = new System.ComponentModel.Container();
-        TextBox textBoxAktualnaCenaTest;
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
+        textBoxAktualnaCenaTest = new TextBox();
         menuStrip2 = new MenuStrip();
         inwestycjePersonalneToolStripMenuItem = new ToolStripMenuItem();
         akcjaToolStripMenuItem = new ToolStripMenuItem();
@@ -39,11 +39,18 @@ namespace Personal_Investment.UI.Forms;
         toolStripMenuItem1 = new ToolStripMenuItem();
         spacerRight = new ToolStripMenuItem();
         panelUser = new Panel();
+        btnAddWatchlist = new Button();
+        imageList2 = new ImageList(components);
+        listViewWatchlist = new ListView();
+        Ticker = new ColumnHeader();
+        Cena = new ColumnHeader();
+        Zmiana = new ColumnHeader();
+        label1 = new Label();
+        labelRaport = new Label();
         labelWelcome = new Label();
         labelBilans = new Label();
         checkBoxTrybTestowy = new CheckBox();
         labelTestPrice = new Label();
-        labelRaport = new Label();
         labelBilansAktualny = new Label();
         panelMain = new Panel();
         groupBox1 = new GroupBox();
@@ -52,7 +59,7 @@ namespace Personal_Investment.UI.Forms;
         btnOdswiez = new Button();
         btnHistoria = new Button();
         btnAktualne = new Button();
-        textBoxAktualnaCenaTest = new TextBox();
+        timerWatchList = new System.Windows.Forms.Timer(components);
         menuStrip2.SuspendLayout();
         panelUser.SuspendLayout();
         panelMain.SuspendLayout();
@@ -61,8 +68,7 @@ namespace Personal_Investment.UI.Forms;
         // 
         // textBoxAktualnaCenaTest
         // 
-        textBoxAktualnaCenaTest.BackColor = Color.FromArgb(30, 30, 30);
-        textBoxAktualnaCenaTest.BorderStyle = BorderStyle.FixedSingle;
+        textBoxAktualnaCenaTest.BackColor = Color.DimGray;
         textBoxAktualnaCenaTest.Font = new Font("Segoe UI", 9F);
         textBoxAktualnaCenaTest.ForeColor = Color.White;
         textBoxAktualnaCenaTest.Location = new Point(30, 223);
@@ -73,7 +79,7 @@ namespace Personal_Investment.UI.Forms;
         // 
         // menuStrip2
         // 
-        menuStrip2.BackColor = Color.FromArgb(10, 10, 10);
+        menuStrip2.BackColor = Color.FromArgb(30, 30, 30);
         menuStrip2.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 238);
         menuStrip2.ForeColor = Color.White;
         menuStrip2.ImageScalingSize = new Size(20, 20);
@@ -88,43 +94,58 @@ namespace Personal_Investment.UI.Forms;
         // 
         // inwestycjePersonalneToolStripMenuItem
         // 
-        inwestycjePersonalneToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        inwestycjePersonalneToolStripMenuItem.AutoSize = false;
+        inwestycjePersonalneToolStripMenuItem.BackColor = Color.FromArgb(30, 30, 30);
         inwestycjePersonalneToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { akcjaToolStripMenuItem, kryptowalutaToolStripMenuItem, surowiecToolStripMenuItem });
-        inwestycjePersonalneToolStripMenuItem.ForeColor = SystemColors.ButtonFace;
+        inwestycjePersonalneToolStripMenuItem.ForeColor = Color.White;
+        inwestycjePersonalneToolStripMenuItem.Image = (Image)resources.GetObject("inwestycjePersonalneToolStripMenuItem.Image");
+        inwestycjePersonalneToolStripMenuItem.ImageAlign = ContentAlignment.MiddleLeft;
         inwestycjePersonalneToolStripMenuItem.Margin = new Padding(5, 0, 5, 0);
         inwestycjePersonalneToolStripMenuItem.Name = "inwestycjePersonalneToolStripMenuItem";
         inwestycjePersonalneToolStripMenuItem.Padding = new Padding(10, 5, 10, 5);
-        inwestycjePersonalneToolStripMenuItem.Size = new Size(169, 39);
+        inwestycjePersonalneToolStripMenuItem.Size = new Size(180, 35);
         inwestycjePersonalneToolStripMenuItem.Text = "Dodaj inwestycję";
         // 
         // akcjaToolStripMenuItem
         // 
+        akcjaToolStripMenuItem.BackColor = Color.FromArgb(30, 30, 30);
+        akcjaToolStripMenuItem.ForeColor = Color.White;
+        akcjaToolStripMenuItem.ImageAlign = ContentAlignment.MiddleLeft;
         akcjaToolStripMenuItem.Name = "akcjaToolStripMenuItem";
-        akcjaToolStripMenuItem.Size = new Size(202, 30);
+        akcjaToolStripMenuItem.Padding = new Padding(5, 2, 5, 2);
+        akcjaToolStripMenuItem.Size = new Size(234, 32);
         akcjaToolStripMenuItem.Text = "Akcja";
         akcjaToolStripMenuItem.Click += akcjaToolStripMenuItem_Click;
         // 
         // kryptowalutaToolStripMenuItem
         // 
+        kryptowalutaToolStripMenuItem.BackColor = Color.FromArgb(30, 30, 30);
+        kryptowalutaToolStripMenuItem.ForeColor = Color.White;
+        kryptowalutaToolStripMenuItem.ImageAlign = ContentAlignment.MiddleLeft;
         kryptowalutaToolStripMenuItem.Name = "kryptowalutaToolStripMenuItem";
-        kryptowalutaToolStripMenuItem.Size = new Size(202, 30);
+        kryptowalutaToolStripMenuItem.Padding = new Padding(5, 2, 5, 2);
+        kryptowalutaToolStripMenuItem.Size = new Size(234, 32);
         kryptowalutaToolStripMenuItem.Text = "Kryptowaluta";
         kryptowalutaToolStripMenuItem.Click += kryptowalutaToolStripMenuItem_Click;
         // 
         // surowiecToolStripMenuItem
         // 
+        surowiecToolStripMenuItem.BackColor = Color.FromArgb(30, 30, 30);
+        surowiecToolStripMenuItem.ForeColor = Color.White;
+        surowiecToolStripMenuItem.ImageAlign = ContentAlignment.MiddleLeft;
         surowiecToolStripMenuItem.Name = "surowiecToolStripMenuItem";
-        surowiecToolStripMenuItem.Size = new Size(202, 30);
+        surowiecToolStripMenuItem.Padding = new Padding(5, 2, 5, 2);
+        surowiecToolStripMenuItem.Size = new Size(234, 32);
         surowiecToolStripMenuItem.Text = "Surowiec";
         surowiecToolStripMenuItem.Click += surowiecToolStripMenuItem_Click;
         // 
         // sprzedajToolStripMenuItem
         // 
-        sprzedajToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        sprzedajToolStripMenuItem.Image = (Image)resources.GetObject("sprzedajToolStripMenuItem.Image");
         sprzedajToolStripMenuItem.Margin = new Padding(5, 0, 5, 0);
         sprzedajToolStripMenuItem.Name = "sprzedajToolStripMenuItem";
         sprzedajToolStripMenuItem.Padding = new Padding(10, 5, 10, 5);
-        sprzedajToolStripMenuItem.Size = new Size(284, 39);
+        sprzedajToolStripMenuItem.Size = new Size(304, 39);
         sprzedajToolStripMenuItem.Text = "Sprzedaj zaznaczoną inwestycję";
         sprzedajToolStripMenuItem.Click += sprzedajToolStripMenuItem_Click;
         // 
@@ -137,53 +158,53 @@ namespace Personal_Investment.UI.Forms;
         // 
         // generujRaportToolStripMenuItem
         // 
-        generujRaportToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        generujRaportToolStripMenuItem.Image = (Image)resources.GetObject("generujRaportToolStripMenuItem.Image");
         generujRaportToolStripMenuItem.Margin = new Padding(5, 0, 5, 0);
         generujRaportToolStripMenuItem.Name = "generujRaportToolStripMenuItem";
         generujRaportToolStripMenuItem.Padding = new Padding(10, 5, 10, 5);
-        generujRaportToolStripMenuItem.Size = new Size(150, 39);
+        generujRaportToolStripMenuItem.Size = new Size(170, 39);
         generujRaportToolStripMenuItem.Text = "Generuj raport";
         generujRaportToolStripMenuItem.Click += generujRaportToolStripMenuItem_Click;
         // 
         // eksportujDaneToolStripMenuItem
         // 
-        eksportujDaneToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        eksportujDaneToolStripMenuItem.Image = (Image)resources.GetObject("eksportujDaneToolStripMenuItem.Image");
         eksportujDaneToolStripMenuItem.Margin = new Padding(5, 0, 5, 0);
         eksportujDaneToolStripMenuItem.Name = "eksportujDaneToolStripMenuItem";
         eksportujDaneToolStripMenuItem.Padding = new Padding(10, 5, 10, 5);
-        eksportujDaneToolStripMenuItem.Size = new Size(154, 39);
+        eksportujDaneToolStripMenuItem.Size = new Size(174, 39);
         eksportujDaneToolStripMenuItem.Text = "Eksportuj dane";
         eksportujDaneToolStripMenuItem.Click += eksportujDaneToolStripMenuItem_Click;
         // 
         // importujDaneToolStripMenuItem
         // 
-        importujDaneToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        importujDaneToolStripMenuItem.Image = (Image)resources.GetObject("importujDaneToolStripMenuItem.Image");
         importujDaneToolStripMenuItem.Margin = new Padding(5, 0, 5, 0);
         importujDaneToolStripMenuItem.Name = "importujDaneToolStripMenuItem";
         importujDaneToolStripMenuItem.Padding = new Padding(10, 5, 10, 5);
-        importujDaneToolStripMenuItem.Size = new Size(149, 39);
+        importujDaneToolStripMenuItem.Size = new Size(169, 39);
         importujDaneToolStripMenuItem.Text = "Importuj dane";
         importujDaneToolStripMenuItem.Click += importujDaneToolStripMenuItem_Click;
         // 
         // UsunKontoToolStripMenuItem
         // 
         UsunKontoToolStripMenuItem.Alignment = ToolStripItemAlignment.Right;
-        UsunKontoToolStripMenuItem.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        UsunKontoToolStripMenuItem.Image = (Image)resources.GetObject("UsunKontoToolStripMenuItem.Image");
         UsunKontoToolStripMenuItem.Margin = new Padding(5, 0, 5, 0);
         UsunKontoToolStripMenuItem.Name = "UsunKontoToolStripMenuItem";
         UsunKontoToolStripMenuItem.Padding = new Padding(10, 5, 10, 5);
-        UsunKontoToolStripMenuItem.Size = new Size(128, 39);
+        UsunKontoToolStripMenuItem.Size = new Size(148, 39);
         UsunKontoToolStripMenuItem.Text = "Usuń konto";
         UsunKontoToolStripMenuItem.Click += UsunKontoToolStripMenuItem_Click;
         // 
         // wylogujToolStripMenuItem1
         // 
         wylogujToolStripMenuItem1.Alignment = ToolStripItemAlignment.Right;
-        wylogujToolStripMenuItem1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        wylogujToolStripMenuItem1.Image = (Image)resources.GetObject("wylogujToolStripMenuItem1.Image");
         wylogujToolStripMenuItem1.Margin = new Padding(5, 0, 5, 0);
         wylogujToolStripMenuItem1.Name = "wylogujToolStripMenuItem1";
         wylogujToolStripMenuItem1.Padding = new Padding(10, 5, 10, 5);
-        wylogujToolStripMenuItem1.Size = new Size(102, 39);
+        wylogujToolStripMenuItem1.Size = new Size(122, 39);
         wylogujToolStripMenuItem1.Text = "Wyloguj";
         wylogujToolStripMenuItem1.Click += wylogujToolStripMenuItem1_Click;
         // 
@@ -203,12 +224,15 @@ namespace Personal_Investment.UI.Forms;
         // panelUser
         // 
         panelUser.BackColor = Color.FromArgb(15, 15, 15);
+        panelUser.Controls.Add(textBoxAktualnaCenaTest);
+        panelUser.Controls.Add(btnAddWatchlist);
+        panelUser.Controls.Add(listViewWatchlist);
+        panelUser.Controls.Add(label1);
+        panelUser.Controls.Add(labelRaport);
         panelUser.Controls.Add(labelWelcome);
         panelUser.Controls.Add(labelBilans);
         panelUser.Controls.Add(checkBoxTrybTestowy);
         panelUser.Controls.Add(labelTestPrice);
-        panelUser.Controls.Add(textBoxAktualnaCenaTest);
-        panelUser.Controls.Add(labelRaport);
         panelUser.Controls.Add(labelBilansAktualny);
         panelUser.Dock = DockStyle.Left;
         panelUser.Location = new Point(0, 45);
@@ -216,6 +240,79 @@ namespace Personal_Investment.UI.Forms;
         panelUser.Padding = new Padding(20, 20, 0, 0);
         panelUser.Size = new Size(350, 708);
         panelUser.TabIndex = 1;
+        // 
+        // btnAddWatchlist
+        // 
+        btnAddWatchlist.FlatAppearance.BorderSize = 0;
+        btnAddWatchlist.FlatStyle = FlatStyle.Flat;
+        btnAddWatchlist.ImageIndex = 3;
+        btnAddWatchlist.ImageList = imageList2;
+        btnAddWatchlist.Location = new Point(179, 321);
+        btnAddWatchlist.Name = "btnAddWatchlist";
+        btnAddWatchlist.Size = new Size(24, 24);
+        btnAddWatchlist.TabIndex = 9;
+        btnAddWatchlist.TabStop = false;
+        btnAddWatchlist.UseVisualStyleBackColor = true;
+        btnAddWatchlist.Click += btnAddWatchlist_Click;
+        // 
+        // imageList2
+        // 
+        imageList2.ColorDepth = ColorDepth.Depth32Bit;
+        imageList2.ImageStream = (ImageListStreamer)resources.GetObject("imageList2.ImageStream");
+        imageList2.TransparentColor = Color.Transparent;
+        imageList2.Images.SetKeyName(0, "wallet.png");
+        imageList2.Images.SetKeyName(1, "history.png");
+        imageList2.Images.SetKeyName(2, "sync.png");
+        imageList2.Images.SetKeyName(3, "plus.png");
+        // 
+        // listViewWatchlist
+        // 
+        listViewWatchlist.BackColor = Color.FromArgb(20, 20, 20);
+        listViewWatchlist.BorderStyle = BorderStyle.None;
+        listViewWatchlist.Columns.AddRange(new ColumnHeader[] { Ticker, Cena, Zmiana });
+        listViewWatchlist.ForeColor = Color.White;
+        listViewWatchlist.HeaderStyle = ColumnHeaderStyle.None;
+        listViewWatchlist.Location = new Point(37, 365);
+        listViewWatchlist.Name = "listViewWatchlist";
+        listViewWatchlist.Size = new Size(267, 314);
+        listViewWatchlist.TabIndex = 8;
+        listViewWatchlist.UseCompatibleStateImageBehavior = false;
+        listViewWatchlist.View = View.Details;
+        // 
+        // Ticker
+        // 
+        Ticker.Text = "Ticker";
+        // 
+        // Cena
+        // 
+        Cena.Text = "Cena";
+        Cena.TextAlign = HorizontalAlignment.Right;
+        Cena.Width = 90;
+        // 
+        // Zmiana
+        // 
+        Zmiana.Text = "Zmiana";
+        Zmiana.TextAlign = HorizontalAlignment.Right;
+        Zmiana.Width = 70;
+        // 
+        // label1
+        // 
+        label1.AutoSize = true;
+        label1.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 238);
+        label1.ForeColor = Color.White;
+        label1.Location = new Point(49, 321);
+        label1.Name = "label1";
+        label1.Size = new Size(124, 23);
+        label1.TabIndex = 7;
+        label1.Text = "Obserwowane";
+        // 
+        // labelRaport
+        // 
+        labelRaport.AutoSize = true;
+        labelRaport.Location = new Point(30, 260);
+        labelRaport.Name = "labelRaport";
+        labelRaport.Size = new Size(0, 20);
+        labelRaport.TabIndex = 5;
         // 
         // labelWelcome
         // 
@@ -265,13 +362,6 @@ namespace Personal_Investment.UI.Forms;
         labelTestPrice.TabIndex = 3;
         labelTestPrice.Text = "Aktualna cena (test):";
         labelTestPrice.Visible = false;
-        // 
-        // labelRaport
-        // 
-        labelRaport.Location = new Point(0, 0);
-        labelRaport.Name = "labelRaport";
-        labelRaport.Size = new Size(100, 23);
-        labelRaport.TabIndex = 5;
         // 
         // labelBilansAktualny
         // 
@@ -344,14 +434,18 @@ namespace Personal_Investment.UI.Forms;
         // 
         btnOdswiez.BackColor = Color.FromArgb(15, 15, 15);
         btnOdswiez.FlatAppearance.BorderColor = Color.FromArgb(35, 0, 55);
+        btnOdswiez.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 50);
         btnOdswiez.FlatStyle = FlatStyle.Flat;
         btnOdswiez.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
         btnOdswiez.ForeColor = Color.White;
-        btnOdswiez.Location = new Point(356, 500);
+        btnOdswiez.ImageIndex = 2;
+        btnOdswiez.ImageList = imageList2;
+        btnOdswiez.Location = new Point(422, 500);
         btnOdswiez.Name = "btnOdswiez";
-        btnOdswiez.Size = new Size(160, 40);
+        btnOdswiez.Size = new Size(200, 44);
         btnOdswiez.TabIndex = 1;
         btnOdswiez.Text = "Odśwież dane";
+        btnOdswiez.TextImageRelation = TextImageRelation.ImageBeforeText;
         btnOdswiez.UseVisualStyleBackColor = false;
         btnOdswiez.Click += btnOdswiez_Click;
         // 
@@ -359,31 +453,46 @@ namespace Personal_Investment.UI.Forms;
         // 
         btnHistoria.BackColor = Color.FromArgb(15, 15, 15);
         btnHistoria.FlatAppearance.BorderColor = Color.FromArgb(35, 0, 55);
+        btnHistoria.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 50);
         btnHistoria.FlatStyle = FlatStyle.Flat;
         btnHistoria.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
         btnHistoria.ForeColor = Color.White;
-        btnHistoria.Location = new Point(190, 500);
+        btnHistoria.ImageIndex = 1;
+        btnHistoria.ImageList = imageList2;
+        btnHistoria.Location = new Point(226, 500);
         btnHistoria.Name = "btnHistoria";
-        btnHistoria.Size = new Size(170, 40);
+        btnHistoria.Size = new Size(200, 44);
         btnHistoria.TabIndex = 2;
         btnHistoria.Text = "Historia sprzedaży";
+        btnHistoria.TextImageRelation = TextImageRelation.ImageBeforeText;
         btnHistoria.UseVisualStyleBackColor = false;
         btnHistoria.Click += btnHistoria_Click;
         // 
         // btnAktualne
         // 
         btnAktualne.BackColor = Color.FromArgb(15, 15, 15);
+        btnAktualne.BackgroundImageLayout = ImageLayout.Zoom;
         btnAktualne.FlatAppearance.BorderColor = Color.FromArgb(35, 0, 55);
+        btnAktualne.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 50);
         btnAktualne.FlatStyle = FlatStyle.Flat;
         btnAktualne.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
         btnAktualne.ForeColor = Color.White;
+        btnAktualne.ImageIndex = 0;
+        btnAktualne.ImageList = imageList2;
         btnAktualne.Location = new Point(30, 500);
         btnAktualne.Name = "btnAktualne";
-        btnAktualne.Size = new Size(163, 40);
+        btnAktualne.Size = new Size(200, 44);
         btnAktualne.TabIndex = 3;
         btnAktualne.Text = "Twoje inwestycje";
+        btnAktualne.TextImageRelation = TextImageRelation.ImageBeforeText;
         btnAktualne.UseVisualStyleBackColor = false;
         btnAktualne.Click += btnAktualne_Click;
+        // 
+        // timerWatchList
+        // 
+        timerWatchList.Enabled = true;
+        timerWatchList.Interval = 30000;
+        timerWatchList.Tick += timerWatchList_Tick;
         // 
         // MainWindow
         // 
@@ -475,4 +584,12 @@ namespace Personal_Investment.UI.Forms;
     private ToolStripMenuItem spacerLeft;
     private ToolStripMenuItem toolStripMenuItem1;
     private ToolStripMenuItem spacerRight;
+    private ImageList imageList2;
+    private Label label1;
+    private ListView listViewWatchlist;
+    private ColumnHeader Ticker;
+    private ColumnHeader Cena;
+    private Button btnAddWatchlist;
+    private ColumnHeader Zmiana;
+    private System.Windows.Forms.Timer timerWatchList;
 }

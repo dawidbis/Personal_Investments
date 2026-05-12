@@ -176,19 +176,32 @@ public class InvestmentService
     // 6. Generowanie raportu
     public async Task<InvestmentReport> GenerateReportAsync(int userId, DateTime from, DateTime to, string ticker = null)
     {
+        var dateFrom = from.Date;
+        var dateTo = to.Date.AddDays(1).AddTicks(-1);
+
         var query = _context.Investments
             .Include(i => i.ReturnsHistories)
             .Where(inv => inv.UserId == userId && inv.IsSold)
-            .Where(inv => inv.DateOfInvestment >= from && inv.DateOfInvestment <= to);
+            // Używamy poprawionych dat:
+            .Where(inv => inv.DateOfInvestment >= dateFrom && inv.DateOfInvestment <= dateTo);
 
         if (!string.IsNullOrEmpty(ticker))
             query = query.Where(inv => inv.Name.ToUpper() == ticker.ToUpper());
 
-        var investments = await query.ToListAsync();
+        var allSoldInvestments = await query.ToListAsync();
 
-        decimal invested = investments.Sum(inv => inv.BuyPrice * inv.NumberOfShares);
-        decimal earned = investments.Sum(inv => {
+        // 2. Filtrujemy po dacie SPRZEDAŻY (z historii zwrotów), a nie zakupu
+        var filteredInvestments = allSoldInvestments.Where(inv =>
+        {
+            var lastReturn = inv.ReturnsHistories.OrderByDescending(r => r.Date).FirstOrDefault();
+            return lastReturn != null && lastReturn.Date >= from && lastReturn.Date <= to;
+        }).ToList();
+
+        // 3. Obliczenia na przefiltrowanej liście
+        decimal invested = filteredInvestments.Sum(inv => inv.BuyPrice * inv.NumberOfShares);
+        decimal earned = filteredInvestments.Sum(inv => {
             var sale = inv.ReturnsHistories.OrderByDescending(r => r.Date).FirstOrDefault();
+            // Jeśli z jakiegoś powodu brak historii, przyjmujemy cenę zakupu (zysk 0)
             return (sale?.Value ?? inv.BuyPrice) * inv.NumberOfShares;
         });
 
@@ -197,7 +210,7 @@ public class InvestmentService
             TotalInvested = invested,
             TotalEarned = earned,
             Profit = earned - invested,
-            InvestmentCount = investments.Count
+            InvestmentCount = filteredInvestments.Count
         };
     }
 
@@ -233,15 +246,51 @@ public class InvestmentService
         return inv;
     }
 
-    public async Task<decimal?> GetLatestPriceAsync(string symbol, string typeName)
+    public async Task<MarketData?> GetMarketDataAsync(string symbol, string typeName)
     {
-        // ZMIANA: Używamy wstrzykniętych serwisów
         return typeName switch
         {
-            "Akcje" => await _finnhub.GetCurrentQuoteAsync(symbol),
-            "Kryptowaluty" => await _finnhub.GetCurrentCryptoQuoteAsync(symbol),
-            "Surowce" => await _twelveData.GetTodayClosePriceAsync(symbol),
-            _ => await _finnhub.GetCurrentQuoteAsync(symbol)
+            "Akcje" => await _finnhub.GetFullQuoteAsync(symbol),
+            "Kryptowaluty" => await _finnhub.GetFullCryptoQuoteAsync(symbol),
+            _ => await _finnhub.GetFullQuoteAsync(symbol)
         };
+    }
+
+    public async Task<decimal?> GetLatestPriceAsync(string symbol, string typeName)
+    {
+        // Wywołujemy nową metodę, która pobiera komplet danych
+        var marketData = await GetMarketDataAsync(symbol, typeName);
+
+        // Zwracamy tylko cenę, bo ta konkretna metoda tego oczekuje
+        return marketData?.Price;
+    }
+
+    // Dodaj to na samym dole klasy InvestmentService
+    public async Task<List<WatchlistItem>> GetWatchlistAsync()
+    {
+        // Pobieramy z bazy listę tickerów, które śledzisz
+        return await _context.WatchlistItems.ToListAsync();
+    }
+
+    public async Task AddToWatchlistAsync(string ticker)
+    {
+        if (string.IsNullOrWhiteSpace(ticker)) return;
+
+        var exists = await _context.WatchlistItems.AnyAsync(w => w.Ticker.ToUpper() == ticker.ToUpper());
+        if (!exists)
+        {
+            _context.WatchlistItems.Add(new WatchlistItem { Ticker = ticker.ToUpper() });
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<List<string>> ExecuteAutomatedCheckAndRefreshAsync(int userId, decimal? manualPrice = null)
+    {
+        // 1. Logika sprawdzania automatów
+        var alerts = await RunAutomaticCheckAsync(userId, manualPrice);
+
+        // 2. Tutaj mogłaby być też inna logika biznesowa wyzwalana przy odświeżaniu
+
+        return alerts; // Zwracamy tylko suche dane (listę alertów)
     }
 }
